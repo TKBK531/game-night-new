@@ -6,48 +6,48 @@ export default function VenueInfo() {
       icon: MapPin,
       title: "Address",
       description: "123 Gaming Street, Tech City\nMumbai, Maharashtra 400001",
-      color: "hsl(158,64%,52%)"
+      color: "hsl(140,100%,60%)"
     },
     {
       icon: Calendar,
       title: "Event Dates",
-      description: "December 16-17, 2023\nTwo days of non-stop gaming",
-      color: "hsl(261,83%,58%)"
+      description: "December 16, 2023\nOne epic day of gaming",
+      color: "hsl(320,100%,70%)"
     },
     {
       icon: Monitor,
       title: "Gaming Setup",
       description: "High-end gaming PCs with RTX 4080\n144Hz monitors • Gaming peripherals provided",
-      color: "hsl(14,100%,60%)"
+      color: "hsl(30,100%,60%)"
     },
     {
       icon: Wifi,
       title: "Network",
       description: "Dedicated gaming network\nUltra-low latency • 1Gbps internet",
-      color: "hsl(185,100%,50%)"
+      color: "hsl(280,100%,70%)"
     }
   ];
 
   return (
-    <section className="py-20 bg-[hsl(215,28%,17%)]/50">
+    <section className="py-20 bg-[hsl(240,10%,12%)]/50 animate-slide-up">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(158,64%,52%)]">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(140,100%,60%)] animate-glow">
             Venue Information
           </h2>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div>
+          <div className="animate-bounce-in">
             <img 
               src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
               alt="Esports tournament setup" 
-              className="rounded-xl shadow-2xl"
+              className="rounded-xl shadow-2xl hover-lift"
             />
           </div>
           
           <div>
-            <h3 className="text-3xl font-orbitron font-bold mb-6 text-[hsl(185,100%,50%)]">
+            <h3 className="text-3xl font-orbitron font-bold mb-6 text-[hsl(280,100%,70%)]">
               Gaming Arena Complex
             </h3>
             

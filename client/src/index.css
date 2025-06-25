@@ -1,39 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
-  --radius: 0.5rem;
+  --background: hsl(240, 16%, 8%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 5%, 15%);
+  --muted-foreground: hsl(240, 4%, 64%);
+  --popover: hsl(240, 16%, 8%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 16%, 8%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 4%, 20%);
+  --input: hsl(240, 4%, 20%);
+  --primary: hsl(280, 100%, 70%);
+  --primary-foreground: hsl(240, 16%, 8%);
+  --secondary: hsl(240, 5%, 15%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 5%, 15%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(280, 100%, 70%);
+  --radius: 0.75rem;
   
-  /* Gaming theme colors */
-  --gaming-dark: hsl(221, 39%, 11%);
-  --gaming-slate: hsl(215, 28%, 17%);
-  --gaming-medium: hsl(215, 16%, 29%);
-  --neon-cyan: hsl(185, 100%, 50%);
-  --neon-orange: hsl(14, 100%, 60%);
-  --neon-purple: hsl(261, 83%, 58%);
-  --neon-green: hsl(158, 64%, 52%);
+  /* New Gaming Theme - Electric Purple/Cyan/Pink */
+  --gaming-dark: hsl(240, 16%, 8%);
+  --gaming-darker: hsl(240, 20%, 4%);
+  --gaming-slate: hsl(240, 10%, 12%);
+  --gaming-medium: hsl(240, 8%, 18%);
+  --electric-purple: hsl(280, 100%, 70%);
+  --electric-cyan: hsl(180, 100%, 60%);
+  --electric-pink: hsl(320, 100%, 70%);
+  --electric-blue: hsl(220, 100%, 70%);
+  --electric-green: hsl(140, 100%, 60%);
+  --neon-orange: hsl(30, 100%, 60%);
 }
 
 .dark {
@@ -65,9 +68,11 @@
   }
 
   body {
-    @apply font-sans antialiased text-white;
-    background: var(--gaming-dark);
-    font-family: 'Inter', sans-serif;
+    @apply antialiased text-white;
+    background: linear-gradient(135deg, var(--gaming-darker) 0%, var(--gaming-dark) 50%, var(--gaming-slate) 100%);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
   }
 }
 
@@ -79,31 +84,47 @@
   .gaming-border {
     border: 2px solid transparent;
     background: linear-gradient(var(--gaming-slate), var(--gaming-slate)) padding-box, 
-                linear-gradient(45deg, var(--neon-cyan), var(--neon-purple)) border-box;
+                linear-gradient(45deg, var(--electric-purple), var(--electric-cyan), var(--electric-pink)) border-box;
+    position: relative;
+  }
+
+  .gaming-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: linear-gradient(45deg, var(--electric-purple), var(--electric-cyan), var(--electric-pink));
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    animation: border-spin 3s linear infinite;
   }
 
   .gaming-input {
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.9);
     border: 1px solid var(--gaming-medium);
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
   }
 
   .gaming-input:focus {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 10px hsla(185, 100%, 50%, 0.5);
+    border-color: var(--electric-cyan);
+    box-shadow: 0 0 20px hsla(180, 100%, 60%, 0.4);
     outline: none;
+    transform: translateY(-1px);
   }
 
   .gaming-button {
-    background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+    background: linear-gradient(45deg, var(--electric-purple), var(--electric-cyan));
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    transform-style: preserve-3d;
   }
 
   .gaming-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px hsla(185, 100%, 50%, 0.3);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 35px hsla(280, 100%, 70%, 0.4);
   }
 
   .gaming-button::before {
@@ -113,7 +134,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.6s;
   }
 
@@ -128,22 +149,92 @@
   .animate-pulse-neon {
     animation: pulse-neon 2s infinite;
   }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.8s ease-out forwards;
+  }
+
+  .hover-lift {
+    transition: all 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
 }
 
 @keyframes glow {
   from { 
-    text-shadow: 0 0 10px currentColor; 
+    text-shadow: 0 0 15px currentColor, 0 0 25px currentColor; 
   }
   to { 
-    text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; 
+    text-shadow: 0 0 25px currentColor, 0 0 35px currentColor, 0 0 45px currentColor; 
   }
 }
 
 @keyframes pulse-neon {
   0%, 100% { 
-    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor; 
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor; 
   }
   50% { 
-    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor; 
+    box-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor; 
+  }
+}
+
+@keyframes border-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(1deg); }
+  66% { transform: translateY(-10px) rotate(-1deg); }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.3) translateY(30px); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05) translateY(-10px); 
+  }
+  70% { 
+    transform: scale(0.95) translateY(0); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
   }
 }

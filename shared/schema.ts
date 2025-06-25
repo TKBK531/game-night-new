@@ -18,6 +18,7 @@ export const teams = pgTable("teams", {
   player4GamingId: text("player4_gaming_id").notNull(),
   player5Name: text("player5_name").notNull(),
   player5GamingId: text("player5_gaming_id").notNull(),
+  bankSlipUrl: text("bank_slip_url"), // Store the uploaded bank slip URL
   registeredAt: timestamp("registered_at").defaultNow().notNull(),
 });
 
@@ -39,6 +40,7 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
   player4GamingId: z.string().min(1, "Player 4 gaming ID is required"),
   player5Name: z.string().min(1, "Player 5 name is required"),
   player5GamingId: z.string().min(1, "Player 5 gaming ID is required"),
+  bankSlip: z.instanceof(File).optional().or(z.string().optional()),
 });
 
 export type InsertTeam = z.infer<typeof insertTeamSchema>;

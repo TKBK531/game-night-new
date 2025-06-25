@@ -33,6 +33,7 @@ export default function TeamRegistration() {
       player4GamingId: "",
       player5Name: "",
       player5GamingId: "",
+      bankSlip: undefined,
     },
   });
 
@@ -72,7 +73,7 @@ export default function TeamRegistration() {
     <section id="register" className="py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(185,100%,50%)]">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(280,100%,70%)] animate-glow">
             Team Registration
           </h2>
           <p className="text-xl text-gray-300">
@@ -80,7 +81,7 @@ export default function TeamRegistration() {
           </p>
         </div>
 
-        <div className="gaming-border rounded-xl p-8">
+        <div className="gaming-border rounded-xl p-8 animate-slide-up">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Game Selection */}
@@ -103,18 +104,18 @@ export default function TeamRegistration() {
                           <RadioGroupItem value="valorant" id="valorant" className="sr-only" />
                           <Label 
                             htmlFor="valorant"
-                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all ${
+                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
                               selectedGame === "valorant" 
-                                ? "border-[hsl(261,83%,58%)] bg-[hsl(261,83%,58%)]/20" 
-                                : "border-transparent gaming-input hover:border-[hsl(261,83%,58%)]"
+                                ? "border-[hsl(320,100%,70%)] bg-[hsl(320,100%,70%)]/20" 
+                                : "border-transparent gaming-input hover:border-[hsl(320,100%,70%)]"
                             }`}
                           >
                             <div className="flex items-center">
-                              <div className="w-12 h-12 bg-[hsl(261,83%,58%)]/20 rounded-lg flex items-center justify-center mr-4">
-                                <Crosshair className="text-[hsl(261,83%,58%)]" />
+                              <div className="w-12 h-12 bg-[hsl(320,100%,70%)]/20 rounded-lg flex items-center justify-center mr-4">
+                                <Crosshair className="text-[hsl(320,100%,70%)]" />
                               </div>
                               <div>
-                                <div className="font-semibold text-[hsl(261,83%,58%)]">Valorant Championship</div>
+                                <div className="font-semibold text-[hsl(320,100%,70%)]">Valorant Championship</div>
                                 <div className="text-sm text-gray-400">₹50,000 Prize Pool</div>
                               </div>
                             </div>
@@ -125,18 +126,18 @@ export default function TeamRegistration() {
                           <RadioGroupItem value="cod" id="cod" className="sr-only" />
                           <Label 
                             htmlFor="cod"
-                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all ${
+                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
                               selectedGame === "cod" 
-                                ? "border-[hsl(14,100%,60%)] bg-[hsl(14,100%,60%)]/20" 
-                                : "border-transparent gaming-input hover:border-[hsl(14,100%,60%)]"
+                                ? "border-[hsl(30,100%,60%)] bg-[hsl(30,100%,60%)]/20" 
+                                : "border-transparent gaming-input hover:border-[hsl(30,100%,60%)]"
                             }`}
                           >
                             <div className="flex items-center">
-                              <div className="w-12 h-12 bg-[hsl(14,100%,60%)]/20 rounded-lg flex items-center justify-center mr-4">
-                                <Target className="text-[hsl(14,100%,60%)]" />
+                              <div className="w-12 h-12 bg-[hsl(30,100%,60%)]/20 rounded-lg flex items-center justify-center mr-4">
+                                <Target className="text-[hsl(30,100%,60%)]" />
                               </div>
                               <div>
-                                <div className="font-semibold text-[hsl(14,100%,60%)]">COD Warzone Battle</div>
+                                <div className="font-semibold text-[hsl(30,100%,60%)]">COD Warzone Battle</div>
                                 <div className="text-sm text-gray-400">₹75,000 Prize Pool</div>
                               </div>
                             </div>
@@ -155,7 +156,7 @@ export default function TeamRegistration() {
                 name="teamName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold text-[hsl(185,100%,50%)] flex items-center">
+                    <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
                       <Flag className="mr-2" />
                       Team Name
                     </FormLabel>
@@ -174,7 +175,7 @@ export default function TeamRegistration() {
 
               {/* Team Members */}
               <div>
-                <label className="block text-lg font-semibold mb-3 text-[hsl(185,100%,50%)] flex items-center">
+                <label className="block text-lg font-semibold mb-3 text-[hsl(280,100%,70%)] flex items-center">
                   <Users className="mr-2" />
                   Team Members (5 Required)
                 </label>
@@ -231,7 +232,7 @@ export default function TeamRegistration() {
                   name="captainEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-[hsl(185,100%,50%)] flex items-center">
+                      <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
                         <Mail className="mr-2" />
                         Team Captain Email
                       </FormLabel>
@@ -253,7 +254,7 @@ export default function TeamRegistration() {
                   name="captainPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-[hsl(185,100%,50%)] flex items-center">
+                      <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
                         <Phone className="mr-2" />
                         Contact Number
                       </FormLabel>
@@ -270,6 +271,57 @@ export default function TeamRegistration() {
                   )}
                 />
               </div>
+
+              {/* Bank Slip Upload */}
+              <FormField
+                control={form.control}
+                name="bankSlip"
+                render={({ field: { onChange, value, ...field } }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                      <Rocket className="mr-2" />
+                      Bank Slip Upload (Registration Fee: ₹500)
+                    </FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="gaming-border rounded-lg p-6 text-center hover-lift">
+                          <input
+                            {...field}
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              onChange(file);
+                            }}
+                            className="hidden"
+                            id="bankSlip"
+                          />
+                          <label 
+                            htmlFor="bankSlip" 
+                            className="cursor-pointer block"
+                          >
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[hsl(280,100%,70%)]/20 flex items-center justify-center">
+                              <Rocket className="text-2xl text-[hsl(280,100%,70%)]" />
+                            </div>
+                            <div className="text-lg font-semibold text-white mb-2">
+                              {value ? 'File Selected!' : 'Upload Bank Slip'}
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              {value ? value.name : 'Click to select image or PDF (Max 5MB)'}
+                            </div>
+                          </label>
+                        </div>
+                        <div className="text-sm text-gray-400 space-y-2">
+                          <p>• Bank Details: Account Name: GameZone Events</p>
+                          <p>• Account Number: 1234567890 | IFSC: BANK0001234</p>
+                          <p>• Please upload payment proof to complete registration</p>
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Registration Button */}
               <div className="text-center pt-6">

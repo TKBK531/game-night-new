@@ -27,9 +27,11 @@ export class MemStorage implements IStorage {
 
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
     const id = this.currentTeamId++;
+    const { bankSlip, ...teamData } = insertTeam;
     const team: Team = {
-      ...insertTeam,
+      ...teamData,
       id,
+      bankSlipUrl: bankSlip ? `uploaded_${id}_${Date.now()}` : null,
       registeredAt: new Date(),
     };
     this.teams.set(id, team);
