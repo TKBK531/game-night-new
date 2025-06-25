@@ -1,0 +1,23 @@
+import Navigation from "@/components/navigation";
+import HeroSection from "@/components/hero-section";
+import TournamentShowcase from "@/components/tournament-showcase";
+import EventSchedule from "@/components/event-schedule";
+import FunZone from "@/components/fun-zone";
+import TeamRegistration from "@/components/team-registration";
+import VenueInfo from "@/components/venue-info";
+import Footer from "@/components/footer";
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-[hsl(221,39%,11%)] text-white">
+      <Navigation />
+      <HeroSection />
+      <TournamentShowcase />
+      <EventSchedule />
+      <FunZone />
+      <TeamRegistration />
+      <VenueInfo />
+      <Footer />
+    </div>
+  );
+}
