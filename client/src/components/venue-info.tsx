@@ -6,33 +6,33 @@ export default function VenueInfo() {
       icon: MapPin,
       title: "Address",
       description: "123 Gaming Street, Tech City\nMumbai, Maharashtra 400001",
-      color: "hsl(140,100%,60%)"
+      color: "#ffffff"
     },
     {
       icon: Calendar,
       title: "Event Dates",
       description: "December 16, 2023\nOne epic day of gaming",
-      color: "hsl(320,100%,70%)"
+      color: "#ff4654"
     },
     {
       icon: Monitor,
       title: "Gaming Setup",
       description: "High-end gaming PCs with RTX 4080\n144Hz monitors • Gaming peripherals provided",
-      color: "hsl(30,100%,60%)"
+      color: "#ba3a46"
     },
     {
       icon: Wifi,
       title: "Network",
       description: "Dedicated gaming network\nUltra-low latency • 1Gbps internet",
-      color: "hsl(280,100%,70%)"
+      color: "#ff4654"
     }
   ];
 
   return (
-    <section className="py-20 bg-[hsl(240,10%,12%)]/50 animate-slide-up">
+    <section className="py-20 bg-[#1a2332]/50 animate-slide-up">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(140,100%,60%)] animate-glow">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ffffff] animate-glow">
             Venue Information
           </h2>
         </div>
@@ -47,7 +47,7 @@ export default function VenueInfo() {
           </div>
           
           <div>
-            <h3 className="text-3xl font-orbitron font-bold mb-6 text-[hsl(280,100%,70%)]">
+            <h3 className="text-3xl font-orbitron font-bold mb-6 text-[#ff4654]">
               Gaming Arena Complex
             </h3>
             

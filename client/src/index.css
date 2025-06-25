@@ -5,38 +5,39 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(240, 16%, 8%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 5%, 15%);
-  --muted-foreground: hsl(240, 4%, 64%);
-  --popover: hsl(240, 16%, 8%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 16%, 8%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 4%, 20%);
-  --input: hsl(240, 4%, 20%);
-  --primary: hsl(280, 100%, 70%);
-  --primary-foreground: hsl(240, 16%, 8%);
-  --secondary: hsl(240, 5%, 15%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 5%, 15%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(280, 100%, 70%);
+  --background: var(--gaming-dark);
+  --foreground: var(--pure-white);
+  --muted: var(--gaming-slate);
+  --muted-foreground: var(--medium-gray);
+  --popover: var(--gaming-dark);
+  --popover-foreground: var(--pure-white);
+  --card: var(--gaming-dark);
+  --card-foreground: var(--pure-white);
+  --border: var(--gaming-medium);
+  --input: var(--gaming-medium);
+  --primary: var(--primary-red);
+  --primary-foreground: var(--pure-white);
+  --secondary: var(--gaming-slate);
+  --secondary-foreground: var(--pure-white);
+  --accent: var(--gaming-slate);
+  --accent-foreground: var(--pure-white);
+  --destructive: var(--primary-red);
+  --destructive-foreground: var(--pure-white);
+  --ring: var(--primary-red);
   --radius: 0.75rem;
   
-  /* New Gaming Theme - Electric Purple/Cyan/Pink */
-  --gaming-dark: hsl(240, 16%, 8%);
-  --gaming-darker: hsl(240, 20%, 4%);
-  --gaming-slate: hsl(240, 10%, 12%);
-  --gaming-medium: hsl(240, 8%, 18%);
-  --electric-purple: hsl(280, 100%, 70%);
-  --electric-cyan: hsl(180, 100%, 60%);
-  --electric-pink: hsl(320, 100%, 70%);
-  --electric-blue: hsl(220, 100%, 70%);
-  --electric-green: hsl(140, 100%, 60%);
-  --neon-orange: hsl(30, 100%, 60%);
+  /* Gaming Theme - Red/Dark Focus */
+  --gaming-dark: #111823;
+  --gaming-darker: #0a0f1a;
+  --gaming-slate: #1a2332;
+  --gaming-medium: #242d3d;
+  --primary-red: #ff4654;
+  --dark-red: #ba3a46;
+  --pure-white: #ffffff;
+  --light-gray: #e5e7eb;
+  --medium-gray: #9ca3af;
+  --accent-red: #ff6b78;
+  --dark-accent: #8b2635;
 }
 
 .dark {
@@ -68,8 +69,9 @@
   }
 
   body {
-    @apply antialiased text-white;
-    background: linear-gradient(135deg, var(--gaming-darker) 0%, var(--gaming-dark) 50%, var(--gaming-slate) 100%);
+    @apply antialiased;
+    background: linear-gradient(135deg, var(--gaming-darker) 0%, var(--gaming-dark) 70%, var(--gaming-slate) 100%);
+    color: var(--pure-white);
     font-family: 'Rajdhani', sans-serif;
     font-weight: 400;
     min-height: 100vh;
@@ -84,38 +86,26 @@
   .gaming-border {
     border: 2px solid transparent;
     background: linear-gradient(var(--gaming-slate), var(--gaming-slate)) padding-box, 
-                linear-gradient(45deg, var(--electric-purple), var(--electric-cyan), var(--electric-pink)) border-box;
+                linear-gradient(45deg, var(--primary-red), var(--dark-red), var(--accent-red)) border-box;
     position: relative;
   }
 
-  .gaming-border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 2px;
-    background: linear-gradient(45deg, var(--electric-purple), var(--electric-cyan), var(--electric-pink));
-    border-radius: inherit;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: xor;
-    animation: border-spin 3s linear infinite;
-  }
-
   .gaming-input {
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(17, 24, 35, 0.9);
     border: 1px solid var(--gaming-medium);
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
   }
 
   .gaming-input:focus {
-    border-color: var(--electric-cyan);
-    box-shadow: 0 0 20px hsla(180, 100%, 60%, 0.4);
+    border-color: var(--primary-red);
+    box-shadow: 0 0 20px rgba(255, 70, 84, 0.4);
     outline: none;
     transform: translateY(-1px);
   }
 
   .gaming-button {
-    background: linear-gradient(45deg, var(--electric-purple), var(--electric-cyan));
+    background: linear-gradient(45deg, var(--primary-red), var(--dark-red));
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -124,7 +114,7 @@
 
   .gaming-button:hover {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 15px 35px hsla(280, 100%, 70%, 0.4);
+    box-shadow: 0 15px 35px rgba(255, 70, 84, 0.4);
   }
 
   .gaming-button::before {
@@ -166,6 +156,14 @@
     animation: bounceIn 0.8s ease-out forwards;
   }
 
+  .animate-slide-in-left {
+    animation: slideInLeft 0.8s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.8s ease-out forwards;
+  }
+
   .hover-lift {
     transition: all 0.3s ease;
   }
@@ -192,11 +190,6 @@
   50% { 
     box-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor; 
   }
-}
-
-@keyframes border-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 @keyframes float {
@@ -236,5 +229,27 @@
   100% { 
     opacity: 1; 
     transform: scale(1) translateY(0); 
+  }
+}
+
+@keyframes slideInLeft {
+  from { 
+    opacity: 0; 
+    transform: translateX(-50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes slideInRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
   }
 }

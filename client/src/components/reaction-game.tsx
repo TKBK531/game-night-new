@@ -108,7 +108,7 @@ export default function ReactionGame() {
       case "waiting":
         return (
           <div className="text-center">
-            <Target className="text-6xl text-[hsl(280,100%,70%)] mx-auto mb-4" />
+            <Target className="text-6xl text-[#ff4654] mx-auto mb-4" />
             <h3 className="text-2xl font-orbitron font-bold mb-4 text-white">Ready to Test Your Reflexes?</h3>
             <p className="text-gray-300 mb-6">Click the button below to start, then click again when the screen turns green!</p>
             <Button onClick={startGame} className="gaming-button px-8 py-4 text-lg">
@@ -121,8 +121,8 @@ export default function ReactionGame() {
       case "ready":
         return (
           <div className="text-center">
-            <div className="text-6xl text-[hsl(30,100%,60%)] mb-4">⏱️</div>
-            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[hsl(30,100%,60%)]">Get Ready...</h3>
+            <div className="text-6xl text-[#ba3a46] mb-4">⏱️</div>
+            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[#ba3a46]">Get Ready...</h3>
             <p className="text-gray-300 mb-6">Wait for the green signal, then click as fast as you can!</p>
             <div className="text-lg text-gray-400">Don't click yet...</div>
           </div>
@@ -131,9 +131,9 @@ export default function ReactionGame() {
       case "go":
         return (
           <div className="text-center">
-            <Zap className="text-6xl text-[hsl(140,100%,60%)] mx-auto mb-4 animate-pulse" />
-            <h3 className="text-3xl font-orbitron font-bold mb-4 text-[hsl(140,100%,60%)]">CLICK NOW!</h3>
-            <div className="text-xl text-[hsl(140,100%,60%)]">⚡ GO GO GO! ⚡</div>
+            <Zap className="text-6xl text-[#ffffff] mx-auto mb-4 animate-pulse" />
+            <h3 className="text-3xl font-orbitron font-bold mb-4 text-[#ffffff]">CLICK NOW!</h3>
+            <div className="text-xl text-[#ffffff]">⚡ GO GO GO! ⚡</div>
           </div>
         );
       
@@ -153,9 +153,9 @@ export default function ReactionGame() {
       case "finished":
         return (
           <div className="text-center">
-            <Trophy className="text-6xl text-[hsl(320,100%,70%)] mx-auto mb-4" />
-            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[hsl(320,100%,70%)]">Great Reflexes!</h3>
-            <div className="text-4xl font-orbitron font-bold text-[hsl(280,100%,70%)] mb-6">
+            <Trophy className="text-6xl text-[#ff4654] mx-auto mb-4" />
+            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[#ff4654]">Great Reflexes!</h3>
+            <div className="text-4xl font-orbitron font-bold text-[#ff4654] mb-6">
               {reactionTime?.toFixed(3)}s
             </div>
             {showNameInput && (
@@ -193,10 +193,10 @@ export default function ReactionGame() {
   };
 
   return (
-    <section id="game" className="py-20 bg-[hsl(240,10%,12%)]/50 animate-slide-up">
+    <section id="game" className="py-20 bg-[#1a2332]/50 animate-slide-up">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(30,100%,60%)] animate-glow">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ba3a46] animate-glow">
             Reaction Speed Challenge
           </h2>
           <p className="text-xl text-gray-300">
@@ -209,10 +209,10 @@ export default function ReactionGame() {
           <div className="gaming-border rounded-xl p-8">
             <div 
               className={`min-h-[400px] flex items-center justify-center rounded-lg cursor-pointer transition-all ${
-                gameState === "go" ? "bg-[hsl(140,100%,60%)]/20" : 
-                gameState === "ready" ? "bg-[hsl(30,100%,60%)]/20" : 
+                gameState === "go" ? "bg-[#ffffff]/20" : 
+                gameState === "ready" ? "bg-[#ba3a46]/20" : 
                 gameState === "early" ? "bg-red-500/20" :
-                "bg-[hsl(240,8%,18%)]/50"
+                "bg-[#242d3d]/50"
               }`}
               onClick={handleClick}
             >
@@ -222,7 +222,7 @@ export default function ReactionGame() {
 
           {/* Leaderboard */}
           <div className="gaming-border rounded-xl p-8">
-            <h3 className="text-2xl font-orbitron font-bold mb-6 text-[hsl(280,100%,70%)] flex items-center">
+            <h3 className="text-2xl font-orbitron font-bold mb-6 text-[#ff4654] flex items-center">
               <Trophy className="mr-2" />
               Leaderboard
             </h3>
@@ -239,7 +239,7 @@ export default function ReactionGame() {
                         index === 0 ? "bg-gradient-to-r from-yellow-500/20 to-yellow-600/20" :
                         index === 1 ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20" :
                         index === 2 ? "bg-gradient-to-r from-orange-500/20 to-orange-600/20" :
-                        "bg-[hsl(240,8%,18%)]/30"
+                        "bg-[#242d3d]/30"
                       }`}
                     >
                       <div className="flex items-center">
@@ -247,13 +247,13 @@ export default function ReactionGame() {
                           index === 0 ? "bg-yellow-500/30 text-yellow-400" :
                           index === 1 ? "bg-gray-400/30 text-gray-300" :
                           index === 2 ? "bg-orange-500/30 text-orange-400" :
-                          "bg-[hsl(280,100%,70%)]/20 text-[hsl(280,100%,70%)]"
+                          "bg-[#ff4654]/20 text-[#ff4654]"
                         }`}>
                           {index + 1}
                         </div>
                         <div className="text-white font-semibold">{score.playerName}</div>
                       </div>
-                      <div className="text-[hsl(140,100%,60%)] font-orbitron font-bold">
+                      <div className="text-[#ffffff] font-orbitron font-bold">
                         {score.score}
                       </div>
                     </div>

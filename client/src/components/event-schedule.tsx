@@ -10,49 +10,49 @@ export default function EventSchedule() {
           time: "9:00 AM",
           title: "Registration & Check-in",
           icon: Clock,
-          color: "hsl(280,100%,70%)"
+          color: "#ff4654"
         },
         {
           time: "10:00 AM",
           title: "Opening Ceremony",
           icon: Star,
-          color: "hsl(140,100%,60%)"
+          color: "#ffffff"
         },
         {
           time: "11:00 AM",
           title: "Valorant Quarter Finals",
           icon: Play,
-          color: "hsl(320,100%,70%)"
+          color: "#ff4654"
         },
         {
           time: "1:00 PM",
           title: "Lunch Break & Fun Zone",
           icon: Clock,
-          color: "hsl(180,100%,60%)"
+          color: "#ba3a46"
         },
         {
           time: "2:00 PM",
           title: "COD Quarter Finals",
           icon: Crosshair,
-          color: "hsl(30,100%,60%)"
+          color: "#ba3a46"
         },
         {
           time: "3:30 PM",
           title: "Valorant Semi Finals",
           icon: Play,
-          color: "hsl(320,100%,70%)"
+          color: "#ff4654"
         },
         {
           time: "4:30 PM",
           title: "COD Semi Finals",
           icon: Crosshair,
-          color: "hsl(30,100%,60%)"
+          color: "#ba3a46"
         },
         {
           time: "5:30 PM",
           title: "Grand Finals & Awards",
           icon: Trophy,
-          color: "hsl(140,100%,60%)"
+          color: "#ffffff"
         }
       ]
     }
@@ -62,7 +62,7 @@ export default function EventSchedule() {
     <section id="schedule" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(140,100%,60%)] animate-glow">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ffffff] animate-glow">
             Event Schedule
           </h2>
           <p className="text-xl text-gray-300">
@@ -74,7 +74,7 @@ export default function EventSchedule() {
           {scheduleData.map((day, dayIndex) => (
             <div key={dayIndex} className="gaming-border rounded-xl p-8 hover-lift animate-slide-up">
               <div className="text-center mb-8">
-                <h3 className="text-3xl font-orbitron font-bold text-[hsl(280,100%,70%)] mb-2">
+                <h3 className="text-3xl font-orbitron font-bold text-[#ff4654] mb-2">
                   {day.day}
                 </h3>
                 <p className="text-lg text-gray-400">{day.date}</p>
@@ -84,7 +84,7 @@ export default function EventSchedule() {
                 {day.events.map((event, eventIndex) => {
                   const IconComponent = event.icon;
                   return (
-                    <div key={eventIndex} className="flex items-center p-4 bg-[hsl(240,8%,18%)]/50 rounded-lg hover:bg-[hsl(240,8%,18%)]/70 transition-all hover-lift">
+                    <div key={eventIndex} className="flex items-center p-4 bg-[#242d3d]/50 rounded-lg hover:bg-[#242d3d]/70 transition-all hover-lift">
                       <div 
                         className="w-16 h-16 rounded-lg flex items-center justify-center mr-4"
                         style={{ backgroundColor: `${event.color}20` }}

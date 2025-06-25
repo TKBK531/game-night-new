@@ -6,27 +6,27 @@ export default function FunZone() {
       icon: Headphones,
       title: "VR Gaming",
       description: "Experience immersive virtual reality gaming with latest VR headsets",
-      color: "hsl(280,100%,70%)"
+      color: "#ff4654"
     },
     {
       icon: Music,
       title: "Gaming Lounge",
       description: "Relax in our gaming lounge with retro arcade machines and consoles",
-      color: "hsl(320,100%,70%)"
+      color: "#ba3a46"
     },
     {
       icon: Utensils,
       title: "Gaming Cafe",
       description: "Fuel up with gaming-themed food and energy drinks",
-      color: "hsl(140,100%,60%)"
+      color: "#ffffff"
     }
   ];
 
   return (
-    <section id="funzone" className="py-20 bg-[hsl(240,10%,12%)]/50 animate-slide-up">
+    <section id="funzone" className="py-20 bg-[#1a2332]/50 animate-slide-up">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(30,100%,60%)] animate-glow">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ba3a46] animate-glow">
             Fun Zone Activities
           </h2>
           <p className="text-xl text-gray-300">

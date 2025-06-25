@@ -73,7 +73,7 @@ export default function TeamRegistration() {
     <section id="register" className="py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(280,100%,70%)] animate-glow">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ff4654] animate-glow">
             Team Registration
           </h2>
           <p className="text-xl text-gray-300">
@@ -106,16 +106,16 @@ export default function TeamRegistration() {
                             htmlFor="valorant"
                             className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
                               selectedGame === "valorant" 
-                                ? "border-[hsl(320,100%,70%)] bg-[hsl(320,100%,70%)]/20" 
-                                : "border-transparent gaming-input hover:border-[hsl(320,100%,70%)]"
+                                ? "border-[#ff4654] bg-[#ff4654]/20" 
+                                : "border-transparent gaming-input hover:border-[#ff4654]"
                             }`}
                           >
                             <div className="flex items-center">
-                              <div className="w-12 h-12 bg-[hsl(320,100%,70%)]/20 rounded-lg flex items-center justify-center mr-4">
-                                <Crosshair className="text-[hsl(320,100%,70%)]" />
+                              <div className="w-12 h-12 bg-[#ff4654]/20 rounded-lg flex items-center justify-center mr-4">
+                                <Crosshair className="text-[#ff4654]" />
                               </div>
                               <div>
-                                <div className="font-semibold text-[hsl(320,100%,70%)]">Valorant Championship</div>
+                                <div className="font-semibold text-[#ff4654]">Valorant Championship</div>
                                 <div className="text-sm text-gray-400">₹50,000 Prize Pool</div>
                               </div>
                             </div>
@@ -128,16 +128,16 @@ export default function TeamRegistration() {
                             htmlFor="cod"
                             className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
                               selectedGame === "cod" 
-                                ? "border-[hsl(30,100%,60%)] bg-[hsl(30,100%,60%)]/20" 
-                                : "border-transparent gaming-input hover:border-[hsl(30,100%,60%)]"
+                                ? "border-[#ba3a46] bg-[#ba3a46]/20" 
+                                : "border-transparent gaming-input hover:border-[#ba3a46]"
                             }`}
                           >
                             <div className="flex items-center">
-                              <div className="w-12 h-12 bg-[hsl(30,100%,60%)]/20 rounded-lg flex items-center justify-center mr-4">
-                                <Target className="text-[hsl(30,100%,60%)]" />
+                              <div className="w-12 h-12 bg-[#ba3a46]/20 rounded-lg flex items-center justify-center mr-4">
+                                <Target className="text-[#ba3a46]" />
                               </div>
                               <div>
-                                <div className="font-semibold text-[hsl(30,100%,60%)]">COD Warzone Battle</div>
+                                <div className="font-semibold text-[#ba3a46]">COD Warzone Battle</div>
                                 <div className="text-sm text-gray-400">₹75,000 Prize Pool</div>
                               </div>
                             </div>
@@ -175,7 +175,7 @@ export default function TeamRegistration() {
 
               {/* Team Members */}
               <div>
-                <label className="block text-lg font-semibold mb-3 text-[hsl(280,100%,70%)] flex items-center">
+                <label className="block text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
                   <Users className="mr-2" />
                   Team Members (5 Required)
                 </label>
@@ -278,7 +278,7 @@ export default function TeamRegistration() {
                 name="bankSlip"
                 render={({ field: { onChange, value, ...field } }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                    <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
                       <Rocket className="mr-2" />
                       Bank Slip Upload (Registration Fee: ₹500)
                     </FormLabel>
@@ -300,8 +300,8 @@ export default function TeamRegistration() {
                             htmlFor="bankSlip" 
                             className="cursor-pointer block"
                           >
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[hsl(280,100%,70%)]/20 flex items-center justify-center">
-                              <Rocket className="text-2xl text-[hsl(280,100%,70%)]" />
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff4654]/20 flex items-center justify-center">
+                              <Rocket className="text-2xl text-[#ff4654]" />
                             </div>
                             <div className="text-lg font-semibold text-white mb-2">
                               {value ? 'File Selected!' : 'Upload Bank Slip'}

@@ -14,10 +14,10 @@ export default function TournamentShowcase() {
   };
 
   return (
-    <section id="tournaments" className="py-20 bg-[hsl(240,10%,12%)]/50 animate-slide-up">
+    <section id="tournaments" className="py-20 bg-[#1a2332]/50 animate-slide-up">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[hsl(280,100%,70%)] animate-glow">
+          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ff4654] animate-glow">
             Main Events
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -34,26 +34,26 @@ export default function TournamentShowcase() {
                 alt="Valorant gameplay setup" 
                 className="w-full h-48 object-cover rounded-lg"
               />
-              <div className="absolute top-4 left-4 bg-[hsl(320,100%,70%)]/90 px-3 py-1 rounded-full text-sm font-semibold">
+              <div className="absolute top-4 left-4 bg-[#ff4654]/90 px-3 py-1 rounded-full text-sm font-semibold">
                 VALORANT
               </div>
             </div>
             
-            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[hsl(320,100%,70%)]">
+            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[#ff4654]">
               Valorant Championship
             </h3>
             
             <div className="space-y-3 mb-6">
               <div className="flex items-center text-gray-300">
-                <Users className="text-[hsl(320,100%,70%)] mr-3" />
+                <Users className="text-[#ff4654] mr-3" />
                 5 Players per Team
               </div>
               <div className="flex items-center text-gray-300">
-                <Trophy className="text-[hsl(320,100%,70%)] mr-3" />
+                <Trophy className="text-[#ff4654] mr-3" />
                 ₹50,000 Prize Pool
               </div>
               <div className="flex items-center text-gray-300">
-                <Clock className="text-[hsl(320,100%,70%)] mr-3" />
+                <Clock className="text-[#ff4654] mr-3" />
                 Tournament Format: Single Elimination
               </div>
             </div>
@@ -64,9 +64,9 @@ export default function TournamentShowcase() {
                 <span>Teams Registered</span>
                 <span>{stats?.valorant.registered || 0}/{stats?.valorant.total || 32}</span>
               </div>
-              <div className="w-full bg-[hsl(240,8%,18%)] rounded-full h-3">
+              <div className="w-full bg-[#242d3d] rounded-full h-3">
                 <div 
-                  className="bg-gradient-to-r from-[hsl(320,100%,70%)] to-[hsl(280,100%,70%)] h-3 rounded-full transition-all duration-500" 
+                  className="bg-gradient-to-r from-[#ff4654] to-[#ba3a46] h-3 rounded-full transition-all duration-500" 
                   style={{ width: `${((stats?.valorant.registered || 0) / (stats?.valorant.total || 32)) * 100}%` }}
                 ></div>
               </div>
@@ -88,26 +88,26 @@ export default function TournamentShowcase() {
                 alt="Call of Duty gameplay setup" 
                 className="w-full h-48 object-cover rounded-lg"
               />
-              <div className="absolute top-4 left-4 bg-[hsl(30,100%,60%)]/90 px-3 py-1 rounded-full text-sm font-semibold">
+              <div className="absolute top-4 left-4 bg-[#ba3a46]/90 px-3 py-1 rounded-full text-sm font-semibold">
                 CALL OF DUTY
               </div>
             </div>
             
-            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[hsl(30,100%,60%)]">
+            <h3 className="text-2xl font-orbitron font-bold mb-4 text-[#ba3a46]">
               COD Warzone Battle
             </h3>
             
             <div className="space-y-3 mb-6">
               <div className="flex items-center text-gray-300">
-                <Users className="text-[hsl(30,100%,60%)] mr-3" />
+                <Users className="text-[#ba3a46] mr-3" />
                 5 Players per Team
               </div>
               <div className="flex items-center text-gray-300">
-                <Trophy className="text-[hsl(30,100%,60%)] mr-3" />
+                <Trophy className="text-[#ba3a46] mr-3" />
                 ₹75,000 Prize Pool
               </div>
               <div className="flex items-center text-gray-300">
-                <Clock className="text-[hsl(30,100%,60%)] mr-3" />
+                <Clock className="text-[#ba3a46] mr-3" />
                 Tournament Format: Battle Royale
               </div>
             </div>
@@ -118,9 +118,9 @@ export default function TournamentShowcase() {
                 <span>Teams Registered</span>
                 <span>{stats?.cod.registered || 0}/{stats?.cod.total || 32}</span>
               </div>
-              <div className="w-full bg-[hsl(240,8%,18%)] rounded-full h-3">
+              <div className="w-full bg-[#242d3d] rounded-full h-3">
                 <div 
-                  className="bg-gradient-to-r from-[hsl(30,100%,60%)] to-[hsl(180,100%,60%)] h-3 rounded-full transition-all duration-500" 
+                  className="bg-gradient-to-r from-[#ba3a46] to-[#ff4654] h-3 rounded-full transition-all duration-500" 
                   style={{ width: `${((stats?.cod.registered || 0) / (stats?.cod.total || 32)) * 100}%` }}
                 ></div>
               </div>
