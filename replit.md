@@ -31,24 +31,33 @@ GameZone is a modern esports tournament registration platform built for hosting 
 ## Key Components
 
 ### Database Schema
-The application uses a single `teams` table with the following structure:
+The application uses two main tables:
+
+**Teams Table:**
 - Team identification (id, teamName, game)
 - Captain contact information (captainEmail, captainPhone)
 - Five player details (name and gaming ID for each player)
 - Registration timestamp
 
+**Game Scores Table:**
+- Score identification (id, playerName, score, gameType)
+- Creation timestamp for leaderboard ordering
+
 ### API Endpoints
 - `POST /api/teams` - Team registration with validation
 - `GET /api/teams/check/:teamName` - Team name availability checking
 - `GET /api/teams/stats` - Tournament statistics (team counts by game)
+- `POST /api/game-scores` - Submit game scores for leaderboard
+- `GET /api/game-scores/leaderboard/:gameType` - Get top scores for game type
 
 ### Frontend Components
-- **Navigation**: Sticky header with smooth scrolling navigation
-- **Hero Section**: Main landing area with call-to-action buttons
+- **Navigation**: Sticky header with smooth scrolling navigation and gaming branding
+- **Hero Section**: Enhanced gamer-style header with decorative elements and updated branding
 - **Tournament Showcase**: Game-specific tournament information
 - **Team Registration**: Multi-step form with real-time validation
-- **Event Schedule**: Tournament timeline and activities
+- **Event Schedule**: Single-day tournament timeline (8 hours of events)
 - **Fun Zone**: Additional event activities
+- **Reaction Game**: Interactive reaction speed challenge with leaderboard system
 - **Venue Information**: Location and facility details
 
 ### Storage Implementation
@@ -109,7 +118,16 @@ The application uses a single `teams` table with the following structure:
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- **June 25, 2025**: Updated website design and features
+  - Changed title from "GameZone" to "Game Night: Reignite 25'"
+  - Redesigned header with more gaming aesthetic and decorative elements
+  - Updated schedule to single day format (8 hours of events)
+  - Added interactive Reaction Speed Challenge game with real-time leaderboard
+  - Enhanced navigation with new "Game" section
+  - Fixed CSS import order to resolve build warnings
+
 ## Changelog
 
-Changelog:
-- June 25, 2025. Initial setup
+- June 25, 2025: Initial setup and major feature updates

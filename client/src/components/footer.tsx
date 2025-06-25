@@ -14,9 +14,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <div className="text-2xl font-orbitron font-bold text-[hsl(185,100%,50%)] mb-4 flex items-center">
-              <Gamepad2 className="mr-2" />
-              GameZone
+            <div className="text-xl font-orbitron font-bold mb-4 flex items-center">
+              <Gamepad2 className="mr-2 text-[hsl(185,100%,50%)]" />
+              <span className="text-[hsl(185,100%,50%)]">GAME</span>
+              <span className="text-[hsl(14,100%,60%)]"> NIGHT</span>
             </div>
             <p className="text-gray-400">
               The ultimate esports tournament experience with professional gaming setups and exciting prizes.
@@ -48,6 +49,14 @@ export default function Footer() {
                   className="hover:text-[hsl(185,100%,50%)] transition-colors cursor-pointer"
                 >
                   Fun Zone
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('game')}
+                  className="hover:text-[hsl(185,100%,50%)] transition-colors cursor-pointer"
+                >
+                  Game
                 </button>
               </li>
               <li>

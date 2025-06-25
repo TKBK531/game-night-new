@@ -17,9 +17,11 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="text-2xl font-orbitron font-bold text-[hsl(185,100%,50%)] animate-glow">
-              <Gamepad2 className="inline mr-2" />
-              GameZone
+            <div className="text-xl font-orbitron font-bold animate-glow relative">
+              <Gamepad2 className="inline mr-2 text-[hsl(185,100%,50%)]" />
+              <span className="text-[hsl(185,100%,50%)]">GAME</span>
+              <span className="text-[hsl(14,100%,60%)]"> NIGHT</span>
+              <div className="text-xs text-[hsl(261,83%,58%)] font-bold">REIGNITE 25'</div>
             </div>
           </div>
           
@@ -41,6 +43,12 @@ export default function Navigation() {
               className="hover:text-[hsl(185,100%,50%)] transition-colors cursor-pointer"
             >
               Fun Zone
+            </button>
+            <button 
+              onClick={() => scrollToSection('game')}
+              className="hover:text-[hsl(185,100%,50%)] transition-colors cursor-pointer"
+            >
+              Game
             </button>
             <button 
               onClick={() => scrollToSection('register')}
@@ -78,6 +86,12 @@ export default function Navigation() {
                 className="text-left hover:text-[hsl(185,100%,50%)] transition-colors cursor-pointer py-2"
               >
                 Fun Zone
+              </button>
+              <button 
+                onClick={() => scrollToSection('game')}
+                className="text-left hover:text-[hsl(185,100%,50%)] transition-colors cursor-pointer py-2"
+              >
+                Game
               </button>
               <button 
                 onClick={() => scrollToSection('register')}

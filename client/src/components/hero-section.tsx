@@ -21,12 +21,22 @@ export default function HeroSection() {
       </div>
       
       <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
-        <h1 className="text-6xl md:text-8xl font-orbitron font-black mb-6 animate-glow">
-          <span className="text-[hsl(185,100%,50%)]">GAME</span>
-          <span className="text-[hsl(14,100%,60%)]">ZONE</span>
-        </h1>
-        <p className="text-xl md:text-2xl mb-8 text-gray-300">
-          Game Night: Reignite 25' - Ultimate Esports Tournament Experience
+        <div className="relative mb-8">
+          <h1 className="text-5xl md:text-7xl font-orbitron font-black mb-4 animate-glow relative">
+            <span className="text-[hsl(185,100%,50%)] drop-shadow-[0_0_20px_hsl(185,100%,50%)]">GAME</span>
+            <span className="text-[hsl(14,100%,60%)] drop-shadow-[0_0_20px_hsl(14,100%,60%)]"> NIGHT</span>
+          </h1>
+          <div className="text-2xl md:text-4xl font-orbitron font-bold text-[hsl(261,83%,58%)] animate-pulse-neon">
+            REIGNITE 25'
+          </div>
+          {/* Gaming decorative elements */}
+          <div className="absolute -top-4 -left-4 w-8 h-8 border-l-4 border-t-4 border-[hsl(185,100%,50%)] animate-pulse"></div>
+          <div className="absolute -top-4 -right-4 w-8 h-8 border-r-4 border-t-4 border-[hsl(14,100%,60%)] animate-pulse"></div>
+          <div className="absolute -bottom-4 -left-4 w-8 h-8 border-l-4 border-b-4 border-[hsl(261,83%,58%)] animate-pulse"></div>
+          <div className="absolute -bottom-4 -right-4 w-8 h-8 border-r-4 border-b-4 border-[hsl(158,64%,52%)] animate-pulse"></div>
+        </div>
+        <p className="text-lg md:text-xl mb-8 text-gray-300 font-semibold">
+          Ultimate Esports Tournament Experience • One Day • Maximum Action
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button 

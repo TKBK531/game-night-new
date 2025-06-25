@@ -1,4 +1,4 @@
-import { teams, type Team, type InsertTeam } from "@shared/schema";
+import { teams, gameScores, type Team, type InsertTeam, type GameScore, type InsertGameScore } from "@shared/schema";
 
 export interface IStorage {
   createTeam(team: InsertTeam): Promise<Team>;
@@ -6,19 +6,27 @@ export interface IStorage {
   getTeamsByGame(game: string): Promise<Team[]>;
   getAllTeams(): Promise<Team[]>;
   getTeamCount(game: string): Promise<number>;
+  
+  // Game scores
+  createGameScore(score: InsertGameScore): Promise<GameScore>;
+  getTopScores(gameType: string, limit: number): Promise<GameScore[]>;
 }
 
 export class MemStorage implements IStorage {
   private teams: Map<number, Team>;
-  private currentId: number;
+  private gameScores: Map<number, GameScore>;
+  private currentTeamId: number;
+  private currentScoreId: number;
 
   constructor() {
     this.teams = new Map();
-    this.currentId = 1;
+    this.gameScores = new Map();
+    this.currentTeamId = 1;
+    this.currentScoreId = 1;
   }
 
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
-    const id = this.currentId++;
+    const id = this.currentTeamId++;
     const team: Team = {
       ...insertTeam,
       id,
@@ -48,6 +56,30 @@ export class MemStorage implements IStorage {
     return Array.from(this.teams.values()).filter(
       (team) => team.game === game,
     ).length;
+  }
+
+  async createGameScore(insertScore: InsertGameScore): Promise<GameScore> {
+    const id = this.currentScoreId++;
+    const score: GameScore = {
+      ...insertScore,
+      id,
+      createdAt: new Date(),
+    };
+    this.gameScores.set(id, score);
+    return score;
+  }
+
+  async getTopScores(gameType: string, limit: number): Promise<GameScore[]> {
+    const scores = Array.from(this.gameScores.values())
+      .filter((score) => score.gameType === gameType)
+      .sort((a, b) => {
+        // For reaction game, lower time is better
+        const aTime = parseFloat(a.score.replace('s', ''));
+        const bTime = parseFloat(b.score.replace('s', ''));
+        return aTime - bTime;
+      })
+      .slice(0, limit);
+    return scores;
   }
 }
 

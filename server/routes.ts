@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertTeamSchema } from "@shared/schema";
+import { insertTeamSchema, insertGameScoreSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -52,6 +52,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         valorant: { registered: valorantCount, total: 32 },
         cod: { registered: codCount, total: 32 }
       });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Game score endpoints
+  app.post("/api/game-scores", async (req, res) => {
+    try {
+      const scoreData = insertGameScoreSchema.parse(req.body);
+      const score = await storage.createGameScore(scoreData);
+      res.status(201).json(score);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/game-scores/leaderboard/:gameType", async (req, res) => {
+    try {
+      const { gameType } = req.params;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const scores = await storage.getTopScores(gameType, limit);
+      res.json(scores);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }

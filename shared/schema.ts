@@ -43,3 +43,24 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
 
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type Team = typeof teams.$inferSelect;
+
+// Game scores table
+export const gameScores = pgTable("game_scores", {
+  id: serial("id").primaryKey(),
+  playerName: text("player_name").notNull(),
+  score: text("score").notNull(), // Store as text for reaction times like "0.234s"
+  gameType: text("game_type").notNull().default("reaction"), // Currently only reaction game
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertGameScoreSchema = createInsertSchema(gameScores).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  playerName: z.string().min(1, "Player name is required").max(20, "Name must be at most 20 characters"),
+  score: z.string().min(1, "Score is required"),
+  gameType: z.string().default("reaction"),
+});
+
+export type InsertGameScore = z.infer<typeof insertGameScoreSchema>;
+export type GameScore = typeof gameScores.$inferSelect;
