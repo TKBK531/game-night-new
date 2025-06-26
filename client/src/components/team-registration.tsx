@@ -39,8 +39,31 @@ export default function TeamRegistration() {
 
   const registerTeamMutation = useMutation({
     mutationFn: async (data: InsertTeam) => {
-      const response = await apiRequest("POST", "/api/teams", data);
-      return response.json();
+      // Use FormData for file uploads
+      const formData = new FormData();
+
+      // Add all form fields to FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'bankSlip' && value instanceof File) {
+          formData.append(key, value);
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
+      const response = await fetch("/api/teams", {
+        method: "POST",
+        body: formData, // Send FormData instead of JSON
+        credentials: "include",
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw responseData;
+      }
+
+      return responseData;
     },
     onSuccess: () => {
       toast({
@@ -51,11 +74,42 @@ export default function TeamRegistration() {
       queryClient.invalidateQueries({ queryKey: ['/api/teams/stats'] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Registration Failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Registration error:", error);
+
+      // Handle validation errors with specific field messages
+      if (error.errors && Array.isArray(error.errors)) {
+        const errorMessages = error.errors.map((err: any) => err.message).join(", ");
+        toast({
+          title: "Registration Failed",
+          description: `${error.message || "Validation errors:"} ${errorMessages}`,
+          variant: "destructive",
+        });
+
+        // Set form errors for specific fields
+        error.errors.forEach((err: any) => {
+          if (err.field) {
+            form.setError(err.field as any, {
+              type: "manual",
+              message: err.message
+            });
+          }
+        });
+      } else {
+        // Handle other errors (like duplicate team name)
+        toast({
+          title: "Registration Failed",
+          description: error.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+
+        // If it's a team name error, set the error on the form
+        if (error.field === "teamName") {
+          form.setError("teamName", {
+            type: "manual",
+            message: error.message
+          });
+        }
+      }
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -102,13 +156,12 @@ export default function TeamRegistration() {
                       >
                         <div>
                           <RadioGroupItem value="valorant" id="valorant" className="sr-only" />
-                          <Label 
+                          <Label
                             htmlFor="valorant"
-                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
-                              selectedGame === "valorant" 
-                                ? "border-[#ff4654] bg-[#ff4654]/20" 
+                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "valorant"
+                                ? "border-[#ff4654] bg-[#ff4654]/20"
                                 : "border-transparent gaming-input hover:border-[#ff4654]"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center">
                               <div className="w-12 h-12 bg-[#ff4654]/20 rounded-lg flex items-center justify-center mr-4">
@@ -121,16 +174,15 @@ export default function TeamRegistration() {
                             </div>
                           </Label>
                         </div>
-                        
+
                         <div>
                           <RadioGroupItem value="cod" id="cod" className="sr-only" />
-                          <Label 
+                          <Label
                             htmlFor="cod"
-                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
-                              selectedGame === "cod" 
-                                ? "border-[#ba3a46] bg-[#ba3a46]/20" 
+                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "cod"
+                                ? "border-[#ba3a46] bg-[#ba3a46]/20"
                                 : "border-transparent gaming-input hover:border-[#ba3a46]"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center">
                               <div className="w-12 h-12 bg-[#ba3a46]/20 rounded-lg flex items-center justify-center mr-4">
@@ -161,9 +213,9 @@ export default function TeamRegistration() {
                       Team Name
                     </FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         {...field}
-                        className="gaming-input p-4 text-white placeholder-gray-400" 
+                        className="gaming-input p-4 text-white placeholder-gray-400"
                         placeholder="Enter unique team name"
                       />
                     </FormControl>
@@ -175,11 +227,11 @@ export default function TeamRegistration() {
 
               {/* Team Members */}
               <div>
-                <label className="block text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
+                <label className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
                   <Users className="mr-2" />
                   Team Members (5 Required)
                 </label>
-                
+
                 <div className="space-y-4">
                   {[1, 2, 3, 4, 5].map((playerNum) => (
                     <div key={playerNum} className="grid md:grid-cols-2 gap-4">
@@ -192,9 +244,9 @@ export default function TeamRegistration() {
                               Player {playerNum} Name {playerNum === 1 && "(Team Captain)"}
                             </FormLabel>
                             <FormControl>
-                              <Input 
+                              <Input
                                 {...field}
-                                className="gaming-input p-3 text-white placeholder-gray-400" 
+                                className="gaming-input p-3 text-white placeholder-gray-400"
                                 placeholder={playerNum === 1 ? "Team Captain" : "Player name"}
                               />
                             </FormControl>
@@ -202,7 +254,7 @@ export default function TeamRegistration() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name={`player${playerNum}GamingId` as keyof InsertTeam}
@@ -210,9 +262,9 @@ export default function TeamRegistration() {
                           <FormItem>
                             <FormLabel className="text-sm font-medium text-gray-300">Gaming ID</FormLabel>
                             <FormControl>
-                              <Input 
+                              <Input
                                 {...field}
-                                className="gaming-input p-3 text-white placeholder-gray-400" 
+                                className="gaming-input p-3 text-white placeholder-gray-400"
                                 placeholder="In-game username"
                               />
                             </FormControl>
@@ -237,10 +289,10 @@ export default function TeamRegistration() {
                         Team Captain Email
                       </FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           {...field}
                           type="email"
-                          className="gaming-input p-4 text-white placeholder-gray-400" 
+                          className="gaming-input p-4 text-white placeholder-gray-400"
                           placeholder="captain@email.com"
                         />
                       </FormControl>
@@ -248,7 +300,7 @@ export default function TeamRegistration() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="captainPhone"
@@ -259,10 +311,10 @@ export default function TeamRegistration() {
                         Contact Number
                       </FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           {...field}
                           type="tel"
-                          className="gaming-input p-4 text-white placeholder-gray-400" 
+                          className="gaming-input p-4 text-white placeholder-gray-400"
                           placeholder="+91 98765 43210"
                         />
                       </FormControl>
@@ -296,8 +348,8 @@ export default function TeamRegistration() {
                             className="hidden"
                             id="bankSlip"
                           />
-                          <label 
-                            htmlFor="bankSlip" 
+                          <label
+                            htmlFor="bankSlip"
                             className="cursor-pointer block"
                           >
                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff4654]/20 flex items-center justify-center">
@@ -325,8 +377,8 @@ export default function TeamRegistration() {
 
               {/* Registration Button */}
               <div className="text-center pt-6">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isSubmitting}
                   className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                 >

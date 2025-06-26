@@ -1,4 +1,6 @@
+import { eq, desc, sql, count } from "drizzle-orm";
 import { teams, gameScores, type Team, type InsertTeam, type GameScore, type InsertGameScore } from "@shared/schema";
+import { db } from "./database";
 
 export interface IStorage {
   createTeam(team: InsertTeam): Promise<Team>;
@@ -6,83 +8,87 @@ export interface IStorage {
   getTeamsByGame(game: string): Promise<Team[]>;
   getAllTeams(): Promise<Team[]>;
   getTeamCount(game: string): Promise<number>;
-  
+
   // Game scores
   createGameScore(score: InsertGameScore): Promise<GameScore>;
   getTopScores(gameType: string, limit: number): Promise<GameScore[]>;
 }
 
-export class MemStorage implements IStorage {
-  private teams: Map<number, Team>;
-  private gameScores: Map<number, GameScore>;
-  private currentTeamId: number;
-  private currentScoreId: number;
-
-  constructor() {
-    this.teams = new Map();
-    this.gameScores = new Map();
-    this.currentTeamId = 1;
-    this.currentScoreId = 1;
-  }
-
+export class PostgreSQLStorage implements IStorage {
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
-    const id = this.currentTeamId++;
     const { bankSlip, ...teamData } = insertTeam;
-    const team: Team = {
-      ...teamData,
-      id,
-      bankSlipUrl: bankSlip ? `uploaded_${id}_${Date.now()}` : null,
-      registeredAt: new Date(),
-    };
-    this.teams.set(id, team);
+
+    // Handle bank slip filename (multer saves file and provides filename)
+    const bankSlipUrl = bankSlip ? `uploads/${bankSlip}` : null;
+
+    const [team] = await db
+      .insert(teams)
+      .values({
+        ...teamData,
+        bankSlipUrl,
+      })
+      .returning();
+
     return team;
   }
 
   async getTeamByName(teamName: string): Promise<Team | undefined> {
-    return Array.from(this.teams.values()).find(
-      (team) => team.teamName.toLowerCase() === teamName.toLowerCase(),
-    );
+    const [team] = await db
+      .select()
+      .from(teams)
+      .where(sql`LOWER(${teams.teamName}) = LOWER(${teamName})`)
+      .limit(1);
+
+    return team;
   }
 
   async getTeamsByGame(game: string): Promise<Team[]> {
-    return Array.from(this.teams.values()).filter(
-      (team) => team.game === game,
-    );
+    return await db
+      .select()
+      .from(teams)
+      .where(eq(teams.game, game));
   }
 
   async getAllTeams(): Promise<Team[]> {
-    return Array.from(this.teams.values());
+    return await db.select().from(teams);
   }
 
   async getTeamCount(game: string): Promise<number> {
-    return Array.from(this.teams.values()).filter(
-      (team) => team.game === game,
-    ).length;
+    const result = await db
+      .select({ count: count() })
+      .from(teams)
+      .where(eq(teams.game, game));
+
+    return result[0]?.count || 0;
   }
 
   async createGameScore(insertScore: InsertGameScore): Promise<GameScore> {
-    const id = this.currentScoreId++;
-    const score: GameScore = {
-      ...insertScore,
-      id,
-      createdAt: new Date(),
-    };
-    this.gameScores.set(id, score);
+    const [score] = await db
+      .insert(gameScores)
+      .values(insertScore)
+      .returning();
+
     return score;
   }
 
   async getTopScores(gameType: string, limit: number): Promise<GameScore[]> {
-    const scores = Array.from(this.gameScores.values())
-      .filter((score) => score.gameType === gameType)
+    // For reaction game, we need custom sorting logic since scores are stored as text
+    const allScores = await db
+      .select()
+      .from(gameScores)
+      .where(eq(gameScores.gameType, gameType));
+
+    // Sort scores manually (for reaction game, lower time is better)
+    const sortedScores = allScores
       .sort((a, b) => {
-        // For reaction game, lower time is better
         const aTime = parseFloat(a.score.replace('s', ''));
         const bTime = parseFloat(b.score.replace('s', ''));
         return aTime - bTime;
       })
       .slice(0, limit);
-    return scores;
+
+    return sortedScores;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new PostgreSQLStorage();

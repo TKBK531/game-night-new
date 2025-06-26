@@ -21,21 +21,21 @@ export default function HeroSection() {
       <div className="absolute inset-0 z-0">
         {/* Gradient mesh background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#ff4654]/20 via-[#111823] to-[#ba3a46]/20"></div>
-        
+
         {/* Moving geometric shapes */}
         <div className="absolute top-20 left-20 w-32 h-32 border-2 border-[#ff4654]/30 rotate-45 animate-float"></div>
         <div className="absolute top-40 right-32 w-24 h-24 border-2 border-[#ba3a46]/30 rotate-12 animate-float" style={{ animationDelay: '1s' }}></div>
         <div className="absolute bottom-32 left-32 w-20 h-20 border-2 border-[#ff4654]/30 rotate-45 animate-float" style={{ animationDelay: '2s' }}></div>
-        
+
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
-      
+
       <div className={`relative z-10 text-center max-w-6xl mx-auto px-4 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
         {/* Main Title */}
         <div className="relative mb-12 animate-slide-up">
           <div className="absolute -inset-4 bg-gradient-to-r from-[#ff4654]/20 via-[#ba3a46]/20 to-[#ff4654]/20 blur-xl rounded-full"></div>
-          
+
           <h1 className="relative text-6xl md:text-8xl font-orbitron font-black mb-6 animate-glow">
             <span className="bg-gradient-to-r from-[#ff4654] to-[#ffffff] bg-clip-text text-transparent drop-shadow-[0_0_30px_#ff4654]">
               GAME
@@ -45,7 +45,7 @@ export default function HeroSection() {
               NIGHT
             </span>
           </h1>
-          
+
           <div className="text-3xl md:text-5xl font-orbitron font-bold mb-4">
             <span className="bg-gradient-to-r from-[#ba3a46] to-[#ff4654] bg-clip-text text-transparent animate-pulse-neon">
               REIGNITE 25'
@@ -75,14 +75,14 @@ export default function HeroSection() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-          <button 
+          <button
             onClick={() => scrollToSection('register')}
             className="group gaming-button px-10 py-5 rounded-xl font-bold text-xl flex items-center justify-center hover-lift"
           >
             <Trophy className="mr-3 group-hover:animate-bounce" />
             Register Your Team
           </button>
-          <button 
+          <button
             onClick={() => scrollToSection('schedule')}
             className="border-2 border-[#ff4654] text-[#ff4654] px-10 py-5 rounded-xl font-bold text-xl hover:bg-[#ff4654] hover:text-[#ffffff] transition-all flex items-center justify-center backdrop-blur-sm bg-[#ff4654]/10 hover-lift"
           >
