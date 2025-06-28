@@ -1,31 +1,14 @@
 import type { Express } from "express";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 import { storage } from "../server/storage";
+import { uploadToCloudinary } from "../server/cloudinary";
 import { insertTeamSchema, insertGameScoreSchema } from "@shared/schema";
 import { z } from "zod";
 
-// Configure multer for file uploads with temporary filename
-const uploadStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Use /tmp for serverless environments (Vercel provides this)
-        const uploadDir = '/tmp';
-        // Ensure directory exists
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        // Use temporary filename, will rename later with team info
-        const tempName = 'temp-' + Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, tempName);
-    }
-});
-
+// Configure multer for memory storage (since we'll upload to Cloudinary)
 const upload = multer({
-    storage: uploadStorage,
+    storage: multer.memoryStorage(),
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit
     },
@@ -40,11 +23,6 @@ const upload = multer({
 });
 
 export function setupServerlessRoutes(app: Express): void {
-    // Ensure uploads directory exists
-    if (!fs.existsSync('/tmp/uploads')) {
-        fs.mkdirSync('/tmp/uploads', { recursive: true });
-    }
-
     // Health check endpoint
     app.get("/api/health", (req, res) => {
         res.json({
@@ -60,7 +38,7 @@ export function setupServerlessRoutes(app: Express): void {
             // Parse form data first to get team information
             const formData = {
                 ...req.body,
-                bankSlip: req.file ? req.file.filename : undefined
+                bankSlip: req.file ? 'temp-filename' : undefined
             };
 
             const teamData = insertTeamSchema.parse(formData);
@@ -68,38 +46,43 @@ export function setupServerlessRoutes(app: Express): void {
             // Check if team name is unique
             const existingTeam = await storage.getTeamByName(teamData.teamName);
             if (existingTeam) {
-                // If team name exists and we have a file, clean up the temp file
-                if (req.file) {
-                    try {
-                        fs.unlinkSync(path.join('/tmp/uploads', req.file.filename));
-                    } catch (e) {
-                        console.error('Error deleting temp file:', e);
-                    }
-                }
                 return res.status(400).json({
                     message: "Team name already exists. Please choose a different name.",
                     field: "teamName"
                 });
             }
 
-            // For serverless, we'll store filename without file system operations
-            // In production, you'd upload to cloud storage here
+            // Upload file to Cloudinary if present
             let finalFileName = undefined;
             if (req.file) {
-                const timestamp = Date.now();
-                const extension = path.extname(req.file.originalname);
+                try {
+                    const timestamp = Date.now();
+                    const extension = path.extname(req.file.originalname);
 
-                // Clean team name and leader name for filename (remove special characters)
-                const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
-                const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
+                    // Clean team name and leader name for filename (remove special characters)
+                    const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
+                    const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
 
-                finalFileName = `${cleanTeamName}-${cleanLeaderName}-${timestamp}${extension}`;
+                    const filename = `${cleanTeamName}-${cleanLeaderName}-${timestamp}`;
 
-                // Note: In production, you should upload to cloud storage (S3, Cloudinary, etc.)
-                // For now, just use the filename
+                    // Upload to Cloudinary
+                    const cloudinaryResult = await uploadToCloudinary(
+                        req.file.buffer,
+                        filename,
+                        'tournament-bank-slips'
+                    );
+
+                    finalFileName = cloudinaryResult.url; // Store the Cloudinary URL
+                } catch (uploadError) {
+                    console.error('Cloudinary upload error:', uploadError);
+                    return res.status(500).json({
+                        message: "Failed to upload bank slip. Please try again.",
+                        field: "bankSlip"
+                    });
+                }
             }
 
-            // Update teamData with the final filename
+            // Update teamData with the final filename/URL
             const finalTeamData = {
                 ...teamData,
                 bankSlip: finalFileName
@@ -109,15 +92,6 @@ export function setupServerlessRoutes(app: Express): void {
             res.status(201).json(team);
         } catch (error) {
             console.error("Error in POST /api/teams:", error);
-
-            // Clean up uploaded file if there was an error
-            if (req.file) {
-                try {
-                    fs.unlinkSync(path.join('/tmp/uploads', req.file.filename));
-                } catch (e) {
-                    console.error('Error deleting temp file after error:', e);
-                }
-            }
 
             if (error instanceof z.ZodError) {
                 // Format validation errors for better user experience
@@ -197,6 +171,53 @@ export function setupServerlessRoutes(app: Express): void {
         } catch (error) {
             console.error("Error in GET /api/game-scores/leaderboard:", error);
             res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // File access endpoint - redirect to Cloudinary URL
+    app.get("/api/files/:teamId/bank-slip", async (req, res) => {
+        try {
+            const { teamId } = req.params;
+            
+            // Get team data to find the bank slip URL
+            const teams = await storage.getAllTeams();
+            const team = teams.find((t: any) => t.id === parseInt(teamId));
+            
+            if (!team || !team.bankSlipUrl) {
+                return res.status(404).json({ message: "File not found" });
+            }
+
+            // If it's a Cloudinary URL, redirect to it
+            if (team.bankSlipUrl.startsWith('http')) {
+                return res.redirect(team.bankSlipUrl);
+            }
+
+            // Fallback for old file system uploads (shouldn't happen in production)
+            return res.status(404).json({ message: "File not found" });
+        } catch (error) {
+            console.error("Error accessing file:", error);
+            res.status(500).json({ message: "Error accessing file" });
+        }
+    });
+
+    // List all uploaded files (admin endpoint)
+    app.get("/api/admin/files", async (req, res) => {
+        try {
+            const teams = await storage.getAllTeams();
+            const files = teams
+                .filter((team: any) => team.bankSlipUrl)
+                .map((team: any) => ({
+                    teamId: team.id,
+                    teamName: team.teamName,
+                    fileName: team.bankSlipUrl,
+                    fileUrl: team.bankSlipUrl.startsWith('http') ? team.bankSlipUrl : null,
+                    uploadedAt: team.registeredAt
+                }));
+
+            res.json(files);
+        } catch (error) {
+            console.error("Error listing files:", error);
+            res.status(500).json({ message: "Error listing files" });
         }
     });
 }

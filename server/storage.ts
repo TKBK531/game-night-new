@@ -18,8 +18,8 @@ export class PostgreSQLStorage implements IStorage {
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
     const { bankSlip, ...teamData } = insertTeam;
 
-    // Handle bank slip filename (multer saves file and provides filename)
-    const bankSlipUrl = bankSlip ? `uploads/${bankSlip}` : null;
+    // Handle bank slip URL (now comes from Cloudinary)
+    const bankSlipUrl = bankSlip || null;
 
     const [team] = await db
       .insert(teams)
