@@ -178,11 +178,11 @@ export function setupServerlessRoutes(app: Express): void {
     app.get("/api/files/:teamId/bank-slip", async (req, res) => {
         try {
             const { teamId } = req.params;
-            
+
             // Get team data to find the bank slip URL
             const teams = await storage.getAllTeams();
             const team = teams.find((t: any) => t.id === parseInt(teamId));
-            
+
             if (!team || !team.bankSlipUrl) {
                 return res.status(404).json({ message: "File not found" });
             }

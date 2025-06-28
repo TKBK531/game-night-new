@@ -11,8 +11,8 @@ export { cloudinary };
 
 // Upload buffer to Cloudinary
 export async function uploadToCloudinary(
-    buffer: Buffer, 
-    filename: string, 
+    buffer: Buffer,
+    filename: string,
     folder: string = 'tournament-uploads'
 ): Promise<{ url: string; public_id: string }> {
     return new Promise((resolve, reject) => {
