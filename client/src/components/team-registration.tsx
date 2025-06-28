@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertTeamSchema, type InsertTeam } from "@shared/schema";
+import { siteConfig } from "@shared/config";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Gamepad2, Flag, Users, Mail, Phone, Rocket, Crosshair, Target } from "lucide-react";
@@ -10,11 +11,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import RulesPopup from "./rules-popup";
+import RulesPage from "../pages/rules";
 
 export default function TeamRegistration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRulesPopup, setShowRulesPopup] = useState(false);
+  const [showRulesPage, setShowRulesPage] = useState(false);
+  const [hasAcceptedRules, setHasAcceptedRules] = useState(false);
 
   const form = useForm<InsertTeam>({
     resolver: zodResolver(insertTeamSchema),
@@ -117,8 +123,27 @@ export default function TeamRegistration() {
   });
 
   const onSubmit = async (data: InsertTeam) => {
+    // Check if rules have been accepted
+    if (!hasAcceptedRules) {
+      setShowRulesPopup(true);
+      return;
+    }
+
     setIsSubmitting(true);
     registerTeamMutation.mutate(data);
+  };
+
+  const handleRulesAccepted = () => {
+    setHasAcceptedRules(true);
+    setShowRulesPopup(false);
+    toast({
+      title: "Rules Accepted",
+      description: "You can now proceed with team registration.",
+    });
+  };
+
+  const handleViewFullRules = () => {
+    setShowRulesPage(true);
   };
 
   const selectedGame = form.watch("game");
@@ -159,8 +184,8 @@ export default function TeamRegistration() {
                           <Label
                             htmlFor="valorant"
                             className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "valorant"
-                                ? "border-[#ff4654] bg-[#ff4654]/20"
-                                : "border-transparent gaming-input hover:border-[#ff4654]"
+                              ? "border-[#ff4654] bg-[#ff4654]/20"
+                              : "border-transparent gaming-input hover:border-[#ff4654]"
                               }`}
                           >
                             <div className="flex items-center">
@@ -168,8 +193,8 @@ export default function TeamRegistration() {
                                 <Crosshair className="text-[#ff4654]" />
                               </div>
                               <div>
-                                <div className="font-semibold text-[#ff4654]">Valorant Championship</div>
-                                <div className="text-sm text-gray-400">₹50,000 Prize Pool</div>
+                                <div className="font-semibold text-[#ff4654]">{siteConfig.tournaments.valorant.name}</div>
+                                <div className="text-sm text-gray-400">{siteConfig.tournaments.valorant.prizePool} Prize Pool</div>
                               </div>
                             </div>
                           </Label>
@@ -180,8 +205,8 @@ export default function TeamRegistration() {
                           <Label
                             htmlFor="cod"
                             className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "cod"
-                                ? "border-[#ba3a46] bg-[#ba3a46]/20"
-                                : "border-transparent gaming-input hover:border-[#ba3a46]"
+                              ? "border-[#ba3a46] bg-[#ba3a46]/20"
+                              : "border-transparent gaming-input hover:border-[#ba3a46]"
                               }`}
                           >
                             <div className="flex items-center">
@@ -189,8 +214,8 @@ export default function TeamRegistration() {
                                 <Target className="text-[#ba3a46]" />
                               </div>
                               <div>
-                                <div className="font-semibold text-[#ba3a46]">COD Warzone Battle</div>
-                                <div className="text-sm text-gray-400">₹75,000 Prize Pool</div>
+                                <div className="font-semibold text-[#ba3a46]">{siteConfig.tournaments.cod.name}</div>
+                                <div className="text-sm text-gray-400">{siteConfig.tournaments.cod.prizePool} Prize Pool</div>
                               </div>
                             </div>
                           </Label>
@@ -332,7 +357,7 @@ export default function TeamRegistration() {
                   <FormItem>
                     <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
                       <Rocket className="mr-2" />
-                      Bank Slip Upload (Registration Fee: ₹500)
+                      Bank Slip Upload (Registration Fee: {siteConfig.tournaments.valorant.registrationFee})
                     </FormLabel>
                     <FormControl>
                       <div className="space-y-4">
@@ -340,7 +365,7 @@ export default function TeamRegistration() {
                           <input
                             {...field}
                             type="file"
-                            accept="image/*,.pdf"
+                            accept={siteConfig.features.teamRegistration.allowedFileTypes.join(",")}
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               onChange(file);
@@ -359,13 +384,15 @@ export default function TeamRegistration() {
                               {value ? 'File Selected!' : 'Upload Bank Slip'}
                             </div>
                             <div className="text-sm text-gray-400">
-                              {value ? value.name : 'Click to select image or PDF (Max 5MB)'}
+                              {value ? value.name : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
                             </div>
                           </label>
                         </div>
                         <div className="text-sm text-gray-400 space-y-2">
-                          <p>• Bank Details: Account Name: GameZone Events</p>
-                          <p>• Account Number: 1234567890 | IFSC: BANK0001234</p>
+                          <p>• Bank Details: Account Name: {siteConfig.payment.accountName}</p>
+                          <p>• Account Number: {siteConfig.payment.accountNumber} | IFSC: {siteConfig.payment.ifscCode}</p>
+                          <p>• Bank: {siteConfig.payment.bankName}</p>
+                          <p>• UPI ID: {siteConfig.payment.upiId}</p>
                           <p>• Please upload payment proof to complete registration</p>
                         </div>
                       </div>
@@ -375,6 +402,19 @@ export default function TeamRegistration() {
                 )}
               />
 
+              {/* Rules Acceptance Status */}
+              {hasAcceptedRules && (
+                <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center text-[#00ff00]">
+                    <Target className="mr-2" size={20} />
+                    <span className="font-semibold">Rules & Regulations Accepted</span>
+                  </div>
+                  <p className="text-sm text-gray-300 mt-2">
+                    You have read and agreed to all tournament rules and regulations.
+                  </p>
+                </div>
+              )}
+
               {/* Registration Button */}
               <div className="text-center pt-6">
                 <button
@@ -383,16 +423,36 @@ export default function TeamRegistration() {
                   className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                 >
                   <Rocket className="mr-2" />
-                  {isSubmitting ? "Registering..." : "Register Team"}
+                  {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register"}
                 </button>
                 <p className="text-sm text-gray-400 mt-4">
-                  Registration fee: ₹500 per team • No account creation required
+                  Registration fee: {selectedGame === "valorant" ? siteConfig.tournaments.valorant.registrationFee : selectedGame === "cod" ? siteConfig.tournaments.cod.registrationFee : "LKR 1,500"} per team • No account creation required
                 </p>
+                {!hasAcceptedRules && (
+                  <p className="text-sm text-[#ff4654] mt-2">
+                    You must read and accept the rules & regulations before registering
+                  </p>
+                )}
               </div>
             </form>
           </Form>
         </div>
       </div>
+
+      {/* Rules Popup */}
+      <RulesPopup
+        isOpen={showRulesPopup}
+        onClose={() => setShowRulesPopup(false)}
+        onAccept={handleRulesAccepted}
+        onViewFullRules={handleViewFullRules}
+      />
+
+      {/* Full Rules Page */}
+      {showRulesPage && (
+        <div className="fixed inset-0 z-50 bg-[#0a0f1a]">
+          <RulesPage onBack={() => setShowRulesPage(false)} />
+        </div>
+      )}
     </section>
   );
 }

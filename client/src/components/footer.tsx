@@ -1,5 +1,6 @@
 import { Gamepad2, Mail, Phone, MapPin } from "lucide-react";
 import { FaDiscord, FaTwitch, FaYoutube, FaInstagram } from "react-icons/fa";
+import { siteConfig } from "../../../shared/config";
 
 export default function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -16,19 +17,19 @@ export default function Footer() {
           <div>
             <div className="text-xl font-orbitron font-bold mb-4 flex items-center">
               <Gamepad2 className="mr-2 text-[#ff4654]" />
-              <span className="text-[#ff4654]">GAME</span>
-              <span className="text-[#ffffff]"> NIGHT</span>
+              <span className="text-[#ff4654]">{siteConfig.event.name.split(' ')[0]}</span>
+              <span className="text-[#ffffff]"> {siteConfig.event.name.split(' ')[1]}</span>
             </div>
             <p className="text-gray-400">
-              The ultimate esports tournament experience with professional gaming setups and exciting prizes.
+              {siteConfig.event.description}
             </p>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-[#ff4654] mb-4">Quick Links</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <button 
+                <button
                   onClick={() => scrollToSection('tournaments')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
@@ -36,7 +37,7 @@ export default function Footer() {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => scrollToSection('schedule')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
@@ -44,7 +45,7 @@ export default function Footer() {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => scrollToSection('funzone')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
@@ -52,7 +53,7 @@ export default function Footer() {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => scrollToSection('game')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
@@ -60,7 +61,7 @@ export default function Footer() {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => scrollToSection('register')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
@@ -69,25 +70,25 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-[#ba3a46] mb-4">Contact Info</h4>
             <ul className="space-y-2 text-gray-400">
               <li className="flex items-center">
                 <Mail className="text-[#ba3a46] mr-2" size={16} />
-                info@gamezone.com
+                {siteConfig.contact.email}
               </li>
               <li className="flex items-center">
                 <Phone className="text-[#ba3a46] mr-2" size={16} />
-                +91 98765 43210
+                {siteConfig.contact.phone}
               </li>
               <li className="flex items-center">
                 <MapPin className="text-[#ba3a46] mr-2" size={16} />
-                Mumbai, Maharashtra
+                {siteConfig.venue.city}, {siteConfig.venue.state}
               </li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-[#ffffff] mb-4">Follow Us</h4>
             <div className="flex space-x-4">
@@ -106,9 +107,9 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        
+
         <div className="border-t border-[#242d3d] mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; 2023 GameZone Esports. All rights reserved.</p>
+          <p>&copy; {siteConfig.event.year} {siteConfig.event.name}. All rights reserved.</p>
         </div>
       </div>
     </footer>
