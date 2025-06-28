@@ -11,6 +11,11 @@ pnpm-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.example
+
+# Sensitive configuration files
+.env.*
+!.env.example
 
 # Build outputs
 dist/
@@ -124,8 +129,13 @@ Thumbs.db
 *.sqlite3
 *.db
 
-# Database migrations (keep generated migrations)
+# Database migrations (keep generated migrations in version control)
 # migrations/
+
+# Database dumps and backups
+*.sql
+*.dump
+*.backup.sql
 
 # Docker
 .dockerignore
@@ -139,6 +149,15 @@ server/public
 
 # Vercel
 .vercel
+.vercel.json.backup
+
+# Deployment artifacts
+.next/
+.output/
+
+# Serverless functions
+.netlify/
+.firebase/
 
 # Temporary files
 /tmp/
@@ -167,3 +186,51 @@ coverage/
 
 # Vite specific
 vite.config.ts.*
+
+# Custom cursor and performance optimization files
+.performance/
+*.perf
+
+# Drizzle ORM
+drizzle/
+.drizzle/
+
+# Tournament specific files
+tournament-data/
+participant-exports/
+
+# Session storage
+sessions/
+.sessions/
+
+# Development tools
+.replit
+replit.nix
+.replit.toml
+.breakpoints
+
+# Package manager lock files (keep one, remove others)
+# package-lock.json  # if using yarn
+# yarn.lock         # if using npm
+# pnpm-lock.yaml    # if not using pnpm
+
+# IDE and editor files
+*.code-workspace
+.history/
+.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Security and secrets
+secrets/
+.secrets/
+*.key
+*.cert
+*.p12
+*.pfx
+
+# API keys and tokens
+.api-keys
+tokens.json
+auth-config.json

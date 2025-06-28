@@ -8,23 +8,16 @@
             "maxDuration": 10
         }
     },
-    "routes": [
+    "rewrites": [
         {
-            "src": "/uploads/(.*)",
-            "dest": "/uploads/$1"
+            "source": "/api/(.*)",
+            "destination": "/api/index.ts"
         },
         {
-            "src": "/api/(.*)",
-            "dest": "/api/index.ts"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/dist/public/index.html"
+            "source": "/((?!api).*)",
+            "destination": "/index.html"
         }
     ],
-    "env": {
-        "NODE_ENV": "production"
-    },
     "headers": [
         {
             "source": "/(.*)",

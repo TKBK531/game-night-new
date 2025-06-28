@@ -9,8 +9,13 @@ import { z } from "zod";
 // Configure multer for file uploads with temporary filename
 const uploadStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Use /tmp for serverless environments
-        cb(null, '/tmp/uploads/')
+        // Use /tmp for serverless environments (Vercel provides this)
+        const uploadDir = '/tmp';
+        // Ensure directory exists
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         // Use temporary filename, will rename later with team info

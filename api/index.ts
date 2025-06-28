@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from 'express';
 import { setupServerlessRoutes } from '../server/serverless-routes';
+import '../server/env-validation'; // Validate environment variables
 
 const app = express();
 
