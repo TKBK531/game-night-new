@@ -97,6 +97,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(team);
     } catch (error) {
       console.error("Error in POST /api/teams:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        data: (error as any)?.data || 'No additional data'
+      });
 
       // Clean up uploaded file if there was an error
       if (req.file) {

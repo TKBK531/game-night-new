@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Gamepad2, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig } from "../../../shared/config";
 
 export default function Navigation() {
@@ -14,108 +15,198 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-[#111823]/90 backdrop-blur-sm border-b border-[#ff4654]/30 sticky top-0 z-50">
+    <motion.nav
+      className="bg-[#111823]/90 backdrop-blur-sm border-b border-[#ff4654]/30 sticky top-0 z-50"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <div className="text-xl font-orbitron font-bold animate-glow relative">
-              <Gamepad2 className="inline mr-2 text-[#ff4654]" />
+          <motion.div
+            className="flex items-center space-x-4"
+            whileHover={{ scale: 1.05 }}
+          >
+            <motion.div
+              className="text-xl font-orbitron font-bold relative"
+              animate={{
+                textShadow: [
+                  "0 0 0px #ff4654",
+                  "0 0 10px #ff4654",
+                  "0 0 20px #ff4654",
+                  "0 0 10px #ff4654",
+                  "0 0 0px #ff4654"
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="inline-block"
+              >
+                <Gamepad2 className="inline mr-2 text-[#ff4654]" />
+              </motion.div>
               <span className="text-[#ff4654]">{siteConfig.event.name.split(' ')[0]}</span>
               <span className="text-[#ffffff]"> {siteConfig.event.name.split(' ')[1]}</span>
               <div className="text-xs text-[#ba3a46] font-bold">{siteConfig.event.title}</div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div className="hidden md:flex items-center space-x-6">
-            <button
+          <motion.div
+            className="hidden md:flex items-center space-x-6"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1,
+                  delayChildren: 0.3
+                }
+              }
+            }}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.button
               onClick={() => scrollToSection('tournaments')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
             >
               Tournaments
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => scrollToSection('schedule')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
             >
               Schedule
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => scrollToSection('funzone')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
             >
               Fun Zone
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => scrollToSection('game')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
             >
               Game
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => scrollToSection('register')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
             >
               Register
-            </button>
-            <a
+            </motion.button>
+            <motion.a
               href="/rules"
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
             >
               Rules
-            </a>
-          </div>
+            </motion.a>
+          </motion.div>
 
-          <button
+          <motion.button
             className="md:hidden text-[#ff4654]"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             {isMenuOpen ? <X className="text-xl" /> : <Menu className="text-xl" />}
-          </button>
+          </motion.button>
         </div>
 
-        {isMenuOpen && (
-          <div className="md:hidden pb-4">
-            <div className="flex flex-col space-y-2">
-              <button
-                onClick={() => scrollToSection('tournaments')}
-                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
-              >
-                Tournaments
-              </button>
-              <button
-                onClick={() => scrollToSection('schedule')}
-                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
-              >
-                Schedule
-              </button>
-              <button
-                onClick={() => scrollToSection('funzone')}
-                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
-              >
-                Fun Zone
-              </button>
-              <button
-                onClick={() => scrollToSection('game')}
-                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
-              >
-                Game
-              </button>
-              <button
-                onClick={() => scrollToSection('register')}
-                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
-              >
-                Register
-              </button>
-              <a
-                href="/rules"
-                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2 block"
-              >
-                Rules
-              </a>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              className="md:hidden pb-4"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >              <div className="flex flex-col space-y-2">
+                <motion.button
+                  onClick={() => scrollToSection('tournaments')}
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
+                  whileHover={{ x: 10 }}
+                >
+                  Tournaments
+                </motion.button>
+                <motion.button
+                  onClick={() => scrollToSection('schedule')}
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
+                  whileHover={{ x: 10 }}
+                >
+                  Schedule
+                </motion.button>
+                <motion.button
+                  onClick={() => scrollToSection('funzone')}
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
+                  whileHover={{ x: 10 }}
+                >
+                  Fun Zone
+                </motion.button>
+                <motion.button
+                  onClick={() => scrollToSection('game')}
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
+                  whileHover={{ x: 10 }}
+                >
+                  Game
+                </motion.button>
+                <motion.button
+                  onClick={() => scrollToSection('register')}
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
+                  whileHover={{ x: 10 }}
+                >
+                  Register
+                </motion.button>
+                <motion.a
+                  href="/rules"
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2 block"
+                  whileHover={{ x: 10 }}
+                >
+                  Rules
+                </motion.a></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </nav>
+    </motion.nav>
   );
 }
