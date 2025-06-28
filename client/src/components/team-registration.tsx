@@ -31,14 +31,19 @@ export default function TeamRegistration() {
       captainPhone: "",
       player1Name: "",
       player1GamingId: "",
+      player1ValorantId: "",
       player2Name: "",
       player2GamingId: "",
+      player2ValorantId: "",
       player3Name: "",
       player3GamingId: "",
+      player3ValorantId: "",
       player4Name: "",
       player4GamingId: "",
+      player4ValorantId: "",
       player5Name: "",
       player5GamingId: "",
+      player5ValorantId: "",
       bankSlip: undefined,
     },
   });
@@ -259,44 +264,73 @@ export default function TeamRegistration() {
 
                 <div className="space-y-4">
                   {[1, 2, 3, 4, 5].map((playerNum) => (
-                    <div key={playerNum} className="grid md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name={`player${playerNum}Name` as keyof InsertTeam}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-300">
-                              Player {playerNum} Name {playerNum === 1 && "(Team Captain)"}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="gaming-input p-3 text-white placeholder-gray-400"
-                                placeholder={playerNum === 1 ? "Team Captain" : "Player name"}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <div key={playerNum} className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`player${playerNum}Name` as keyof InsertTeam}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-300">
+                                Player {playerNum} Name {playerNum === 1 && "(Team Captain)"}
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  className="gaming-input p-3 text-white placeholder-gray-400"
+                                  placeholder={playerNum === 1 ? "Team Captain" : "Player name"}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name={`player${playerNum}GamingId` as keyof InsertTeam}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-300">Gaming ID</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="gaming-input p-3 text-white placeholder-gray-400"
-                                placeholder="In-game username"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name={`player${playerNum}GamingId` as keyof InsertTeam}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-300">Gaming ID</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  className="gaming-input p-3 text-white placeholder-gray-400"
+                                  placeholder="In-game username"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Valorant User ID - Only show when Valorant is selected */}
+                      {selectedGame === "valorant" && (
+                        <FormField
+                          control={form.control}
+                          name={`player${playerNum}ValorantId` as keyof InsertTeam}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-[#ff4654] flex items-center">
+                                <Crosshair className="mr-1 w-4 h-4" />
+                                Player {playerNum} Valorant User ID (Required for Valorant)
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  className="gaming-input p-3 text-white placeholder-gray-400 border-[#ff4654]/50"
+                                  placeholder="e.g., Username#1234"
+                                />
+                              </FormControl>
+                              <p className="text-xs text-gray-400">
+                                Your Valorant username with tag (found in game profile)
+                              </p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>

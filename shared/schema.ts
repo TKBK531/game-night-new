@@ -10,14 +10,19 @@ export const teams = pgTable("teams", {
   captainPhone: text("captain_phone").notNull(),
   player1Name: text("player1_name").notNull(),
   player1GamingId: text("player1_gaming_id").notNull(),
+  player1ValorantId: text("player1_valorant_id"), // Valorant-specific user ID
   player2Name: text("player2_name").notNull(),
   player2GamingId: text("player2_gaming_id").notNull(),
+  player2ValorantId: text("player2_valorant_id"), // Valorant-specific user ID
   player3Name: text("player3_name").notNull(),
   player3GamingId: text("player3_gaming_id").notNull(),
+  player3ValorantId: text("player3_valorant_id"), // Valorant-specific user ID
   player4Name: text("player4_name").notNull(),
   player4GamingId: text("player4_gaming_id").notNull(),
+  player4ValorantId: text("player4_valorant_id"), // Valorant-specific user ID
   player5Name: text("player5_name").notNull(),
   player5GamingId: text("player5_gaming_id").notNull(),
+  player5ValorantId: text("player5_valorant_id"), // Valorant-specific user ID
   bankSlipUrl: text("bank_slip_url"), // Store the uploaded bank slip URL
   registeredAt: timestamp("registered_at").defaultNow().notNull(),
 });
@@ -33,15 +38,33 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
   captainPhone: z.string().min(10, "Phone number must be at least 10 digits").max(15, "Phone number must be at most 15 digits"),
   player1Name: z.string().min(1, "Player 1 name is required").max(50, "Player name too long"),
   player1GamingId: z.string().min(1, "Player 1 gaming ID is required").max(50, "Gaming ID too long"),
+  player1ValorantId: z.string().optional().or(z.literal("")),
   player2Name: z.string().min(1, "Player 2 name is required").max(50, "Player name too long"),
   player2GamingId: z.string().min(1, "Player 2 gaming ID is required").max(50, "Gaming ID too long"),
+  player2ValorantId: z.string().optional().or(z.literal("")),
   player3Name: z.string().min(1, "Player 3 name is required").max(50, "Player name too long"),
   player3GamingId: z.string().min(1, "Player 3 gaming ID is required").max(50, "Gaming ID too long"),
+  player3ValorantId: z.string().optional().or(z.literal("")),
   player4Name: z.string().min(1, "Player 4 name is required").max(50, "Player name too long"),
   player4GamingId: z.string().min(1, "Player 4 gaming ID is required").max(50, "Gaming ID too long"),
+  player4ValorantId: z.string().optional().or(z.literal("")),
   player5Name: z.string().min(1, "Player 5 name is required").max(50, "Player name too long"),
   player5GamingId: z.string().min(1, "Player 5 gaming ID is required").max(50, "Gaming ID too long"),
+  player5ValorantId: z.string().optional().or(z.literal("")),
   bankSlip: z.any().optional(), // Handle file uploads as any type since File objects can't be JSON stringified
+}).refine((data) => {
+  // If game is Valorant, require Valorant user IDs for all players
+  if (data.game === "valorant") {
+    return data.player1ValorantId && data.player1ValorantId.trim() !== "" &&
+      data.player2ValorantId && data.player2ValorantId.trim() !== "" &&
+      data.player3ValorantId && data.player3ValorantId.trim() !== "" &&
+      data.player4ValorantId && data.player4ValorantId.trim() !== "" &&
+      data.player5ValorantId && data.player5ValorantId.trim() !== "";
+  }
+  return true;
+}, {
+  message: "Valorant user IDs are required for all players when registering for Valorant tournament",
+  path: ["game"],
 });
 
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
