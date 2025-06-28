@@ -137,6 +137,12 @@ public/uploads/
 static/uploads/
 server/public
 
+# Vercel
+.vercel
+
+# Temporary files
+/tmp/
+
 # SSL certificates
 *.pem
 *.crt
