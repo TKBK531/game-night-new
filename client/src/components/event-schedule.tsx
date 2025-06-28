@@ -1,60 +1,18 @@
 import { Clock, Play, Crosshair, Trophy, Medal, Star } from "lucide-react";
+import { siteConfig } from "../../../shared/config";
 
 export default function EventSchedule() {
   const scheduleData = [
     {
-      day: "Game Day",
-      date: "Saturday, December 16, 2023",
-      events: [
-        {
-          time: "9:00 AM",
-          title: "Registration & Check-in",
-          icon: Clock,
-          color: "#ff4654"
-        },
-        {
-          time: "10:00 AM",
-          title: "Opening Ceremony",
-          icon: Star,
-          color: "#ffffff"
-        },
-        {
-          time: "11:00 AM",
-          title: "Valorant Quarter Finals",
-          icon: Play,
-          color: "#ff4654"
-        },
-        {
-          time: "1:00 PM",
-          title: "Lunch Break & Fun Zone",
-          icon: Clock,
-          color: "#ba3a46"
-        },
-        {
-          time: "2:00 PM",
-          title: "COD Quarter Finals",
-          icon: Crosshair,
-          color: "#ba3a46"
-        },
-        {
-          time: "3:30 PM",
-          title: "Valorant Semi Finals",
-          icon: Play,
-          color: "#ff4654"
-        },
-        {
-          time: "4:30 PM",
-          title: "COD Semi Finals",
-          icon: Crosshair,
-          color: "#ba3a46"
-        },
-        {
-          time: "5:30 PM",
-          title: "Grand Finals & Awards",
-          icon: Trophy,
-          color: "#ffffff"
-        }
-      ]
+      day: siteConfig.schedule.eventDayName,
+      date: siteConfig.schedule.eventDateFormatted,
+      events: siteConfig.timeline.map((item, index) => ({
+        time: item.time,
+        title: item.event,
+        description: item.description,
+        icon: index % 4 === 0 ? Clock : index % 4 === 1 ? Star : index % 4 === 2 ? Play : Crosshair,
+        color: index % 2 === 0 ? "#ff4654" : "#ba3a46"
+      }))
     }
   ];
 
@@ -66,7 +24,7 @@ export default function EventSchedule() {
             Event Schedule
           </h2>
           <p className="text-xl text-gray-300">
-            One epic day of non-stop gaming action - 8 hours of pure adrenaline
+            {siteConfig.event.description} - from {siteConfig.schedule.eventStartTime} to {siteConfig.schedule.eventEndTime}
           </p>
         </div>
 
@@ -79,29 +37,32 @@ export default function EventSchedule() {
                 </h3>
                 <p className="text-lg text-gray-400">{day.date}</p>
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-4">
                 {day.events.map((event, eventIndex) => {
                   const IconComponent = event.icon;
                   return (
                     <div key={eventIndex} className="flex items-center p-4 bg-[#242d3d]/50 rounded-lg hover:bg-[#242d3d]/70 transition-all hover-lift">
-                      <div 
+                      <div
                         className="w-16 h-16 rounded-lg flex items-center justify-center mr-4"
                         style={{ backgroundColor: `${event.color}20` }}
                       >
-                        <IconComponent 
-                          className="text-xl" 
+                        <IconComponent
+                          className="text-xl"
                           style={{ color: event.color }}
                         />
                       </div>
-                      <div>
-                        <div 
+                      <div className="flex-1">
+                        <div
                           className="font-semibold text-lg"
                           style={{ color: event.color }}
                         >
                           {event.time}
                         </div>
-                        <div className="text-gray-300">{event.title}</div>
+                        <div className="text-gray-300 font-medium">{event.title}</div>
+                        {event.description && (
+                          <div className="text-gray-400 text-sm mt-1">{event.description}</div>
+                        )}
                       </div>
                     </div>
                   );

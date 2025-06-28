@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Gamepad2, Menu, X } from "lucide-react";
+import { siteConfig } from "../../../shared/config";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,81 +20,81 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             <div className="text-xl font-orbitron font-bold animate-glow relative">
               <Gamepad2 className="inline mr-2 text-[#ff4654]" />
-              <span className="text-[#ff4654]">GAME</span>
-              <span className="text-[#ffffff]"> NIGHT</span>
-              <div className="text-xs text-[#ba3a46] font-bold">REIGNITE 25'</div>
+              <span className="text-[#ff4654]">{siteConfig.event.name.split(' ')[0]}</span>
+              <span className="text-[#ffffff]"> {siteConfig.event.name.split(' ')[1]}</span>
+              <div className="text-xs text-[#ba3a46] font-bold">{siteConfig.event.title}</div>
             </div>
           </div>
-          
+
           <div className="hidden md:flex items-center space-x-6">
-            <button 
+            <button
               onClick={() => scrollToSection('tournaments')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
             >
               Tournaments
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('schedule')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
             >
               Schedule
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('funzone')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
             >
               Fun Zone
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('game')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
             >
               Game
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('register')}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
             >
               Register
             </button>
           </div>
-          
-          <button 
+
+          <button
             className="md:hidden text-[#ff4654]"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="text-xl" /> : <Menu className="text-xl" />}
           </button>
         </div>
-        
+
         {isMenuOpen && (
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-2">
-              <button 
+              <button
                 onClick={() => scrollToSection('tournaments')}
                 className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
               >
                 Tournaments
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('schedule')}
                 className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
               >
                 Schedule
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('funzone')}
                 className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
               >
                 Fun Zone
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('game')}
                 className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
               >
                 Game
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('register')}
                 className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
               >
