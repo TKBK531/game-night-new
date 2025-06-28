@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { insertTeamSchema, type InsertTeam } from "@shared/schema";
 import { siteConfig } from "@shared/config";
 import { apiRequest } from "@/lib/queryClient";
@@ -11,6 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { ScrollReveal } from "./ui/scroll-reveal";
+import { staggerVariants } from "@/hooks/use-scroll-reveal";
 import RulesPopup from "./rules-popup";
 import RulesPage from "../pages/rules";
 
@@ -156,16 +159,29 @@ export default function TeamRegistration() {
   return (
     <section id="register" className="py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ff4654] animate-glow">
-            Team Registration
-          </h2>
-          <p className="text-xl text-gray-300">
-            Register your 5-member team for the ultimate gaming experience
-          </p>
-        </div>
+        <ScrollReveal variant="fadeInUp">
+          <div className="text-center mb-16">
+            <motion.h2 
+              className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ff4654]"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              Team Registration
+            </motion.h2>
+            <p className="text-xl text-gray-300">
+              Register your 5-member team for the ultimate gaming experience
+            </p>
+          </div>
+        </ScrollReveal>
 
-        <div className="gaming-border rounded-xl p-8 animate-slide-up">
+        <ScrollReveal variant="scaleIn" delay={0.3}>
+          <motion.div 
+            className="gaming-border rounded-xl p-8"
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Game Selection */}
@@ -470,7 +486,8 @@ export default function TeamRegistration() {
               </div>
             </form>
           </Form>
-        </div>
+          </motion.div>
+        </ScrollReveal>
       </div>
 
       {/* Rules Popup */}
