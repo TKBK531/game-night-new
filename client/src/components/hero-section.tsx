@@ -41,7 +41,7 @@ export default function HeroSection() {
           <div className="relative mb-12">
             <div className="absolute -inset-4 bg-gradient-to-r from-[#ff4654]/20 via-[#ba3a46]/20 to-[#ff4654]/20 blur-xl rounded-full"></div>
 
-            <motion.h1 
+            <motion.h1
               className="relative text-6xl md:text-8xl font-orbitron font-black mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -56,7 +56,7 @@ export default function HeroSection() {
               </span>
             </motion.h1>
 
-            <motion.div 
+            <motion.div
               className="text-3xl md:text-5xl font-orbitron font-bold mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -116,7 +116,7 @@ export default function HeroSection() {
         </ScrollReveal>
 
         {/* Stats Cards */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
           variants={staggerVariants}
           initial="hidden"
@@ -155,25 +155,19 @@ export default function HeroSection() {
                 className="gaming-border rounded-xl p-6 backdrop-blur-sm bg-[#111823]/50 hover-lift"
                 variants={{
                   hidden: { opacity: 0, y: 50, scale: 0.8 },
-                  visible: { 
-                    opacity: 1, 
-                    y: 0, 
+                  visible: {
+                    opacity: 1,
+                    y: 0,
                     scale: 1,
                     transition: { duration: 0.6, ease: "easeOut" }
                   }
                 }}
-                whileHover={{ 
-                  scale: 1.05, 
+                whileHover={{
+                  scale: 1.05,
                   transition: { duration: 0.2 }
                 }}
               >
-                <motion.div
-                  initial={{ rotate: 0 }}
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <IconComponent className="text-3xl mx-auto mb-3" style={{ color: stat.color }} />
-                </motion.div>
+                <IconComponent className="text-3xl mx-auto mb-3" style={{ color: stat.color }} />
                 <div className="text-2xl font-orbitron font-bold" style={{ color: stat.color }}>
                   {displayValue}
                 </div>
@@ -185,44 +179,44 @@ export default function HeroSection() {
       </div>
 
       {/* Floating Gaming Elements */}
-      <motion.div 
+      <motion.div
         className="absolute bottom-10 left-10 text-[#ff4654]"
-        animate={{ 
+        animate={{
           y: [0, -20, 0],
           rotate: [0, 10, -10, 0]
         }}
-        transition={{ 
-          duration: 3, 
-          repeat: Infinity, 
-          ease: "easeInOut" 
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut"
         }}
       >
         <Zap className="text-4xl" />
       </motion.div>
-      <motion.div 
+      <motion.div
         className="absolute top-20 right-10 text-[#ffffff]"
-        animate={{ 
+        animate={{
           y: [0, -15, 0],
           x: [0, 10, 0]
         }}
-        transition={{ 
-          duration: 4, 
-          repeat: Infinity, 
+        transition={{
+          duration: 4,
+          repeat: Infinity,
           ease: "easeInOut",
           delay: 1
         }}
       >
         <Target className="text-4xl" />
       </motion.div>
-      <motion.div 
+      <motion.div
         className="absolute bottom-20 right-20 text-[#ba3a46]"
-        animate={{ 
+        animate={{
           y: [0, -25, 0],
           scale: [1, 1.1, 1]
         }}
-        transition={{ 
-          duration: 3.5, 
-          repeat: Infinity, 
+        transition={{
+          duration: 3.5,
+          repeat: Infinity,
           ease: "easeInOut",
           delay: 2
         }}

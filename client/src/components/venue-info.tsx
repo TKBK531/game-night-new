@@ -37,7 +37,7 @@ export default function VenueInfo() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="fadeInUp">
           <div className="text-center mb-16">
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ffffff]"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -65,7 +65,7 @@ export default function VenueInfo() {
 
           <ScrollReveal variant="fadeInRight" delay={0.4}>
             <div>
-              <motion.h3 
+              <motion.h3
                 className="text-3xl font-orbitron font-bold mb-6 text-[#ff4654]"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -75,7 +75,7 @@ export default function VenueInfo() {
                 {siteConfig.venue.name}
               </motion.h3>
 
-              <motion.div 
+              <motion.div
                 className="space-y-4"
                 variants={staggerVariants}
                 initial="hidden"
@@ -85,13 +85,13 @@ export default function VenueInfo() {
                 {venueDetails.map((detail, index) => {
                   const IconComponent = detail.icon;
                   return (
-                    <motion.div 
-                      key={index} 
+                    <motion.div
+                      key={index}
                       className="flex items-start"
                       variants={{
                         hidden: { opacity: 0, x: -20 },
-                        visible: { 
-                          opacity: 1, 
+                        visible: {
+                          opacity: 1,
                           x: 0,
                           transition: { duration: 0.6, ease: "easeOut" }
                         }
@@ -99,13 +99,13 @@ export default function VenueInfo() {
                       whileHover={{ scale: 1.02, x: 5 }}
                     >
                       <motion.div
-                        animate={{ 
+                        animate={{
                           rotate: [0, 5, -5, 0],
                           scale: [1, 1.1, 1]
                         }}
-                        transition={{ 
-                          duration: 3, 
-                          repeat: Infinity, 
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
                           ease: "easeInOut",
                           delay: index * 0.5
                         }}

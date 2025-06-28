@@ -161,7 +161,7 @@ export default function TeamRegistration() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="fadeInUp">
           <div className="text-center mb-16">
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ff4654]"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -177,315 +177,315 @@ export default function TeamRegistration() {
         </ScrollReveal>
 
         <ScrollReveal variant="scaleIn" delay={0.3}>
-          <motion.div 
+          <motion.div
             className="gaming-border rounded-xl p-8"
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Game Selection */}
-              <FormField
-                control={form.control}
-                name="game"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-[hsl(185,100%,50%)] flex items-center">
-                      <Gamepad2 className="mr-2" />
-                      Select Tournament
-                    </FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="grid md:grid-cols-2 gap-4"
-                      >
-                        <div>
-                          <RadioGroupItem value="valorant" id="valorant" className="sr-only" />
-                          <Label
-                            htmlFor="valorant"
-                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "valorant"
-                              ? "border-[#ff4654] bg-[#ff4654]/20"
-                              : "border-transparent gaming-input hover:border-[#ff4654]"
-                              }`}
-                          >
-                            <div className="flex items-center">
-                              <div className="w-12 h-12 bg-[#ff4654]/20 rounded-lg flex items-center justify-center mr-4">
-                                <Crosshair className="text-[#ff4654]" />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-[#ff4654]">{siteConfig.tournaments.valorant.name}</div>
-                                <div className="text-sm text-gray-400">{siteConfig.tournaments.valorant.prizePool} Prize Pool</div>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-
-                        <div>
-                          <RadioGroupItem value="cod" id="cod" className="sr-only" />
-                          <Label
-                            htmlFor="cod"
-                            className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "cod"
-                              ? "border-[#ba3a46] bg-[#ba3a46]/20"
-                              : "border-transparent gaming-input hover:border-[#ba3a46]"
-                              }`}
-                          >
-                            <div className="flex items-center">
-                              <div className="w-12 h-12 bg-[#ba3a46]/20 rounded-lg flex items-center justify-center mr-4">
-                                <Target className="text-[#ba3a46]" />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-[#ba3a46]">{siteConfig.tournaments.cod.name}</div>
-                                <div className="text-sm text-gray-400">{siteConfig.tournaments.cod.prizePool} Prize Pool</div>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Team Name */}
-              <FormField
-                control={form.control}
-                name="teamName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
-                      <Flag className="mr-2" />
-                      Team Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        className="gaming-input p-4 text-white placeholder-gray-400"
-                        placeholder="Enter unique team name"
-                      />
-                    </FormControl>
-                    <p className="text-sm text-gray-400">Team name must be unique and 3-20 characters long</p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Team Members */}
-              <div>
-                <label className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
-                  <Users className="mr-2" />
-                  Team Members (5 Required)
-                </label>
-
-                <div className="space-y-4">
-                  {[1, 2, 3, 4, 5].map((playerNum) => (
-                    <div key={playerNum} className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`player${playerNum}Name` as keyof InsertTeam}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-300">
-                                Player {playerNum} Name {playerNum === 1 && "(Team Captain)"}
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="gaming-input p-3 text-white placeholder-gray-400"
-                                  placeholder={playerNum === 1 ? "Team Captain" : "Player name"}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`player${playerNum}GamingId` as keyof InsertTeam}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-300">Gaming ID</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="gaming-input p-3 text-white placeholder-gray-400"
-                                  placeholder="In-game username"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Valorant User ID - Only show when Valorant is selected */}
-                      {selectedGame === "valorant" && (
-                        <FormField
-                          control={form.control}
-                          name={`player${playerNum}ValorantId` as keyof InsertTeam}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-[#ff4654] flex items-center">
-                                <Crosshair className="mr-1 w-4 h-4" />
-                                Player {playerNum} Valorant User ID (Required for Valorant)
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="gaming-input p-3 text-white placeholder-gray-400 border-[#ff4654]/50"
-                                  placeholder="e.g., Username#1234"
-                                />
-                              </FormControl>
-                              <p className="text-xs text-gray-400">
-                                Your Valorant username with tag (found in game profile)
-                              </p>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className="grid md:grid-cols-2 gap-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Game Selection */}
                 <FormField
                   control={form.control}
-                  name="captainEmail"
+                  name="game"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
-                        <Mail className="mr-2" />
-                        Team Captain Email
+                      <FormLabel className="text-lg font-semibold text-[hsl(185,100%,50%)] flex items-center">
+                        <Gamepad2 className="mr-2" />
+                        Select Tournament
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          type="email"
-                          className="gaming-input p-4 text-white placeholder-gray-400"
-                          placeholder="captain@email.com"
-                        />
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="grid md:grid-cols-2 gap-4"
+                        >
+                          <div>
+                            <RadioGroupItem value="valorant" id="valorant" className="sr-only" />
+                            <Label
+                              htmlFor="valorant"
+                              className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "valorant"
+                                ? "border-[#ff4654] bg-[#ff4654]/20"
+                                : "border-transparent gaming-input hover:border-[#ff4654]"
+                                }`}
+                            >
+                              <div className="flex items-center">
+                                <div className="w-12 h-12 bg-[#ff4654]/20 rounded-lg flex items-center justify-center mr-4">
+                                  <Crosshair className="text-[#ff4654]" />
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-[#ff4654]">{siteConfig.tournaments.valorant.name}</div>
+                                  <div className="text-sm text-gray-400">{siteConfig.tournaments.valorant.prizePool} Prize Pool</div>
+                                </div>
+                              </div>
+                            </Label>
+                          </div>
+
+                          <div>
+                            <RadioGroupItem value="cod" id="cod" className="sr-only" />
+                            <Label
+                              htmlFor="cod"
+                              className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "cod"
+                                ? "border-[#ba3a46] bg-[#ba3a46]/20"
+                                : "border-transparent gaming-input hover:border-[#ba3a46]"
+                                }`}
+                            >
+                              <div className="flex items-center">
+                                <div className="w-12 h-12 bg-[#ba3a46]/20 rounded-lg flex items-center justify-center mr-4">
+                                  <Target className="text-[#ba3a46]" />
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-[#ba3a46]">{siteConfig.tournaments.cod.name}</div>
+                                  <div className="text-sm text-gray-400">{siteConfig.tournaments.cod.prizePool} Prize Pool</div>
+                                </div>
+                              </div>
+                            </Label>
+                          </div>
+                        </RadioGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                {/* Team Name */}
                 <FormField
                   control={form.control}
-                  name="captainPhone"
+                  name="teamName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
-                        <Phone className="mr-2" />
-                        Contact Number
+                        <Flag className="mr-2" />
+                        Team Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          type="tel"
                           className="gaming-input p-4 text-white placeholder-gray-400"
-                          placeholder="+91 98765 43210"
+                          placeholder="Enter unique team name"
                         />
                       </FormControl>
+                      <p className="text-sm text-gray-400">Team name must be unique and 3-20 characters long</p>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              {/* Bank Slip Upload */}
-              <FormField
-                control={form.control}
-                name="bankSlip"
-                render={({ field: { onChange, value, ...field } }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
-                      <Rocket className="mr-2" />
-                      Bank Slip Upload (Registration Fee: {siteConfig.tournaments.valorant.registrationFee})
-                    </FormLabel>
-                    <FormControl>
-                      <div className="space-y-4">
-                        <div className="gaming-border rounded-lg p-6 text-center hover-lift">
-                          <input
-                            {...field}
-                            type="file"
-                            accept={siteConfig.features.teamRegistration.allowedFileTypes.join(",")}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              onChange(file);
-                            }}
-                            className="hidden"
-                            id="bankSlip"
+                {/* Team Members */}
+                <div>
+                  <label className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
+                    <Users className="mr-2" />
+                    Team Members (5 Required)
+                  </label>
+
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((playerNum) => (
+                      <div key={playerNum} className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`player${playerNum}Name` as keyof InsertTeam}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-gray-300">
+                                  Player {playerNum} Name {playerNum === 1 && "(Team Captain)"}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    className="gaming-input p-3 text-white placeholder-gray-400"
+                                    placeholder={playerNum === 1 ? "Team Captain" : "Player name"}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
-                          <label
-                            htmlFor="bankSlip"
-                            className="cursor-pointer block"
-                          >
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff4654]/20 flex items-center justify-center">
-                              <Rocket className="text-2xl text-[#ff4654]" />
-                            </div>
-                            <div className="text-lg font-semibold text-white mb-2">
-                              {value ? 'File Selected!' : 'Upload Bank Slip'}
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {value ? value.name : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
-                            </div>
-                          </label>
+
+                          <FormField
+                            control={form.control}
+                            name={`player${playerNum}GamingId` as keyof InsertTeam}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-gray-300">Gaming ID</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    className="gaming-input p-3 text-white placeholder-gray-400"
+                                    placeholder="In-game username"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
-                        <div className="text-sm text-gray-400 space-y-2">
-                          <p>• Bank Details: Account Name: {siteConfig.payment.accountName}</p>
-                          <p>• Account Number: {siteConfig.payment.accountNumber} | IFSC: {siteConfig.payment.ifscCode}</p>
-                          <p>• Bank: {siteConfig.payment.bankName}</p>
-                          <p>• UPI ID: {siteConfig.payment.upiId}</p>
-                          <p>• Please upload payment proof to complete registration</p>
-                        </div>
+
+                        {/* Valorant User ID - Only show when Valorant is selected */}
+                        {selectedGame === "valorant" && (
+                          <FormField
+                            control={form.control}
+                            name={`player${playerNum}ValorantId` as keyof InsertTeam}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-[#ff4654] flex items-center">
+                                  <Crosshair className="mr-1 w-4 h-4" />
+                                  Player {playerNum} Valorant User ID (Required for Valorant)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    className="gaming-input p-3 text-white placeholder-gray-400 border-[#ff4654]/50"
+                                    placeholder="e.g., Username#1234"
+                                  />
+                                </FormControl>
+                                <p className="text-xs text-gray-400">
+                                  Your Valorant username with tag (found in game profile)
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Rules Acceptance Status */}
-              {hasAcceptedRules && (
-                <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4 text-center">
-                  <div className="flex items-center justify-center text-[#00ff00]">
-                    <Target className="mr-2" size={20} />
-                    <span className="font-semibold">Rules & Regulations Accepted</span>
+                    ))}
                   </div>
-                  <p className="text-sm text-gray-300 mt-2">
-                    You have read and agreed to all tournament rules and regulations.
-                  </p>
                 </div>
-              )}
 
-              {/* Registration Button */}
-              <div className="text-center pt-6">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
-                >
-                  <Rocket className="mr-2" />
-                  {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register"}
-                </button>
-                <p className="text-sm text-gray-400 mt-4">
-                  Registration fee: {selectedGame === "valorant" ? siteConfig.tournaments.valorant.registrationFee : selectedGame === "cod" ? siteConfig.tournaments.cod.registrationFee : "LKR 1,500"} per team • No account creation required
-                </p>
-                {!hasAcceptedRules && (
-                  <p className="text-sm text-[#ff4654] mt-2">
-                    You must read and accept the rules & regulations before registering
-                  </p>
+                {/* Contact Information */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="captainEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                          <Mail className="mr-2" />
+                          Team Captain Email
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            className="gaming-input p-4 text-white placeholder-gray-400"
+                            placeholder="captain@email.com"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="captainPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                          <Phone className="mr-2" />
+                          Contact Number
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            className="gaming-input p-4 text-white placeholder-gray-400"
+                            placeholder="+91 98765 43210"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Bank Slip Upload */}
+                <FormField
+                  control={form.control}
+                  name="bankSlip"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
+                        <Rocket className="mr-2" />
+                        Bank Slip Upload (Registration Fee: {siteConfig.tournaments.valorant.registrationFee})
+                      </FormLabel>
+                      <FormControl>
+                        <div className="space-y-4">
+                          <div className="gaming-border rounded-lg p-6 text-center hover-lift">
+                            <input
+                              {...field}
+                              type="file"
+                              accept={siteConfig.features.teamRegistration.allowedFileTypes.join(",")}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                onChange(file);
+                              }}
+                              className="hidden"
+                              id="bankSlip"
+                            />
+                            <label
+                              htmlFor="bankSlip"
+                              className="cursor-pointer block"
+                            >
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff4654]/20 flex items-center justify-center">
+                                <Rocket className="text-2xl text-[#ff4654]" />
+                              </div>
+                              <div className="text-lg font-semibold text-white mb-2">
+                                {value ? 'File Selected!' : 'Upload Bank Slip'}
+                              </div>
+                              <div className="text-sm text-gray-400">
+                                {value ? value.name : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
+                              </div>
+                            </label>
+                          </div>
+                          <div className="text-sm text-gray-400 space-y-2">
+                            <p>• Bank Details: Account Name: {siteConfig.payment.accountName}</p>
+                            <p>• Account Number: {siteConfig.payment.accountNumber} | IFSC: {siteConfig.payment.ifscCode}</p>
+                            <p>• Bank: {siteConfig.payment.bankName}</p>
+                            <p>• UPI ID: {siteConfig.payment.upiId}</p>
+                            <p>• Please upload payment proof to complete registration</p>
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Rules Acceptance Status */}
+                {hasAcceptedRules && (
+                  <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center text-[#00ff00]">
+                      <Target className="mr-2" size={20} />
+                      <span className="font-semibold">Rules & Regulations Accepted</span>
+                    </div>
+                    <p className="text-sm text-gray-300 mt-2">
+                      You have read and agreed to all tournament rules and regulations.
+                    </p>
+                  </div>
                 )}
-              </div>
-            </form>
-          </Form>
+
+                {/* Registration Button */}
+                <div className="text-center pt-6">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+                  >
+                    <Rocket className="mr-2" />
+                    {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register"}
+                  </button>
+                  <p className="text-sm text-gray-400 mt-4">
+                    Registration fee: {selectedGame === "valorant" ? siteConfig.tournaments.valorant.registrationFee : selectedGame === "cod" ? siteConfig.tournaments.cod.registrationFee : "LKR 1,500"} per team • No account creation required
+                  </p>
+                  {!hasAcceptedRules && (
+                    <p className="text-sm text-[#ff4654] mt-2">
+                      You must read and accept the rules & regulations before registering
+                    </p>
+                  )}
+                </div>
+              </form>
+            </Form>
           </motion.div>
         </ScrollReveal>
       </div>

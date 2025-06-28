@@ -22,7 +22,7 @@ export default function TournamentShowcase() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="fadeInUp">
           <div className="text-center mb-16">
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ff4654]"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -37,7 +37,7 @@ export default function TournamentShowcase() {
           </div>
         </ScrollReveal>
 
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-2 gap-8"
           variants={staggerVariants}
           initial="hidden"
@@ -45,18 +45,18 @@ export default function TournamentShowcase() {
           viewport={{ once: true, margin: "-50px" }}
         >
           {/* Valorant Tournament Card */}
-          <motion.div 
+          <motion.div
             className="gaming-border rounded-xl p-8 hover-lift transition-transform group"
             variants={{
               hidden: { opacity: 0, y: 50, rotateY: -15 },
-              visible: { 
-                opacity: 1, 
-                y: 0, 
+              visible: {
+                opacity: 1,
+                y: 0,
                 rotateY: 0,
                 transition: { duration: 0.8, ease: "easeOut" }
               }
             }}
-            whileHover={{ 
+            whileHover={{
               scale: 1.02,
               transition: { duration: 0.2 }
             }}
@@ -69,7 +69,7 @@ export default function TournamentShowcase() {
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}
               />
-              <motion.div 
+              <motion.div
                 className="absolute top-4 left-4 bg-[#ff4654]/90 px-3 py-1 rounded-full text-sm font-semibold"
                 initial={{ x: -20, opacity: 0 }}
                 whileInView={{ x: 0, opacity: 1 }}
@@ -79,7 +79,7 @@ export default function TournamentShowcase() {
               </motion.div>
             </div>
 
-            <motion.h3 
+            <motion.h3
               className="text-2xl font-orbitron font-bold mb-4 text-[#ff4654]"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -88,7 +88,7 @@ export default function TournamentShowcase() {
               {siteConfig.tournaments.valorant.name}
             </motion.h3>
 
-            <motion.div 
+            <motion.div
               className="space-y-3 mb-6"
               variants={{
                 hidden: { opacity: 0 },
@@ -103,7 +103,7 @@ export default function TournamentShowcase() {
               initial="hidden"
               whileInView="visible"
             >
-              <motion.div 
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -113,7 +113,7 @@ export default function TournamentShowcase() {
                 <Users className="text-[#ff4654] mr-3" />
                 {siteConfig.tournaments.valorant.teamSize} Players per Team
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -123,7 +123,7 @@ export default function TournamentShowcase() {
                 <Trophy className="text-[#ff4654] mr-3" />
                 {siteConfig.tournaments.valorant.prizePool} Prize Pool
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -136,7 +136,7 @@ export default function TournamentShowcase() {
             </motion.div>
 
             {/* Gaming-style progress bar */}
-            <motion.div 
+            <motion.div
               className="mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -170,18 +170,18 @@ export default function TournamentShowcase() {
           </motion.div>
 
           {/* Call of Duty Tournament Card */}
-          <motion.div 
+          <motion.div
             className="gaming-border rounded-xl p-8 hover-lift transition-transform group"
             variants={{
               hidden: { opacity: 0, y: 50, rotateY: 15 },
-              visible: { 
-                opacity: 1, 
-                y: 0, 
+              visible: {
+                opacity: 1,
+                y: 0,
                 rotateY: 0,
                 transition: { duration: 0.8, ease: "easeOut" }
               }
             }}
-            whileHover={{ 
+            whileHover={{
               scale: 1.02,
               transition: { duration: 0.2 }
             }}
@@ -194,7 +194,7 @@ export default function TournamentShowcase() {
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}
               />
-              <motion.div 
+              <motion.div
                 className="absolute top-4 left-4 bg-[#ba3a46]/90 px-3 py-1 rounded-full text-sm font-semibold"
                 initial={{ x: -20, opacity: 0 }}
                 whileInView={{ x: 0, opacity: 1 }}
@@ -204,7 +204,7 @@ export default function TournamentShowcase() {
               </motion.div>
             </div>
 
-            <motion.h3 
+            <motion.h3
               className="text-2xl font-orbitron font-bold mb-4 text-[#ba3a46]"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -213,7 +213,7 @@ export default function TournamentShowcase() {
               {siteConfig.tournaments.cod.name}
             </motion.h3>
 
-            <motion.div 
+            <motion.div
               className="space-y-3 mb-6"
               variants={{
                 hidden: { opacity: 0 },
@@ -228,7 +228,7 @@ export default function TournamentShowcase() {
               initial="hidden"
               whileInView="visible"
             >
-              <motion.div 
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -238,7 +238,7 @@ export default function TournamentShowcase() {
                 <Users className="text-[#ba3a46] mr-3" />
                 {siteConfig.tournaments.cod.teamSize} Players per Team
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -248,7 +248,7 @@ export default function TournamentShowcase() {
                 <Trophy className="text-[#ba3a46] mr-3" />
                 {siteConfig.tournaments.cod.prizePool} Prize Pool
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -261,7 +261,7 @@ export default function TournamentShowcase() {
             </motion.div>
 
             {/* Gaming-style progress bar */}
-            <motion.div 
+            <motion.div
               className="mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}

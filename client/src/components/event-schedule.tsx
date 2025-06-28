@@ -24,7 +24,7 @@ export default function EventSchedule() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="fadeInUp">
           <div className="text-center mb-16">
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-orbitron font-bold mb-6 text-[#ffffff]"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -42,13 +42,13 @@ export default function EventSchedule() {
         <ScrollReveal variant="scaleIn" delay={0.3}>
           <div className="max-w-4xl mx-auto">
             {scheduleData.map((day, dayIndex) => (
-              <motion.div 
-                key={dayIndex} 
+              <motion.div
+                key={dayIndex}
                 className="gaming-border rounded-xl p-8 hover-lift"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
               >
-                <motion.div 
+                <motion.div
                   className="text-center mb-8"
                   initial={{ opacity: 0, y: -20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ export default function EventSchedule() {
                   <p className="text-lg text-gray-400">{day.date}</p>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="grid md:grid-cols-2 gap-4"
                   variants={staggerVariants}
                   initial="hidden"
@@ -71,19 +71,19 @@ export default function EventSchedule() {
                   {day.events.map((event, eventIndex) => {
                     const IconComponent = event.icon;
                     return (
-                      <motion.div 
-                        key={eventIndex} 
+                      <motion.div
+                        key={eventIndex}
                         className="flex items-center p-4 bg-[#242d3d]/50 rounded-lg hover:bg-[#242d3d]/70 transition-all hover-lift"
                         variants={{
                           hidden: { opacity: 0, x: eventIndex % 2 === 0 ? -50 : 50, scale: 0.9 },
-                          visible: { 
-                            opacity: 1, 
-                            x: 0, 
+                          visible: {
+                            opacity: 1,
+                            x: 0,
                             scale: 1,
                             transition: { duration: 0.6, ease: "easeOut" }
                           }
                         }}
-                        whileHover={{ 
+                        whileHover={{
                           scale: 1.05,
                           backgroundColor: "rgba(36, 45, 61, 0.8)",
                           transition: { duration: 0.2 }
@@ -92,20 +92,20 @@ export default function EventSchedule() {
                         <motion.div
                           className="w-16 h-16 rounded-lg flex items-center justify-center mr-4"
                           style={{ backgroundColor: `${event.color}20` }}
-                          whileHover={{ 
+                          whileHover={{
                             scale: 1.1,
                             backgroundColor: `${event.color}30`
                           }}
                           transition={{ duration: 0.2 }}
                         >
                           <motion.div
-                            animate={{ 
+                            animate={{
                               rotate: [0, 5, -5, 0],
                               scale: [1, 1.05, 1]
                             }}
-                            transition={{ 
-                              duration: 2, 
-                              repeat: Infinity, 
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
                               ease: "easeInOut",
                               delay: eventIndex * 0.2
                             }}
@@ -116,7 +116,7 @@ export default function EventSchedule() {
                             />
                           </motion.div>
                         </motion.div>
-                        <motion.div 
+                        <motion.div
                           className="flex-1"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}

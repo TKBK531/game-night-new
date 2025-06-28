@@ -16,7 +16,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#0a0f1a] border-t border-[#ff4654]/30 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-4 gap-8"
           variants={staggerVariants}
           initial="hidden"
@@ -26,14 +26,14 @@ export default function Footer() {
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
-              visible: { 
-                opacity: 1, 
+              visible: {
+                opacity: 1,
                 y: 0,
                 transition: { duration: 0.6, ease: "easeOut" }
               }
             }}
           >
-            <motion.div 
+            <motion.div
               className="text-xl font-orbitron font-bold mb-4 flex items-center"
               whileHover={{ scale: 1.05 }}
             >
@@ -54,8 +54,8 @@ export default function Footer() {
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
-              visible: { 
-                opacity: 1, 
+              visible: {
+                opacity: 1,
                 y: 0,
                 transition: { duration: 0.6, ease: "easeOut" }
               }
@@ -109,8 +109,8 @@ export default function Footer() {
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
-              visible: { 
-                opacity: 1, 
+              visible: {
+                opacity: 1,
                 y: 0,
                 transition: { duration: 0.6, ease: "easeOut" }
               }
@@ -136,8 +136,8 @@ export default function Footer() {
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
-              visible: { 
-                opacity: 1, 
+              visible: {
+                opacity: 1,
                 y: 0,
                 transition: { duration: 0.6, ease: "easeOut" }
               }
@@ -145,32 +145,32 @@ export default function Footer() {
           >
             <h4 className="font-semibold text-[#ffffff] mb-4">Follow Us</h4>
             <motion.div className="flex space-x-4">
-              <motion.a 
-                href="#" 
+              <motion.a
+                href="#"
                 className="text-gray-400 hover:text-[#ff4654] transition-colors"
                 whileHover={{ scale: 1.2, rotate: 15 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <FaDiscord className="text-2xl" />
               </motion.a>
-              <motion.a 
-                href="#" 
+              <motion.a
+                href="#"
                 className="text-gray-400 hover:text-[#ba3a46] transition-colors"
                 whileHover={{ scale: 1.2, rotate: -15 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <FaTwitch className="text-2xl" />
               </motion.a>
-              <motion.a 
-                href="#" 
+              <motion.a
+                href="#"
                 className="text-gray-400 hover:text-[#ff4654] transition-colors"
                 whileHover={{ scale: 1.2, rotate: 15 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <FaYoutube className="text-2xl" />
               </motion.a>
-              <motion.a 
-                href="#" 
+              <motion.a
+                href="#"
                 className="text-gray-400 hover:text-[#ffffff] transition-colors"
                 whileHover={{ scale: 1.2, rotate: -15 }}
                 whileTap={{ scale: 0.9 }}

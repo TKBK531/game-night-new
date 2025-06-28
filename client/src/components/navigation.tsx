@@ -15,7 +15,7 @@ export default function Navigation() {
   };
 
   return (
-    <motion.nav 
+    <motion.nav
       className="bg-[#111823]/90 backdrop-blur-sm border-b border-[#ff4654]/30 sticky top-0 z-50"
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -23,13 +23,13 @@ export default function Navigation() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <motion.div 
+          <motion.div
             className="flex items-center space-x-4"
             whileHover={{ scale: 1.05 }}
           >
-            <motion.div 
+            <motion.div
               className="text-xl font-orbitron font-bold relative"
-              animate={{ 
+              animate={{
                 textShadow: [
                   "0 0 0px #ff4654",
                   "0 0 10px #ff4654",
@@ -53,7 +53,7 @@ export default function Navigation() {
             </motion.div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="hidden md:flex items-center space-x-6"
             variants={{
               hidden: { opacity: 0 },
@@ -154,7 +154,7 @@ export default function Navigation() {
 
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div 
+            <motion.div
               className="md:hidden pb-4"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
