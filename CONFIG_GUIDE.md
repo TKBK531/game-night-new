@@ -147,6 +147,34 @@ heroStats: [
 ]
 ```
 
+## Rules and Regulations System
+
+The project includes a comprehensive rules and regulations system with centralized data management:
+
+### Rules Data File
+- **Location**: `shared/rules.ts`
+- **Contains**: All tournament rules, policies, and regulations
+- **Sections**: General rules, tournament-specific rules, penalties, policies, legal terms, and contact information
+
+### Components
+1. **Rules Popup** (`components/rules-popup.tsx`): Shows during registration
+2. **Rules Page** (`pages/rules.tsx`): Full standalone rules page
+3. **Integration**: Built into team registration process
+
+### Features
+- **Mandatory Acceptance**: Users must read and accept rules before registering
+- **Scroll Validation**: Users must scroll through the entire popup
+- **Centralized Data**: All rules content managed in one file
+- **Responsive Design**: Works on all device sizes
+- **Print Functionality**: Rules page can be printed
+
+### Updating Rules
+To modify rules and regulations:
+1. Edit `shared/rules.ts`
+2. Update the `lastUpdated` field
+3. Modify content in any section (general, tournaments, penalties, etc.)
+4. Rules will automatically appear in both popup and full page
+
 ## Making Changes
 
 1. **Edit the config file**: Open `shared/config.ts` in any text editor

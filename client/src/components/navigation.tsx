@@ -57,6 +57,12 @@ export default function Navigation() {
             >
               Register
             </button>
+            <a
+              href="/rules"
+              className="hover:text-[#ff4654] transition-colors cursor-pointer"
+            >
+              Rules
+            </a>
           </div>
 
           <button
@@ -100,6 +106,12 @@ export default function Navigation() {
               >
                 Register
               </button>
+              <a
+                href="/rules"
+                className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2 block"
+              >
+                Rules
+              </a>
             </div>
           </div>
         )}

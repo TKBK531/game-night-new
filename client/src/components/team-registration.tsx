@@ -11,11 +11,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import RulesPopup from "./rules-popup";
+import RulesPage from "../pages/rules";
 
 export default function TeamRegistration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRulesPopup, setShowRulesPopup] = useState(false);
+  const [showRulesPage, setShowRulesPage] = useState(false);
+  const [hasAcceptedRules, setHasAcceptedRules] = useState(false);
 
   const form = useForm<InsertTeam>({
     resolver: zodResolver(insertTeamSchema),
@@ -118,8 +123,27 @@ export default function TeamRegistration() {
   });
 
   const onSubmit = async (data: InsertTeam) => {
+    // Check if rules have been accepted
+    if (!hasAcceptedRules) {
+      setShowRulesPopup(true);
+      return;
+    }
+
     setIsSubmitting(true);
     registerTeamMutation.mutate(data);
+  };
+
+  const handleRulesAccepted = () => {
+    setHasAcceptedRules(true);
+    setShowRulesPopup(false);
+    toast({
+      title: "Rules Accepted",
+      description: "You can now proceed with team registration.",
+    });
+  };
+
+  const handleViewFullRules = () => {
+    setShowRulesPage(true);
   };
 
   const selectedGame = form.watch("game");
@@ -378,6 +402,19 @@ export default function TeamRegistration() {
                 )}
               />
 
+              {/* Rules Acceptance Status */}
+              {hasAcceptedRules && (
+                <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center text-[#00ff00]">
+                    <Target className="mr-2" size={20} />
+                    <span className="font-semibold">Rules & Regulations Accepted</span>
+                  </div>
+                  <p className="text-sm text-gray-300 mt-2">
+                    You have read and agreed to all tournament rules and regulations.
+                  </p>
+                </div>
+              )}
+
               {/* Registration Button */}
               <div className="text-center pt-6">
                 <button
@@ -386,16 +423,36 @@ export default function TeamRegistration() {
                   className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                 >
                   <Rocket className="mr-2" />
-                  {isSubmitting ? "Registering..." : "Register Team"}
+                  {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register"}
                 </button>
                 <p className="text-sm text-gray-400 mt-4">
-                  Registration fee: ₹500 per team • No account creation required
+                  Registration fee: {selectedGame === "valorant" ? siteConfig.tournaments.valorant.registrationFee : selectedGame === "cod" ? siteConfig.tournaments.cod.registrationFee : "LKR 1,500"} per team • No account creation required
                 </p>
+                {!hasAcceptedRules && (
+                  <p className="text-sm text-[#ff4654] mt-2">
+                    You must read and accept the rules & regulations before registering
+                  </p>
+                )}
               </div>
             </form>
           </Form>
         </div>
       </div>
+
+      {/* Rules Popup */}
+      <RulesPopup
+        isOpen={showRulesPopup}
+        onClose={() => setShowRulesPopup(false)}
+        onAccept={handleRulesAccepted}
+        onViewFullRules={handleViewFullRules}
+      />
+
+      {/* Full Rules Page */}
+      {showRulesPage && (
+        <div className="fixed inset-0 z-50 bg-[#0a0f1a]">
+          <RulesPage onBack={() => setShowRulesPage(false)} />
+        </div>
+      )}
     </section>
   );
 }
