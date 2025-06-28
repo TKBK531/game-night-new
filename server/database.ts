@@ -6,10 +6,13 @@ if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is required");
 }
 
-// Create a connection pool
+// Create a connection pool optimized for Neon
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    max: 20, // Maximum number of connections in the pool
+    idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+    connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
 });
 
 // Create the drizzle database instance

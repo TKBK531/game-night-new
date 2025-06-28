@@ -11,10 +11,15 @@
     ],
     "functions": {
         "api/*.ts": {
-            "runtime": "@vercel/node@3"
+            "runtime": "@vercel/node@3",
+            "maxDuration": 10
         }
     },
     "routes": [
+        {
+            "src": "/uploads/(.*)",
+            "dest": "/uploads/$1"
+        },
         {
             "src": "/api/(.*)",
             "dest": "/api/index.ts"
@@ -26,5 +31,24 @@
     ],
     "env": {
         "NODE_ENV": "production"
-    }
+    },
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                }
+            ]
+        }
+    ]
 }
