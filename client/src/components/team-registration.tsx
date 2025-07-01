@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { insertTeamSchema, type InsertTeam } from "@shared/schema";
+import { insertTeamSchema, type InsertTeam } from "../../../shared/mongo-validation";
 import { siteConfig } from "@shared/config";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";

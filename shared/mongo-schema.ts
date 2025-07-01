@@ -134,7 +134,7 @@ const GameScoreSchema = new Schema<IGameScore>({
 });
 
 // Create indexes for better performance
-TeamSchema.index({ teamName: 1 });
+// Note: teamName already has unique index from schema definition
 TeamSchema.index({ game: 1 });
 TeamSchema.index({ registeredAt: -1 });
 

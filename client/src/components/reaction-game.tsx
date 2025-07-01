@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Zap, Trophy, Play, RotateCcw, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { GameScore } from "@shared/schema";
+import type { IGameScore } from "../../../shared/mongo-validation";
 
 type GameState = "waiting" | "ready" | "go" | "finished" | "early";
 
@@ -19,7 +19,7 @@ export default function ReactionGame() {
   const [showNameInput, setShowNameInput] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<GameScore[]>({
+  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<IGameScore[]>({
     queryKey: ['/api/game-scores/leaderboard/reaction'],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/game-scores/leaderboard/reaction");
@@ -212,9 +212,9 @@ export default function ReactionGame() {
           <div className="gaming-border rounded-xl p-8">
             <div
               className={`min-h-[400px] flex items-center justify-center rounded-lg cursor-pointer transition-all ${gameState === "go" ? "bg-[#ffffff]/20" :
-                  gameState === "ready" ? "bg-[#ba3a46]/20" :
-                    gameState === "early" ? "bg-red-500/20" :
-                      "bg-[#242d3d]/50"
+                gameState === "ready" ? "bg-[#ba3a46]/20" :
+                  gameState === "early" ? "bg-red-500/20" :
+                    "bg-[#242d3d]/50"
                 }`}
               onClick={handleClick}
             >
@@ -234,20 +234,20 @@ export default function ReactionGame() {
             ) : (
               <div className="space-y-3">
                 {leaderboard && leaderboard.length > 0 ? (
-                  leaderboard.slice(0, 10).map((score: GameScore, index: number) => (
+                  leaderboard.slice(0, 10).map((score: IGameScore, index: number) => (
                     <div
                       key={score.id}
                       className={`flex items-center justify-between p-3 rounded-lg hover-lift ${index === 0 ? "bg-gradient-to-r from-yellow-500/20 to-yellow-600/20" :
-                          index === 1 ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20" :
-                            index === 2 ? "bg-gradient-to-r from-orange-500/20 to-orange-600/20" :
-                              "bg-[#242d3d]/30"
+                        index === 1 ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20" :
+                          index === 2 ? "bg-gradient-to-r from-orange-500/20 to-orange-600/20" :
+                            "bg-[#242d3d]/30"
                         }`}
                     >
                       <div className="flex items-center">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 font-bold ${index === 0 ? "bg-yellow-500/30 text-yellow-400" :
-                            index === 1 ? "bg-gray-400/30 text-gray-300" :
-                              index === 2 ? "bg-orange-500/30 text-orange-400" :
-                                "bg-[#ff4654]/20 text-[#ff4654]"
+                          index === 1 ? "bg-gray-400/30 text-gray-300" :
+                            index === 2 ? "bg-orange-500/30 text-orange-400" :
+                              "bg-[#ff4654]/20 text-[#ff4654]"
                           }`}>
                           {index + 1}
                         </div>

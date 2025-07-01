@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-// Re-export types from mongo-schema for convenience
-export type { ITeam, IGameScore } from "./mongo-schema";
-
-// Team validation schema
-export const insertTeamSchema = z.object({
+// Server-side team validation schema with GridFS fields
+// This is only used on the server where Buffer is available
+export const serverInsertTeamSchema = z.object({
     teamName: z.string()
         .min(3, "Team name must be at least 3 characters")
         .max(20, "Team name must be at most 20 characters"),
@@ -52,6 +50,10 @@ export const insertTeamSchema = z.object({
         .max(50, "Gaming ID too long"),
     player5ValorantId: z.string().optional().or(z.literal("")),
     bankSlip: z.any().optional(), // Handle file uploads as any type since File objects can't be JSON stringified
+    // GridFS file fields (used internally on server)
+    bankSlipFile: z.instanceof(Buffer).optional(),
+    bankSlipFileName: z.string().optional(),
+    bankSlipContentType: z.string().optional()
 }).refine((data) => {
     // If game is Valorant, require Valorant user IDs for all players
     if (data.game === "valorant") {
@@ -67,17 +69,8 @@ export const insertTeamSchema = z.object({
     path: ["game"],
 });
 
-// Game score validation schema
-export const insertGameScoreSchema = z.object({
-    playerName: z.string()
-        .min(1, "Player name is required")
-        .max(50, "Player name too long"),
-    score: z.string()
-        .min(1, "Score is required"),
-    gameType: z.string()
-        .min(1, "Game type is required")
-        .max(50, "Game type too long"),
-});
+// Re-export the base schemas for convenience
+export { insertTeamSchema, insertGameScoreSchema } from "./mongo-validation";
+export type { InsertTeam, InsertGameScore, ITeam, IGameScore } from "./mongo-validation";
 
-export type InsertTeam = z.infer<typeof insertTeamSchema>;
-export type InsertGameScore = z.infer<typeof insertGameScoreSchema>;
+export type ServerInsertTeam = z.infer<typeof serverInsertTeamSchema>;
