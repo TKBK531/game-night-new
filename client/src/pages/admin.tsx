@@ -309,6 +309,10 @@ export default function AdminDashboard() {
     };
 
     const handleViewTeamDetails = (team: Team) => {
+        console.log('Viewing team details for:', team.teamName);
+        console.log('Team data:', team);
+        console.log('Bank slip file ID:', team.bankSlipFileId);
+        console.log('Bank slip file name:', team.bankSlipFileName);
         setSelectedTeam(team);
         setIsTeamDetailsDialogOpen(true);
     };
@@ -356,6 +360,9 @@ export default function AdminDashboard() {
     };
 
     const previewBankSlip = (team: Team) => {
+        console.log('Preview bank slip called for team:', team.teamName);
+        console.log('Bank slip file ID:', team.bankSlipFileId);
+
         if (!team.bankSlipFileId) {
             toast({
                 title: 'No document',
@@ -366,6 +373,7 @@ export default function AdminDashboard() {
         }
 
         const previewUrl = `/api/files/${team.bankSlipFileId}`;
+        console.log('Opening preview URL:', previewUrl);
         window.open(previewUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
     };
 

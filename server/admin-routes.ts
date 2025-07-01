@@ -197,7 +197,13 @@ adminRouter.delete('/users/:id', requireAuth, requireRole(['superuser']), async 
 adminRouter.get('/teams', requireAuth, async (req: any, res: any) => {
     try {
         const teams = await storage.getAllTeams();
-        res.json(teams);
+        // Serialize ObjectIds to strings for frontend compatibility
+        const serializedTeams = teams.map(team => ({
+            ...team.toObject(),
+            _id: team._id.toString(),
+            bankSlipFileId: team.bankSlipFileId ? team.bankSlipFileId.toString() : undefined
+        }));
+        res.json(serializedTeams);
     } catch (error) {
         console.error('Get teams error:', error);
         res.status(500).json({ message: 'Failed to fetch teams' });
