@@ -2,7 +2,7 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { testConnection, closeConnection } from "./database";
+import { testConnection } from "./mongodb";
 
 const app = express();
 app.use(express.json());
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
   log("🔗 Testing database connection...");
   const dbConnected = await testConnection();
   if (!dbConnected) {
-    log("❌ Failed to connect to database. Please check your DATABASE_URL in .env file");
+    log("❌ Failed to connect to database. Please check your MONGODB_URI in .env file");
     process.exit(1);
   }
 
@@ -84,13 +84,13 @@ app.use((req, res, next) => {
   // Graceful shutdown
   process.on('SIGINT', async () => {
     log('🛑 Shutting down gracefully...');
-    await closeConnection();
+    // MongoDB connections will be handled automatically
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
     log('🛑 Shutting down gracefully...');
-    await closeConnection();
+    // MongoDB connections will be handled automatically
     process.exit(0);
   });
 })();
