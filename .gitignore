@@ -234,3 +234,4 @@ secrets/
 .api-keys
 tokens.json
 auth-config.json
+.env*.local
