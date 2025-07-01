@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // If team name exists and we have a file, clean up the temp file
         if (req.file) {
           try {
-            fs.unlinkSync(path.join('uploads', req.file.filename));
+            fs.unlinkSync(req.file.path);
           } catch (e) {
             console.error('Error deleting temp file:', e);
           }
@@ -67,35 +67,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // If we have a file, rename it with the proper format
-      let finalFileName = undefined;
+      // Prepare team data for MongoDB storage
+      let finalTeamData: any = { ...teamData };
+
+      // If we have a file, read it and prepare for GridFS storage
       if (req.file) {
-        const timestamp = Date.now();
-        const extension = path.extname(req.file.originalname);
-
-        // Clean team name and leader name for filename (remove special characters)
-        const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
-        const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
-
-        finalFileName = `${cleanTeamName}-${cleanLeaderName}-${timestamp}${extension}`;
-
-        const oldPath = path.join('uploads', req.file.filename);
-        const newPath = path.join('uploads', finalFileName);
-
         try {
-          fs.renameSync(oldPath, newPath);
+          // Read the uploaded file
+          const fileBuffer = fs.readFileSync(req.file.path);
+
+          // Create proper filename
+          const timestamp = Date.now();
+          const extension = path.extname(req.file.originalname);
+          const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
+          const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
+          const finalFileName = `${cleanTeamName}-${cleanLeaderName}-${timestamp}${extension}`;
+
+          // Add file data for GridFS storage
+          finalTeamData = {
+            ...teamData,
+            bankSlipFile: fileBuffer,
+            bankSlipFileName: finalFileName,
+            bankSlipContentType: req.file.mimetype
+          };
+
+          // Clean up the temporary file
+          fs.unlinkSync(req.file.path);
         } catch (error) {
-          console.error('Error renaming file:', error);
-          // If rename fails, keep the original filename
-          finalFileName = req.file.filename;
+          console.error('Error processing uploaded file:', error);
+          // Clean up the temporary file if it exists
+          try {
+            if (req.file && req.file.path) {
+              fs.unlinkSync(req.file.path);
+            }
+          } catch (cleanupError) {
+            console.error('Error cleaning up temp file:', cleanupError);
+          }
+          throw new Error('Failed to process uploaded file');
         }
       }
-
-      // Update teamData with the final filename
-      const finalTeamData = {
-        ...teamData,
-        bankSlip: finalFileName
-      };
 
       const team = await storage.createTeam(finalTeamData);
       res.status(201).json(team);
@@ -110,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clean up uploaded file if there was an error
       if (req.file) {
         try {
-          fs.unlinkSync(path.join('uploads', req.file.filename));
+          fs.unlinkSync(req.file.path);
         } catch (e) {
           console.error('Error deleting temp file after error:', e);
         }
