@@ -220,11 +220,12 @@ export function setupServerlessRoutes(app: Express): void {
                     res.set({
                         'Content-Type': team.bankSlipContentType || file.contentType,
                         'Content-Disposition': `inline; filename="${team.bankSlipFileName || file.filename}"`,
+                        'Content-Length': file.buffer.length,
                         'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
                     });
 
-                    // Send file buffer
-                    res.send(file.buffer);
+                    // Send file buffer as binary data
+                    res.end(file.buffer);
                     return;
                 } catch (fileError) {
                     console.error('Error serving GridFS file:', fileError);
@@ -253,11 +254,12 @@ export function setupServerlessRoutes(app: Express): void {
                 res.set({
                     'Content-Type': file.contentType,
                     'Content-Disposition': `${disposition}; filename="${file.filename}"`,
+                    'Content-Length': file.buffer.length,
                     'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
                 });
 
-                // Send file buffer
-                res.send(file.buffer);
+                // Send file buffer as binary data
+                res.end(file.buffer);
                 return;
             } catch (fileError) {
                 console.error('Error serving GridFS file:', fileError);

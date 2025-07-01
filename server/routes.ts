@@ -209,6 +209,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.use("/api/admin", adminRouter);
 
+  // File access endpoint - serve files from MongoDB GridFS
+  app.get("/api/files/:teamId/bank-slip", async (req, res) => {
+    try {
+      const { teamId } = req.params;
+
+      // Get team data to find the bank slip file
+      const teams = await storage.getAllTeams();
+      const team = teams.find((t: any) => t._id.toString() === teamId);
+
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Check if team has a GridFS file
+      if (team.bankSlipFileId) {
+        try {
+          const file = await storage.getBankSlipFile(team.bankSlipFileId.toString());
+
+          // Set appropriate headers
+          res.set({
+            'Content-Type': team.bankSlipContentType || file.contentType,
+            'Content-Disposition': `inline; filename="${team.bankSlipFileName || file.filename}"`,
+            'Content-Length': file.buffer.length,
+            'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+          });
+
+          // Send file buffer as binary data
+          res.end(file.buffer);
+          return;
+        } catch (fileError) {
+          console.error('Error serving GridFS file:', fileError);
+          return res.status(404).json({ message: "File not found in database" });
+        }
+      }
+
+      return res.status(404).json({ message: "No bank slip file found" });
+    } catch (error) {
+      console.error("Error accessing file:", error);
+      res.status(500).json({ message: "Error accessing file" });
+    }
+  });
+
+  // Direct file access by GridFS file ID
+  app.get("/api/files/:fileId", async (req, res) => {
+    try {
+      const { fileId } = req.params;
+      const download = req.query.download === 'true';
+
+      try {
+        const file = await storage.getBankSlipFile(fileId);
+
+        // Set appropriate headers based on whether it's a download or preview
+        const disposition = download ? 'attachment' : 'inline';
+        res.set({
+          'Content-Type': file.contentType,
+          'Content-Disposition': `${disposition}; filename="${file.filename}"`,
+          'Content-Length': file.buffer.length,
+          'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+        });
+
+        // Send file buffer as binary data
+        res.end(file.buffer);
+        return;
+      } catch (fileError) {
+        console.error('Error serving GridFS file:', fileError);
+        return res.status(404).json({ message: "File not found in database" });
+      }
+    } catch (error) {
+      console.error("Error accessing file:", error);
+      res.status(500).json({ message: "Error accessing file" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
