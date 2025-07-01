@@ -2,6 +2,7 @@ import type { Express } from "express";
 import multer from "multer";
 import path from "path";
 import { MongoDBStorage } from "../server/mongo-storage";
+import { connectToDatabase } from "../server/mongodb";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
 import adminRouter from "./admin-routes";
@@ -35,6 +36,37 @@ export function setupServerlessRoutes(app: Express): void {
             database: process.env.MONGODB_URI ? "configured" : "missing",
             fileStorage: "mongodb_gridfs"
         });
+    });
+
+    // Debug endpoint for production troubleshooting
+    app.get("/api/debug", async (req, res) => {
+        try {
+            // Test database connection
+            await connectToDatabase();
+            const dbConnected = true;
+
+            res.json({
+                status: "ok",
+                timestamp: new Date().toISOString(),
+                environment: process.env.NODE_ENV || "development",
+                database: {
+                    configured: !!process.env.MONGODB_URI,
+                    connected: dbConnected
+                },
+                nodeVersion: process.version,
+                memoryUsage: process.memoryUsage(),
+                uptime: process.uptime()
+            });
+        } catch (error) {
+            res.status(500).json({
+                status: "error",
+                error: error instanceof Error ? error.message : "Unknown error",
+                database: {
+                    configured: !!process.env.MONGODB_URI,
+                    connected: false
+                }
+            });
+        }
     });
 
     // Team registration endpoint with file upload to MongoDB GridFS

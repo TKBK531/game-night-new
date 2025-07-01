@@ -1,7 +1,7 @@
 // Production environment validation
 export function validateEnvironment() {
     const requiredEnvVars = [
-        'DATABASE_URL',
+        'MONGODB_URI',
         'SESSION_SECRET'
     ];
 
@@ -12,10 +12,10 @@ export function validateEnvironment() {
         throw new Error(`Missing environment variables: ${missing.join(', ')}`);
     }
 
-    // Validate DATABASE_URL format for Neon
-    const dbUrl = process.env.DATABASE_URL!;
-    if (!dbUrl.includes('neon.tech') && !dbUrl.includes('localhost')) {
-        console.warn('⚠️  DATABASE_URL doesn\'t appear to be a Neon database URL');
+    // Validate MONGODB_URI format
+    const mongoUri = process.env.MONGODB_URI!;
+    if (!mongoUri.includes('mongodb')) {
+        console.warn('⚠️  MONGODB_URI doesn\'t appear to be a valid MongoDB connection string');
     }
 
     // Validate SESSION_SECRET strength
