@@ -177,7 +177,7 @@ TeamSchema.index({ registeredAt: -1 });
 GameScoreSchema.index({ gameType: 1, score: 1 });
 GameScoreSchema.index({ createdAt: -1 });
 
-UserSchema.index({ username: 1 });
+// Note: username index is automatically created by unique: true in schema definition
 UserSchema.index({ role: 1 });
 
 // Export Models

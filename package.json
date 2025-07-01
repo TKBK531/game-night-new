@@ -11,6 +11,7 @@
     "check": "tsc",
     "db:test": "tsx server/test-db.ts",
     "init:superuser": "tsx server/init-superuser.ts",
+    "check-ip": "node scripts/check-ip.js",
     "deploy:prepare": "npm run check && npm run build"
   },
   "dependencies": {

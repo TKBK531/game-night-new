@@ -239,6 +239,36 @@ export function setupServerlessRoutes(app: Express): void {
         }
     });
 
+    // Direct file access by GridFS file ID
+    app.get("/api/files/:fileId", async (req, res) => {
+        try {
+            const { fileId } = req.params;
+            const download = req.query.download === 'true';
+
+            try {
+                const file = await storage.getBankSlipFile(fileId);
+
+                // Set appropriate headers based on whether it's a download or preview
+                const disposition = download ? 'attachment' : 'inline';
+                res.set({
+                    'Content-Type': file.contentType,
+                    'Content-Disposition': `${disposition}; filename="${file.filename}"`,
+                    'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+                });
+
+                // Send file buffer
+                res.send(file.buffer);
+                return;
+            } catch (fileError) {
+                console.error('Error serving GridFS file:', fileError);
+                return res.status(404).json({ message: "File not found in database" });
+            }
+        } catch (error) {
+            console.error("Error accessing file:", error);
+            res.status(500).json({ message: "Error accessing file" });
+        }
+    });
+
     // List all uploaded files (admin endpoint)
     app.get("/api/admin/files", async (req, res) => {
         try {
