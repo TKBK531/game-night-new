@@ -7,12 +7,14 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import RulesPage from "@/pages/rules";
 import AdminFiles from "@/pages/admin-files";
+import AdminDashboard from "@/pages/admin";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/rules" component={() => <RulesPage />} />
+      <Route path="/admin" component={() => <AdminDashboard />} />
       <Route path="/admin/files" component={() => <AdminFiles />} />
       <Route component={NotFound} />
     </Switch>

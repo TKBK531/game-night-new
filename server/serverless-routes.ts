@@ -4,6 +4,7 @@ import path from "path";
 import { MongoDBStorage } from "../server/mongo-storage";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
+import adminRouter from "./admin-routes";
 
 // Initialize MongoDB storage
 const storage = new MongoDBStorage();
@@ -291,4 +292,9 @@ export function setupServerlessRoutes(app: Express): void {
             });
         }
     });
+}
+
+// Add admin routes
+export function configureAdminRoutes(app: Express) {
+    app.use('/api/admin', adminRouter);
 }

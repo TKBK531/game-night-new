@@ -47,6 +47,17 @@ export interface IGameScore extends Document {
     createdAt: Date;
 }
 
+// User Interface for Admin System
+export interface IUser extends Document {
+    _id: string;
+    username: string;
+    password: string; // Hashed password
+    role: 'superuser' | 'elite_board' | 'top_board';
+    createdAt: Date;
+    lastLogin?: Date;
+    isActive: boolean;
+}
+
 // Team Schema
 const TeamSchema = new Schema<ITeam>({
     teamName: {
@@ -133,6 +144,31 @@ const GameScoreSchema = new Schema<IGameScore>({
     createdAt: { type: Date, default: Date.now }
 });
 
+// User Schema
+const UserSchema = new Schema<IUser>({
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+        minlength: 3,
+        maxlength: 50
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6
+    },
+    role: {
+        type: String,
+        required: true,
+        enum: ['superuser', 'elite_board', 'top_board'],
+        default: 'top_board'
+    },
+    createdAt: { type: Date, default: Date.now },
+    lastLogin: { type: Date },
+    isActive: { type: Boolean, default: true }
+});
+
 // Create indexes for better performance
 // Note: teamName already has unique index from schema definition
 TeamSchema.index({ game: 1 });
@@ -141,9 +177,13 @@ TeamSchema.index({ registeredAt: -1 });
 GameScoreSchema.index({ gameType: 1, score: 1 });
 GameScoreSchema.index({ createdAt: -1 });
 
+UserSchema.index({ username: 1 });
+UserSchema.index({ role: 1 });
+
 // Export Models
 export const Team = mongoose.model<ITeam>('Team', TeamSchema);
 export const GameScore = mongoose.model<IGameScore>('GameScore', GameScoreSchema);
+export const User = mongoose.model<IUser>('User', UserSchema);
 
 // Types for insertion (without MongoDB-specific fields)
 export interface InsertTeam {
@@ -176,4 +216,16 @@ export interface InsertGameScore {
     playerName: string;
     score: string;
     gameType: string;
+}
+
+// User insertion types
+export interface InsertUser {
+    username: string;
+    password: string;
+    role: 'superuser' | 'elite_board' | 'top_board';
+}
+
+export interface LoginUser {
+    username: string;
+    password: string;
 }

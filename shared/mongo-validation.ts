@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Re-export types from mongo-schema for convenience
-export type { ITeam, IGameScore } from "./mongo-schema";
+export type { ITeam, IGameScore, IUser } from "./mongo-schema";
 
 // Team validation schema
 export const insertTeamSchema = z.object({
@@ -81,3 +81,28 @@ export const insertGameScoreSchema = z.object({
 
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type InsertGameScore = z.infer<typeof insertGameScoreSchema>;
+
+// User validation schemas
+export const loginUserSchema = z.object({
+    username: z.string()
+        .min(3, "Username must be at least 3 characters")
+        .max(50, "Username must be at most 50 characters"),
+    password: z.string()
+        .min(6, "Password must be at least 6 characters")
+});
+
+export const insertUserSchema = z.object({
+    username: z.string()
+        .min(3, "Username must be at least 3 characters")
+        .max(50, "Username must be at most 50 characters")
+        .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+    password: z.string()
+        .min(6, "Password must be at least 6 characters")
+        .max(100, "Password too long"),
+    role: z.enum(["superuser", "elite_board", "top_board"], {
+        required_error: "Please select a user role"
+    })
+});
+
+export type LoginUser = z.infer<typeof loginUserSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;

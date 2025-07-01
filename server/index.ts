@@ -1,12 +1,26 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testConnection } from "./mongodb";
+import { initializeSuperuser } from "./init-superuser";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Configure sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'game-night-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // Serve uploaded files statically
 app.use('/uploads', express.static('uploads'));
@@ -49,6 +63,10 @@ app.use((req, res, next) => {
     log("❌ Failed to connect to database. Please check your MONGODB_URI in .env file");
     process.exit(1);
   }
+
+  // Initialize superuser account
+  log("👤 Initializing superuser account...");
+  await initializeSuperuser();
 
   const server = await registerRoutes(app);
 

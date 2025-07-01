@@ -6,6 +6,7 @@ import fs from "fs";
 import { MongoDBStorage } from "./mongo-storage";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
+import adminRouter from "./admin-routes";
 
 // Initialize MongoDB storage
 const storage = new MongoDBStorage();
@@ -194,6 +195,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Admin routes
+  app.use("/api/admin", adminRouter);
 
   const httpServer = createServer(app);
   return httpServer;
