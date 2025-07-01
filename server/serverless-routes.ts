@@ -2,9 +2,17 @@ import type { Express } from "express";
 import multer from "multer";
 import path from "path";
 import { storage } from "../server/storage";
-import { uploadToCloudinary } from "../server/cloudinary";
 import { insertTeamSchema, insertGameScoreSchema } from "@shared/schema";
 import { z } from "zod";
+
+// Conditional import for Cloudinary
+let uploadToCloudinary: any = null;
+try {
+    const cloudinaryModule = require("../server/cloudinary");
+    uploadToCloudinary = cloudinaryModule.uploadToCloudinary;
+} catch (error) {
+    console.warn('Cloudinary module not available:', error);
+}
 
 // Configure multer for memory storage (since we'll upload to Cloudinary)
 const upload = multer({
@@ -28,7 +36,9 @@ export function setupServerlessRoutes(app: Express): void {
         res.json({
             status: "ok",
             timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || "development"
+            environment: process.env.NODE_ENV || "development",
+            database: process.env.DATABASE_URL ? "configured" : "missing",
+            cloudinary: uploadToCloudinary ? "available" : "unavailable"
         });
     });
 
@@ -56,6 +66,10 @@ export function setupServerlessRoutes(app: Express): void {
             let finalFileName = undefined;
             if (req.file) {
                 try {
+                    if (!uploadToCloudinary) {
+                        throw new Error('File upload service not available');
+                    }
+
                     const timestamp = Date.now();
                     const extension = path.extname(req.file.originalname);
 
@@ -74,11 +88,9 @@ export function setupServerlessRoutes(app: Express): void {
 
                     finalFileName = cloudinaryResult.url; // Store the Cloudinary URL
                 } catch (uploadError) {
-                    console.error('Cloudinary upload error:', uploadError);
-                    return res.status(500).json({
-                        message: "Failed to upload bank slip. Please try again.",
-                        field: "bankSlip"
-                    });
+                    console.error('File upload error:', uploadError);
+                    // Continue without file if upload fails
+                    finalFileName = undefined;
                 }
             }
 
@@ -147,18 +159,39 @@ export function setupServerlessRoutes(app: Express): void {
     // Game score endpoints
     app.post("/api/game-scores", async (req, res) => {
         try {
+            console.log('Received game score submission:', req.body);
+
             const scoreData = insertGameScoreSchema.parse(req.body);
+            console.log('Validated score data:', scoreData);
+
             const score = await storage.createGameScore(scoreData);
+            console.log('Created score:', score);
+
             res.status(201).json(score);
         } catch (error) {
             console.error("Error in POST /api/game-scores:", error);
+
             if (error instanceof z.ZodError) {
+                console.error("Validation errors:", error.errors);
                 return res.status(400).json({
                     message: "Validation error",
                     errors: error.errors
                 });
             }
-            res.status(500).json({ message: "Internal server error" });
+
+            // Log the full error for debugging
+            const errorDetails = error instanceof Error ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            } : { message: String(error) };
+
+            console.error("Full error details:", errorDetails);
+
+            res.status(500).json({
+                message: "Internal server error",
+                error: process.env.NODE_ENV === 'development' ? errorDetails.message : undefined
+            });
         }
     });
 
@@ -218,6 +251,36 @@ export function setupServerlessRoutes(app: Express): void {
         } catch (error) {
             console.error("Error listing files:", error);
             res.status(500).json({ message: "Error listing files" });
+        }
+    });
+
+    // Database test endpoint
+    app.get("/api/test-db", async (req, res) => {
+        try {
+            console.log('Testing database connection...');
+
+            // Test basic query
+            const teams = await storage.getAllTeams();
+            console.log(`Database test successful. Found ${teams.length} teams.`);
+
+            res.json({
+                status: "success",
+                message: "Database connection working",
+                teamCount: teams.length
+            });
+        } catch (error) {
+            console.error("Database test failed:", error);
+            const errorDetails = error instanceof Error ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            } : { message: String(error) };
+
+            res.status(500).json({
+                status: "error",
+                message: "Database connection failed",
+                error: errorDetails
+            });
         }
     });
 }
