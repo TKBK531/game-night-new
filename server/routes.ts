@@ -3,9 +3,12 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { storage } from "./storage";
-import { insertTeamSchema, insertGameScoreSchema } from "@shared/schema";
+import { MongoDBStorage } from "./mongo-storage";
+import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
+
+// Initialize MongoDB storage
+const storage = new MongoDBStorage();
 
 // Configure multer for file uploads with temporary filename
 const uploadStorage = multer.diskStorage({

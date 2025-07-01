@@ -1,20 +1,14 @@
 import type { Express } from "express";
 import multer from "multer";
 import path from "path";
-import { storage } from "../server/storage";
-import { insertTeamSchema, insertGameScoreSchema } from "@shared/schema";
+import { MongoDBStorage } from "../server/mongo-storage";
+import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
 
-// Conditional import for Cloudinary
-let uploadToCloudinary: any = null;
-try {
-    const cloudinaryModule = require("../server/cloudinary");
-    uploadToCloudinary = cloudinaryModule.uploadToCloudinary;
-} catch (error) {
-    console.warn('Cloudinary module not available:', error);
-}
+// Initialize MongoDB storage
+const storage = new MongoDBStorage();
 
-// Configure multer for memory storage (since we'll upload to Cloudinary)
+// Configure multer for memory storage (for MongoDB GridFS upload)
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
@@ -37,12 +31,12 @@ export function setupServerlessRoutes(app: Express): void {
             status: "ok",
             timestamp: new Date().toISOString(),
             environment: process.env.NODE_ENV || "development",
-            database: process.env.DATABASE_URL ? "configured" : "missing",
-            cloudinary: uploadToCloudinary ? "available" : "unavailable"
+            database: process.env.MONGODB_URI ? "configured" : "missing",
+            fileStorage: "mongodb_gridfs"
         });
     });
 
-    // Team registration endpoint with file upload
+    // Team registration endpoint with file upload to MongoDB GridFS
     app.post("/api/teams", upload.single('bankSlip'), async (req, res) => {
         try {
             // Parse form data first to get team information
@@ -62,14 +56,12 @@ export function setupServerlessRoutes(app: Express): void {
                 });
             }
 
-            // Upload file to Cloudinary if present
-            let finalFileName = undefined;
+            // Prepare team data for MongoDB storage
+            let finalTeamData: any = { ...teamData };
+
+            // Handle file upload to MongoDB GridFS if present
             if (req.file) {
                 try {
-                    if (!uploadToCloudinary) {
-                        throw new Error('File upload service not available');
-                    }
-
                     const timestamp = Date.now();
                     const extension = path.extname(req.file.originalname);
 
@@ -77,29 +69,27 @@ export function setupServerlessRoutes(app: Express): void {
                     const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
                     const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
 
-                    const filename = `${cleanTeamName}-${cleanLeaderName}-${timestamp}`;
+                    const filename = `${cleanTeamName}-${cleanLeaderName}-${timestamp}${extension}`;
 
-                    // Upload to Cloudinary
-                    const cloudinaryResult = await uploadToCloudinary(
-                        req.file.buffer,
-                        filename,
-                        'tournament-bank-slips'
-                    );
+                    // Prepare file data for GridFS storage
+                    finalTeamData = {
+                        ...teamData,
+                        bankSlipFile: req.file.buffer,
+                        bankSlipFileName: filename,
+                        bankSlipContentType: req.file.mimetype
+                    };
 
-                    finalFileName = cloudinaryResult.url; // Store the Cloudinary URL
+                    console.log(`Uploading bank slip to MongoDB GridFS: ${filename} (${req.file.mimetype})`);
                 } catch (uploadError) {
-                    console.error('File upload error:', uploadError);
-                    // Continue without file if upload fails
-                    finalFileName = undefined;
+                    console.error('File preparation error:', uploadError);
+                    return res.status(500).json({
+                        message: "Failed to process uploaded file",
+                        field: "bankSlip"
+                    });
                 }
             }
 
-            // Update teamData with the final filename/URL
-            const finalTeamData = {
-                ...teamData,
-                bankSlip: finalFileName
-            };
-
+            // Create team with GridFS file data
             const team = await storage.createTeam(finalTeamData);
             res.status(201).json(team);
         } catch (error) {
@@ -207,26 +197,41 @@ export function setupServerlessRoutes(app: Express): void {
         }
     });
 
-    // File access endpoint - redirect to Cloudinary URL
+    // File access endpoint - serve files from MongoDB GridFS
     app.get("/api/files/:teamId/bank-slip", async (req, res) => {
         try {
             const { teamId } = req.params;
-            
-            // Get team data to find the bank slip URL
+
+            // Get team data to find the bank slip file
             const teams = await storage.getAllTeams();
-            const team = teams.find((t: any) => t.id === parseInt(teamId));
-            
-            if (!team || !team.bankSlipUrl) {
-                return res.status(404).json({ message: "File not found" });
+            const team = teams.find((t: any) => t._id.toString() === teamId);
+
+            if (!team) {
+                return res.status(404).json({ message: "Team not found" });
             }
 
-            // If it's a Cloudinary URL, redirect to it
-            if (team.bankSlipUrl.startsWith('http')) {
-                return res.redirect(team.bankSlipUrl);
+            // Check if team has a GridFS file
+            if (team.bankSlipFileId) {
+                try {
+                    const file = await storage.getBankSlipFile(team.bankSlipFileId.toString());
+
+                    // Set appropriate headers
+                    res.set({
+                        'Content-Type': team.bankSlipContentType || file.contentType,
+                        'Content-Disposition': `inline; filename="${team.bankSlipFileName || file.filename}"`,
+                        'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+                    });
+
+                    // Send file buffer
+                    res.send(file.buffer);
+                    return;
+                } catch (fileError) {
+                    console.error('Error serving GridFS file:', fileError);
+                    return res.status(404).json({ message: "File not found in database" });
+                }
             }
 
-            // Fallback for old file system uploads (shouldn't happen in production)
-            return res.status(404).json({ message: "File not found" });
+            return res.status(404).json({ message: "No bank slip file found" });
         } catch (error) {
             console.error("Error accessing file:", error);
             res.status(500).json({ message: "Error accessing file" });
@@ -238,12 +243,15 @@ export function setupServerlessRoutes(app: Express): void {
         try {
             const teams = await storage.getAllTeams();
             const files = teams
-                .filter((team: any) => team.bankSlipUrl)
+                .filter((team: any) => team.bankSlipFileId)
                 .map((team: any) => ({
-                    teamId: team.id,
+                    teamId: team._id.toString(),
                     teamName: team.teamName,
-                    fileName: team.bankSlipUrl,
-                    fileUrl: team.bankSlipUrl.startsWith('http') ? team.bankSlipUrl : null,
+                    fileName: team.bankSlipFileName || 'unknown',
+                    fileType: 'gridfs',
+                    fileId: team.bankSlipFileId?.toString(),
+                    fileUrl: `/api/files/${team._id.toString()}/bank-slip`,
+                    contentType: team.bankSlipContentType,
                     uploadedAt: team.registeredAt
                 }));
 

@@ -1,24 +1,23 @@
 import "dotenv/config";
-import { testConnection, closeConnection } from "./database";
+import { testConnection } from "./mongodb";
 
 async function main() {
-    console.log("Testing database connection...");
-    console.log("DATABASE_URL:", process.env.DATABASE_URL ? "Set ✅" : "Not set ❌");
+    console.log("Testing MongoDB connection...");
+    console.log("MONGODB_URI:", process.env.MONGODB_URI ? "Set ✅" : "Not set ❌");
 
     const connected = await testConnection();
 
     if (connected) {
-        console.log("🎉 Database connection successful!");
+        console.log("🎉 MongoDB connection successful!");
     } else {
-        console.log("💥 Database connection failed!");
+        console.log("💥 MongoDB connection failed!");
         console.log("\nTroubleshooting tips:");
-        console.log("1. Make sure PostgreSQL is running");
-        console.log("2. Check your DATABASE_URL in .env file");
-        console.log("3. Verify database and user exist");
-        console.log("4. Check credentials are correct");
+        console.log("1. Make sure your MongoDB Atlas cluster is running");
+        console.log("2. Check your MONGODB_URI in .env file");
+        console.log("3. Verify database user exists and has proper permissions");
+        console.log("4. Check network access (IP whitelist) in MongoDB Atlas");
     }
 
-    await closeConnection();
     process.exit(connected ? 0 : 1);
 }
 
