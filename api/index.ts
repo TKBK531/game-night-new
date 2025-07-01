@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { setupServerlessRoutes } from '../server/serverless-routes';
 import '../server/env-validation'; // Validate environment variables
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const app = express();
 
@@ -31,5 +32,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     });
 });
 
-// Export for Vercel
-export default app;
+// Vercel serverless function handler
+export default function handler(req: VercelRequest, res: VercelResponse) {
+    return app(req, res);
+}
