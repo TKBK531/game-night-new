@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, FileText, ExternalLink, AlertTriangle, CheckCircle } from "lucide-react";
+import { X, FileText, ExternalLink, AlertTriangle, CheckCircle, Rocket } from "lucide-react";
 import { rulesAndRegulations } from "../../../shared/rules";
 
 interface RulesPopupProps {
@@ -7,9 +7,11 @@ interface RulesPopupProps {
     onClose: () => void;
     onAccept: () => void;
     onViewFullRules: () => void;
+    onAgreeAndRegister?: () => void;
+    isRegistering?: boolean;
 }
 
-export default function RulesPopup({ isOpen, onClose, onAccept, onViewFullRules }: RulesPopupProps) {
+export default function RulesPopup({ isOpen, onClose, onAccept, onViewFullRules, onAgreeAndRegister, isRegistering = false }: RulesPopupProps) {
     const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
     const [hasAgreed, setHasAgreed] = useState(false);
 
@@ -24,9 +26,20 @@ export default function RulesPopup({ isOpen, onClose, onAccept, onViewFullRules 
         }
     };
 
+    const handleAgreeAndRegister = () => {
+        if (hasAgreed && hasScrolledToBottom && onAgreeAndRegister) {
+            onAgreeAndRegister();
+        }
+    };
+
     const handleAccept = () => {
         if (hasAgreed && hasScrolledToBottom) {
-            onAccept();
+            // If we have the new registration handler, use it; otherwise use the old accept handler
+            if (onAgreeAndRegister) {
+                handleAgreeAndRegister();
+            } else {
+                onAccept();
+            }
         }
     };
 
@@ -42,7 +55,11 @@ export default function RulesPopup({ isOpen, onClose, onAccept, onViewFullRules 
                         </h2>
                     </div>
                     <button
-                        onClick={onClose}
+                        onClick={() => {
+                            onClose();
+                            setHasAgreed(false);
+                            setHasScrolledToBottom(false);
+                        }}
                         className="text-gray-400 hover:text-white transition-colors"
                     >
                         <X size={24} />
@@ -175,10 +192,10 @@ export default function RulesPopup({ isOpen, onClose, onAccept, onViewFullRules 
                                     disabled={!hasScrolledToBottom}
                                 />
                                 <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center transition-colors ${hasScrolledToBottom
-                                        ? hasAgreed
-                                            ? 'border-[#ff4654] bg-[#ff4654]'
-                                            : 'border-[#ff4654] hover:border-[#ba3a46]'
-                                        : 'border-gray-600 bg-gray-800'
+                                    ? hasAgreed
+                                        ? 'border-[#ff4654] bg-[#ff4654]'
+                                        : 'border-[#ff4654] hover:border-[#ba3a46]'
+                                    : 'border-gray-600 bg-gray-800'
                                     }`}>
                                     {hasAgreed && <CheckCircle className="text-white" size={12} />}
                                 </div>
@@ -190,13 +207,25 @@ export default function RulesPopup({ isOpen, onClose, onAccept, onViewFullRules 
 
                             <button
                                 onClick={handleAccept}
-                                disabled={!hasAgreed || !hasScrolledToBottom}
-                                className={`px-6 py-2 rounded-lg font-semibold transition-all ${hasAgreed && hasScrolledToBottom
-                                        ? 'bg-[#ff4654] text-white hover:bg-[#ba3a46] gaming-button'
-                                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                disabled={!hasAgreed || !hasScrolledToBottom || isRegistering}
+                                className={`px-6 py-2 rounded-lg font-semibold transition-all flex items-center ${hasAgreed && hasScrolledToBottom && !isRegistering
+                                    ? 'bg-[#ff4654] text-white hover:bg-[#ba3a46] gaming-button'
+                                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
-                                Accept & Continue
+                                {isRegistering ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Registering...
+                                    </>
+                                ) : onAgreeAndRegister ? (
+                                    <>
+                                        <Rocket className="mr-2" size={16} />
+                                        Agree & Register Team
+                                    </>
+                                ) : (
+                                    "Accept & Continue"
+                                )}
                             </button>
                         </div>
                     </div>

@@ -24,6 +24,7 @@ export default function TeamRegistration() {
   const [showRulesPopup, setShowRulesPopup] = useState(false);
   const [showRulesPage, setShowRulesPage] = useState(false);
   const [hasAcceptedRules, setHasAcceptedRules] = useState(false);
+  const [pendingRegistrationData, setPendingRegistrationData] = useState<InsertTeam | null>(null);
 
   const form = useForm<InsertTeam>({
     resolver: zodResolver(insertTeamSchema),
@@ -127,12 +128,14 @@ export default function TeamRegistration() {
     },
     onSettled: () => {
       setIsSubmitting(false);
+      setPendingRegistrationData(null);
     },
   });
 
   const onSubmit = async (data: InsertTeam) => {
     // Check if rules have been accepted
     if (!hasAcceptedRules) {
+      setPendingRegistrationData(data);
       setShowRulesPopup(true);
       return;
     }
@@ -148,6 +151,16 @@ export default function TeamRegistration() {
       title: "Rules Accepted",
       description: "You can now proceed with team registration.",
     });
+  };
+
+  const handleAgreeAndRegister = () => {
+    if (pendingRegistrationData) {
+      setHasAcceptedRules(true);
+      setShowRulesPopup(false);
+      setIsSubmitting(true);
+      registerTeamMutation.mutate(pendingRegistrationData);
+      setPendingRegistrationData(null);
+    }
   };
 
   const handleViewFullRules = () => {
@@ -473,14 +486,14 @@ export default function TeamRegistration() {
                     className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                   >
                     <Rocket className="mr-2" />
-                    {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register"}
+                    {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register Team"}
                   </button>
                   <p className="text-sm text-gray-400 mt-4">
                     Registration fee: {selectedGame === "valorant" ? siteConfig.tournaments.valorant.registrationFee : selectedGame === "cod" ? siteConfig.tournaments.cod.registrationFee : "LKR 1,500"} per team • No account creation required
                   </p>
                   {!hasAcceptedRules && (
                     <p className="text-sm text-[#ff4654] mt-2">
-                      You must read and accept the rules & regulations before registering
+                      Click to review rules & complete registration in one step
                     </p>
                   )}
                 </div>
@@ -493,9 +506,14 @@ export default function TeamRegistration() {
       {/* Rules Popup */}
       <RulesPopup
         isOpen={showRulesPopup}
-        onClose={() => setShowRulesPopup(false)}
+        onClose={() => {
+          setShowRulesPopup(false);
+          setPendingRegistrationData(null);
+        }}
         onAccept={handleRulesAccepted}
         onViewFullRules={handleViewFullRules}
+        onAgreeAndRegister={pendingRegistrationData ? handleAgreeAndRegister : undefined}
+        isRegistering={isSubmitting}
       />
 
       {/* Full Rules Page */}
