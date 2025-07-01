@@ -140,6 +140,18 @@ export default function Navigation() {
             >
               Rules
             </motion.a>
+            <motion.a
+              href="/admin"
+              className="hover:text-[#ff4654] transition-colors cursor-pointer text-sm"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Admin
+            </motion.a>
           </motion.div>
 
           <motion.button
@@ -202,6 +214,13 @@ export default function Navigation() {
                   whileHover={{ x: 10 }}
                 >
                   Rules
+                </motion.a>
+                <motion.a
+                  href="/admin"
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2 block text-sm"
+                  whileHover={{ x: 10 }}
+                >
+                  Admin
                 </motion.a></div>
             </motion.div>
           )}

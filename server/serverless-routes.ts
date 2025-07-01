@@ -4,6 +4,7 @@ import path from "path";
 import { MongoDBStorage } from "../server/mongo-storage";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
+import adminRouter from "./admin-routes";
 
 // Initialize MongoDB storage
 const storage = new MongoDBStorage();
@@ -219,11 +220,12 @@ export function setupServerlessRoutes(app: Express): void {
                     res.set({
                         'Content-Type': team.bankSlipContentType || file.contentType,
                         'Content-Disposition': `inline; filename="${team.bankSlipFileName || file.filename}"`,
+                        'Content-Length': file.buffer.length,
                         'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
                     });
 
-                    // Send file buffer
-                    res.send(file.buffer);
+                    // Send file buffer as binary data
+                    res.end(file.buffer);
                     return;
                 } catch (fileError) {
                     console.error('Error serving GridFS file:', fileError);
@@ -232,6 +234,37 @@ export function setupServerlessRoutes(app: Express): void {
             }
 
             return res.status(404).json({ message: "No bank slip file found" });
+        } catch (error) {
+            console.error("Error accessing file:", error);
+            res.status(500).json({ message: "Error accessing file" });
+        }
+    });
+
+    // Direct file access by GridFS file ID
+    app.get("/api/files/:fileId", async (req, res) => {
+        try {
+            const { fileId } = req.params;
+            const download = req.query.download === 'true';
+
+            try {
+                const file = await storage.getBankSlipFile(fileId);
+
+                // Set appropriate headers based on whether it's a download or preview
+                const disposition = download ? 'attachment' : 'inline';
+                res.set({
+                    'Content-Type': file.contentType,
+                    'Content-Disposition': `${disposition}; filename="${file.filename}"`,
+                    'Content-Length': file.buffer.length,
+                    'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+                });
+
+                // Send file buffer as binary data
+                res.end(file.buffer);
+                return;
+            } catch (fileError) {
+                console.error('Error serving GridFS file:', fileError);
+                return res.status(404).json({ message: "File not found in database" });
+            }
         } catch (error) {
             console.error("Error accessing file:", error);
             res.status(500).json({ message: "Error accessing file" });
@@ -291,4 +324,9 @@ export function setupServerlessRoutes(app: Express): void {
             });
         }
     });
+}
+
+// Add admin routes
+export function configureAdminRoutes(app: Express) {
+    app.use('/api/admin', adminRouter);
 }

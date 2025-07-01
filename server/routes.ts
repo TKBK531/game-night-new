@@ -6,6 +6,7 @@ import fs from "fs";
 import { MongoDBStorage } from "./mongo-storage";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
 import { z } from "zod";
+import adminRouter from "./admin-routes";
 
 // Initialize MongoDB storage
 const storage = new MongoDBStorage();
@@ -55,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // If team name exists and we have a file, clean up the temp file
         if (req.file) {
           try {
-            fs.unlinkSync(path.join('uploads', req.file.filename));
+            fs.unlinkSync(req.file.path);
           } catch (e) {
             console.error('Error deleting temp file:', e);
           }
@@ -66,35 +67,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // If we have a file, rename it with the proper format
-      let finalFileName = undefined;
+      // Prepare team data for MongoDB storage
+      let finalTeamData: any = { ...teamData };
+
+      // If we have a file, read it and prepare for GridFS storage
       if (req.file) {
-        const timestamp = Date.now();
-        const extension = path.extname(req.file.originalname);
-
-        // Clean team name and leader name for filename (remove special characters)
-        const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
-        const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
-
-        finalFileName = `${cleanTeamName}-${cleanLeaderName}-${timestamp}${extension}`;
-
-        const oldPath = path.join('uploads', req.file.filename);
-        const newPath = path.join('uploads', finalFileName);
-
         try {
-          fs.renameSync(oldPath, newPath);
+          // Read the uploaded file
+          const fileBuffer = fs.readFileSync(req.file.path);
+
+          // Create proper filename
+          const timestamp = Date.now();
+          const extension = path.extname(req.file.originalname);
+          const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
+          const cleanLeaderName = teamData.player1Name.replace(/[^a-zA-Z0-9]/g, '');
+          const finalFileName = `${cleanTeamName}-${cleanLeaderName}-${timestamp}${extension}`;
+
+          // Add file data for GridFS storage
+          finalTeamData = {
+            ...teamData,
+            bankSlipFile: fileBuffer,
+            bankSlipFileName: finalFileName,
+            bankSlipContentType: req.file.mimetype
+          };
+
+          // Clean up the temporary file
+          fs.unlinkSync(req.file.path);
         } catch (error) {
-          console.error('Error renaming file:', error);
-          // If rename fails, keep the original filename
-          finalFileName = req.file.filename;
+          console.error('Error processing uploaded file:', error);
+          // Clean up the temporary file if it exists
+          try {
+            if (req.file && req.file.path) {
+              fs.unlinkSync(req.file.path);
+            }
+          } catch (cleanupError) {
+            console.error('Error cleaning up temp file:', cleanupError);
+          }
+          throw new Error('Failed to process uploaded file');
         }
       }
-
-      // Update teamData with the final filename
-      const finalTeamData = {
-        ...teamData,
-        bankSlip: finalFileName
-      };
 
       const team = await storage.createTeam(finalTeamData);
       res.status(201).json(team);
@@ -109,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clean up uploaded file if there was an error
       if (req.file) {
         try {
-          fs.unlinkSync(path.join('uploads', req.file.filename));
+          fs.unlinkSync(req.file.path);
         } catch (e) {
           console.error('Error deleting temp file after error:', e);
         }
@@ -192,6 +203,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in GET /api/game-scores/leaderboard:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Admin routes
+  app.use("/api/admin", adminRouter);
+
+  // File access endpoint - serve files from MongoDB GridFS
+  app.get("/api/files/:teamId/bank-slip", async (req, res) => {
+    try {
+      const { teamId } = req.params;
+
+      // Get team data to find the bank slip file
+      const teams = await storage.getAllTeams();
+      const team = teams.find((t: any) => t._id.toString() === teamId);
+
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Check if team has a GridFS file
+      if (team.bankSlipFileId) {
+        try {
+          const file = await storage.getBankSlipFile(team.bankSlipFileId.toString());
+
+          // Set appropriate headers
+          res.set({
+            'Content-Type': team.bankSlipContentType || file.contentType,
+            'Content-Disposition': `inline; filename="${team.bankSlipFileName || file.filename}"`,
+            'Content-Length': file.buffer.length,
+            'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+          });
+
+          // Send file buffer as binary data
+          res.end(file.buffer);
+          return;
+        } catch (fileError) {
+          console.error('Error serving GridFS file:', fileError);
+          return res.status(404).json({ message: "File not found in database" });
+        }
+      }
+
+      return res.status(404).json({ message: "No bank slip file found" });
+    } catch (error) {
+      console.error("Error accessing file:", error);
+      res.status(500).json({ message: "Error accessing file" });
+    }
+  });
+
+  // Direct file access by GridFS file ID
+  app.get("/api/files/:fileId", async (req, res) => {
+    try {
+      const { fileId } = req.params;
+      const download = req.query.download === 'true';
+
+      try {
+        const file = await storage.getBankSlipFile(fileId);
+
+        // Set appropriate headers based on whether it's a download or preview
+        const disposition = download ? 'attachment' : 'inline';
+        res.set({
+          'Content-Type': file.contentType,
+          'Content-Disposition': `${disposition}; filename="${file.filename}"`,
+          'Content-Length': file.buffer.length,
+          'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+        });
+
+        // Send file buffer as binary data
+        res.end(file.buffer);
+        return;
+      } catch (fileError) {
+        console.error('Error serving GridFS file:', fileError);
+        return res.status(404).json({ message: "File not found in database" });
+      }
+    } catch (error) {
+      console.error("Error accessing file:", error);
+      res.status(500).json({ message: "Error accessing file" });
     }
   });
 
