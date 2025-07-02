@@ -12,12 +12,15 @@ export interface IStorage {
     getAllTeams(): Promise<ITeam[]>;
     getTeamCount(game: string): Promise<number>;
     deleteTeam(teamId: string): Promise<void>;
+    teamExists(teamName: string): Promise<boolean>;
+    getTeamStats(): Promise<{ totalTeams: number; valorantTeams: number; csTeams: number }>;
 
     // Game scores
     createGameScore(score: InsertGameScore): Promise<IGameScore>;
     getTopScores(gameType: string, limit: number): Promise<IGameScore[]>;
     getAllScores(): Promise<IGameScore[]>;
     deleteGameScore(scoreId: string): Promise<void>;
+    getLeaderboard(gameType: string): Promise<IGameScore[]>;
 
     // Users
     createUser(user: InsertUser): Promise<IUser>;
@@ -32,6 +35,8 @@ export interface IStorage {
     // File operations
     getBankSlipFile(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string }>;
     deleteBankSlipFile(fileId: string): Promise<void>;
+    getFiles(): Promise<any[]>;
+    getFileById(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string } | null>;
 }
 
 export class MongoDBStorage implements IStorage {
@@ -254,6 +259,75 @@ export class MongoDBStorage implements IStorage {
         }
 
         await Team.findByIdAndDelete(teamId);
+    }
+
+    // Check if team exists
+    async teamExists(teamName: string): Promise<boolean> {
+        await connectToDatabase();
+        const team = await Team.findOne({
+            teamName: { $regex: new RegExp(`^${teamName}$`, 'i') }
+        });
+        return !!team;
+    }
+
+    // Get team statistics
+    async getTeamStats(): Promise<{ totalTeams: number; valorantTeams: number; csTeams: number }> {
+        await connectToDatabase();
+        
+        const totalTeams = await Team.countDocuments({});
+        const valorantTeams = await Team.countDocuments({ game: 'valorant' });
+        const csTeams = await Team.countDocuments({ game: 'cs' });
+        
+        return {
+            totalTeams,
+            valorantTeams,
+            csTeams
+        };
+    }
+
+    // Get leaderboard for a specific game type
+    async getLeaderboard(gameType: string): Promise<IGameScore[]> {
+        await connectToDatabase();
+        
+        const scores = await GameScore.find({ gameType })
+            .sort({ score: 1 }) // Ascending order for reaction time (lower is better)
+            .limit(20); // Top 20 scores
+        
+        return scores;
+    }
+
+    // Get all files (for admin)
+    async getFiles(): Promise<any[]> {
+        await connectToDatabase();
+        
+        const teams = await Team.find({ 
+            bankSlipFileId: { $exists: true, $ne: null } 
+        }).select('teamName bankSlipFileId bankSlipFileName bankSlipContentType registeredAt');
+        
+        return teams.map(team => ({
+            _id: team.bankSlipFileId,
+            filename: team.bankSlipFileName,
+            contentType: team.bankSlipContentType,
+            teamName: team.teamName,
+            uploadedAt: team.registeredAt
+        }));
+    }
+
+    // Get file by ID
+    async getFileById(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string } | null> {
+        await connectToDatabase();
+        
+        try {
+            const file = await downloadFileFromGridFS(fileId);
+            return {
+                buffer: file.buffer,
+                filename: file.filename,
+                contentType: file.contentType
+            };
+        } catch (error) {
+            console.error('Failed to get file by ID:', error);
+            return null;
+        }
     }
 }
 

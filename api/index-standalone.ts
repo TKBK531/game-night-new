@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { z } from 'zod';
-import { IncomingForm } from 'formidable';
 
 // Environment validation
 if (!process.env.MONGODB_URI) {
@@ -58,8 +57,6 @@ const insertTeamSchema = z.object({
     player5Name: z.string().min(1, "Player 5 name is required"),
     player5GamingId: z.string().min(1, "Player 5 gaming ID is required"),
     player5ValorantId: z.string().optional(),
-    // Make bank slip optional since the frontend might not always send it
-    bankSlip: z.any().optional(),
 });
 
 const insertGameScoreSchema = z.object({
@@ -135,19 +132,14 @@ class MongoDBStorage {
 
     async getTeamStats() {
         await connectToDatabase();
-        console.log('Getting team stats...');
-        
         const totalTeams = await Team.countDocuments({});
         const valorantTeams = await Team.countDocuments({ game: 'valorant' });
         const codTeams = await Team.countDocuments({ game: 'cod' });
         
-        console.log('Team stats:', { totalTeams, valorantTeams, codTeams });
-        
         return {
             totalTeams,
             valorantTeams,
-            codTeams,
-            csTeams: codTeams // Also provide csTeams for backward compatibility
+            codTeams
         };
     }
 
@@ -243,28 +235,6 @@ class MongoDBStorage {
     }
 }
 
-// Helper function to parse form data
-function parseFormData(req: VercelRequest): Promise<{ fields: any; files: any }> {
-    return new Promise((resolve, reject) => {
-        const form = new IncomingForm();
-        form.parse(req, (err, fields, files) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            
-            // Convert arrays to single values for simple fields
-            const processedFields: any = {};
-            Object.keys(fields).forEach(key => {
-                const value = fields[key];
-                processedFields[key] = Array.isArray(value) ? value[0] : value;
-            });
-            
-            resolve({ fields: processedFields, files });
-        });
-    });
-}
-
 // Initialize storage
 const storage = new MongoDBStorage();
 
@@ -333,8 +303,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -372,26 +341,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 method
             });
             return;
-        }
-
-        // Test endpoint for team registration
-        if (url?.includes('/test/teams') && method === 'POST') {
-            try {
-                console.log('Test team registration endpoint hit');
-                console.log('Headers:', req.headers);
-                console.log('Body:', req.body);
-                
-                res.status(200).json({
-                    message: 'Test endpoint working',
-                    receivedData: req.body,
-                    headers: req.headers
-                });
-                return;
-            } catch (error) {
-                console.error('Test endpoint error:', error);
-                res.status(500).json({ error: error.message });
-                return;
-            }
         }
 
         // Admin login endpoint
@@ -463,59 +412,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Team registration endpoint
         if (url?.includes('/teams') && method === 'POST') {
             try {
-                console.log('Team registration request received');
-                console.log('Content-Type:', req.headers['content-type']);
-
-                let teamData;
-                const contentType = req.headers['content-type'];
-                
-                if (contentType && contentType.includes('multipart/form-data')) {
-                    console.log('Parsing FormData...');
-                    const { fields, files } = await parseFormData(req);
-                    console.log('FormData fields:', fields);
-                    console.log('FormData files:', Object.keys(files));
-                    teamData = fields;
-                    
-                    // Handle file if present
-                    if (files.bankSlip) {
-                        console.log('Bank slip file found:', files.bankSlip);
-                        // For now, we'll just log it since GridFS is not implemented
-                        // In the future, this would be uploaded to GridFS
-                    }
-                } else {
-                    // Regular JSON data
-                    console.log('Processing JSON data...');
-                    teamData = req.body;
-                }
-
-                console.log('Processing team data:', teamData);
-                
-                // Validate team data
-                const validatedData = insertTeamSchema.parse(teamData);
-                console.log('Validation passed for team:', validatedData.teamName);
-
-                // Check if team name already exists
-                const exists = await storage.teamExists(validatedData.teamName);
-                if (exists) {
-                    console.log('Team name already exists:', validatedData.teamName);
-                    return res.status(400).json({ 
-                        message: "Team name already exists. Please choose a different name." 
-                    });
-                }
-
-                // Create team
+                const validatedData = insertTeamSchema.parse(req.body);
                 const team = await storage.createTeam(validatedData);
-                console.log('Team created successfully:', team._id);
-                
-                res.status(201).json({
-                    message: 'Team registered successfully!',
-                    team: {
-                        _id: team._id,
-                        teamName: team.teamName,
-                        game: team.game,
-                        registeredAt: team.registeredAt
-                    }
-                });
+                res.status(201).json(team);
                 return;
             } catch (error) {
                 console.error("Error in POST /api/teams:", error);
@@ -524,16 +423,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         field: err.path.join('.'),
                         message: err.message
                     }));
-                    console.log('Validation errors:', formattedErrors);
                     return res.status(400).json({
                         message: "Please fix the following errors:",
                         errors: formattedErrors
                     });
                 }
-                return res.status(500).json({ 
-                    message: "Internal server error",
-                    error: process.env.NODE_ENV === 'development' ? error.message : undefined
-                });
+                return res.status(500).json({ message: "Internal server error" });
             }
         }
 
@@ -554,17 +449,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Teams stats endpoint
         if (url?.includes('/teams/stats') && method === 'GET') {
             try {
-                console.log('Teams stats endpoint hit');
                 const stats = await storage.getTeamStats();
-                console.log('Returning stats:', stats);
                 res.status(200).json(stats);
                 return;
             } catch (error) {
                 console.error("Error getting team stats:", error);
-                res.status(500).json({ 
-                    message: "Internal server error",
-                    error: process.env.NODE_ENV === 'development' ? error.message : undefined
-                });
+                res.status(500).json({ message: "Internal server error" });
                 return;
             }
         }
