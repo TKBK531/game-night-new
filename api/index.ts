@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { IncomingForm } from 'formidable';
+import { GridFSBucket, ObjectId } from 'mongodb';
+import * as fs from 'fs';
 
 // Environment validation
 if (!process.env.MONGODB_URI) {
@@ -118,9 +120,43 @@ const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
 // Storage class implementation
 class MongoDBStorage {
-    async createTeam(teamData: any) {
+    async createTeam(teamData: any, fileBuffer?: Buffer, fileName?: string, contentType?: string) {
         await connectToDatabase();
-        const team = new Team(teamData);
+        
+        let teamDoc = { ...teamData };
+        
+        // Handle file upload to GridFS if file data is provided
+        if (fileBuffer && fileName && contentType) {
+            console.log('Uploading bank slip to GridFS...');
+            
+            // Validate file type
+            if (!validateBankSlipFile(contentType, fileName)) {
+                throw new Error('Invalid file type. Only images (JPEG, PNG, GIF, BMP, WebP) and PDF files are allowed.');
+            }
+
+            try {
+                // Generate clean filename
+                const timestamp = Date.now();
+                const cleanTeamName = teamData.teamName.replace(/[^a-zA-Z0-9]/g, '');
+                const extension = fileName.substring(fileName.lastIndexOf('.'));
+                const cleanFileName = `${cleanTeamName}-${timestamp}${extension}`;
+
+                // Upload file to GridFS
+                const fileId = await uploadFileToGridFS(fileBuffer, cleanFileName, contentType);
+
+                // Store GridFS file information in team document
+                teamDoc.bankSlipFileId = fileId;
+                teamDoc.bankSlipFileName = cleanFileName;
+                teamDoc.bankSlipContentType = contentType;
+                
+                console.log(`Bank slip uploaded successfully with ID: ${fileId}`);
+            } catch (error) {
+                console.error('Failed to upload bank slip file:', error);
+                throw new Error('Failed to upload bank slip file');
+            }
+        }
+
+        const team = new Team(teamDoc);
         await team.save();
         return team;
     }
@@ -243,11 +279,115 @@ class MongoDBStorage {
     }
 }
 
+// GridFS functions for file storage
+let gridFSBucket: GridFSBucket | null = null;
+
+async function getGridFSBucket(): Promise<GridFSBucket> {
+    if (!gridFSBucket) {
+        await connectToDatabase();
+        const db = mongoose.connection.db;
+        if (!db) {
+            throw new Error('Database connection not established');
+        }
+        gridFSBucket = new GridFSBucket(db, { bucketName: 'bankSlips' });
+    }
+    return gridFSBucket;
+}
+
+async function uploadFileToGridFS(
+    fileBuffer: Buffer,
+    filename: string,
+    contentType: string
+): Promise<ObjectId> {
+    const bucket = await getGridFSBucket();
+
+    return new Promise((resolve, reject) => {
+        const uploadStream = bucket.openUploadStream(filename, {
+            contentType: contentType,
+            metadata: {
+                uploadDate: new Date(),
+                originalName: filename
+            }
+        });
+
+        uploadStream.on('error', (error) => {
+            console.error('GridFS upload error:', error);
+            reject(error);
+        });
+
+        uploadStream.on('finish', () => {
+            console.log(`File uploaded successfully with ID: ${uploadStream.id}`);
+            resolve(uploadStream.id);
+        });
+
+        uploadStream.end(fileBuffer);
+    });
+}
+
+async function downloadFileFromGridFS(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
+    const bucket = await getGridFSBucket();
+    const objectId = new ObjectId(fileId);
+
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        
+        const downloadStream = bucket.openDownloadStream(objectId);
+        
+        downloadStream.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+        
+        downloadStream.on('end', async () => {
+            try {
+                const buffer = Buffer.concat(chunks);
+                
+                // Get file info
+                const files = await bucket.find({ _id: objectId }).toArray();
+                if (files.length === 0) {
+                    reject(new Error('File not found'));
+                    return;
+                }
+                
+                const file = files[0];
+                resolve({
+                    buffer,
+                    filename: file.filename,
+                    contentType: file.contentType || 'application/octet-stream'
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+        
+        downloadStream.on('error', (error) => {
+            reject(error);
+        });
+    });
+}
+
+function validateBankSlipFile(contentType: string, filename: string): boolean {
+    const allowedTypes = [
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+        'application/pdf'
+    ];
+    
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.pdf'];
+    const fileExtension = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+    
+    return allowedTypes.includes(contentType.toLowerCase()) && 
+           allowedExtensions.includes(fileExtension);
+}
+
 // Helper function to parse form data
 function parseFormData(req: VercelRequest): Promise<{ fields: any; files: any }> {
     return new Promise((resolve, reject) => {
         const form = new IncomingForm();
-        form.parse(req, (err, fields, files) => {
+        form.parse(req, (err: any, fields: any, files: any) => {
             if (err) {
                 reject(err);
                 return;
@@ -389,7 +529,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return;
             } catch (error) {
                 console.error('Test endpoint error:', error);
-                res.status(500).json({ error: error.message });
+                res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
                 return;
             }
         }
@@ -467,6 +607,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log('Content-Type:', req.headers['content-type']);
 
                 let teamData;
+                let fileBuffer: Buffer | undefined;
+                let fileName: string | undefined;
+                let fileContentType: string | undefined;
+                
                 const contentType = req.headers['content-type'];
                 
                 if (contentType && contentType.includes('multipart/form-data')) {
@@ -478,9 +622,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     
                     // Handle file if present
                     if (files.bankSlip) {
-                        console.log('Bank slip file found:', files.bankSlip);
-                        // For now, we'll just log it since GridFS is not implemented
-                        // In the future, this would be uploaded to GridFS
+                        const bankSlipFile = Array.isArray(files.bankSlip) ? files.bankSlip[0] : files.bankSlip;
+                        console.log('Bank slip file found:', {
+                            originalFilename: bankSlipFile.originalFilename,
+                            mimetype: bankSlipFile.mimetype,
+                            size: bankSlipFile.size,
+                            filepath: bankSlipFile.filepath
+                        });
+                        
+                        // Read the file buffer
+                        if (bankSlipFile.filepath) {
+                            try {
+                                fileBuffer = await fs.promises.readFile(bankSlipFile.filepath);
+                                fileName = bankSlipFile.originalFilename || 'bankslip';
+                                fileContentType = bankSlipFile.mimetype || 'application/octet-stream';
+                                console.log(`File read successfully: ${fileName} (${fileBuffer.length} bytes)`);
+                            } catch (fileError) {
+                                console.error('Error reading uploaded file:', fileError);
+                                return res.status(400).json({ 
+                                    message: "Error processing uploaded file" 
+                                });
+                            }
+                        }
                     }
                 } else {
                     // Regular JSON data
@@ -503,8 +666,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     });
                 }
 
-                // Create team
-                const team = await storage.createTeam(validatedData);
+                // Create team with file upload
+                const team = await storage.createTeam(
+                    validatedData, 
+                    fileBuffer, 
+                    fileName, 
+                    fileContentType
+                );
                 console.log('Team created successfully:', team._id);
                 
                 res.status(201).json({
@@ -513,7 +681,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         _id: team._id,
                         teamName: team.teamName,
                         game: team.game,
-                        registeredAt: team.registeredAt
+                        registeredAt: team.registeredAt,
+                        bankSlipUploaded: !!fileBuffer
                     }
                 });
                 return;
@@ -530,9 +699,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         errors: formattedErrors
                     });
                 }
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
                 return res.status(500).json({ 
                     message: "Internal server error",
-                    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+                    error: process.env.NODE_ENV === 'development' ? errorMessage : undefined
                 });
             }
         }
@@ -561,9 +731,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return;
             } catch (error) {
                 console.error("Error getting team stats:", error);
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
                 res.status(500).json({ 
                     message: "Internal server error",
-                    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+                    error: process.env.NODE_ENV === 'development' ? errorMessage : undefined
                 });
                 return;
             }
@@ -602,6 +773,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             } catch (error) {
                 console.error("Error getting leaderboard:", error);
                 res.status(500).json({ message: "Internal server error" });
+                return;
+            }
+        }
+
+        // Admin files endpoint
+        if (url?.includes('/admin/files') && method === 'GET' && token) {
+            const userSession = verifyToken(token);
+            if (!userSession || !['admin', 'superuser', 'elite_board'].includes(userSession.role)) {
+                return res.status(403).json({ message: 'Insufficient permissions' });
+            }
+
+            try {
+                const files = await storage.getFiles();
+                res.status(200).json(files);
+                return;
+            } catch (error) {
+                console.error("Error getting files:", error);
+                res.status(500).json({ message: "Internal server error" });
+                return;
+            }
+        }
+
+        // Download file endpoint
+        if (url?.match(/\/admin\/files\/[a-fA-F0-9]{24}$/) && method === 'GET' && token) {
+            const userSession = verifyToken(token);
+            if (!userSession || !['admin', 'superuser', 'elite_board'].includes(userSession.role)) {
+                return res.status(403).json({ message: 'Insufficient permissions' });
+            }
+
+            const fileId = url.split('/admin/files/')[1];
+            try {
+                const fileData = await downloadFileFromGridFS(fileId);
+                
+                res.setHeader('Content-Type', fileData.contentType);
+                res.setHeader('Content-Disposition', `attachment; filename="${fileData.filename}"`);
+                res.setHeader('Content-Length', fileData.buffer.length);
+                
+                res.status(200).send(fileData.buffer);
+                return;
+            } catch (error) {
+                console.error("Error downloading file:", error);
+                res.status(404).json({ message: "File not found" });
                 return;
             }
         }
@@ -731,6 +944,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 '/api/admin/teams (GET)',
                 '/api/admin/scores (GET)',
                 '/api/admin/users (GET)',
+                '/api/admin/files (GET)',
+                '/api/admin/files/:id (GET)',
                 '/api/admin/teams/:id (DELETE)',
                 '/api/admin/scores/:id (DELETE)',
                 '/api/admin/users/:id (DELETE)',
