@@ -303,14 +303,26 @@ class MongoDBStorage {
 let gridFSBucket: GridFSBucket | null = null;
 
 async function getGridFSBucket(): Promise<GridFSBucket> {
+  console.log("getGridFSBucket called");
+
   if (!gridFSBucket) {
+    console.log("GridFS bucket not initialized, creating new one");
     await connectToDatabase();
+    console.log("Database connected");
+
     const db = mongoose.connection.db;
     if (!db) {
+      console.error("Database connection not established");
       throw new Error("Database connection not established");
     }
+
+    console.log("Creating GridFS bucket with database:", db.databaseName);
     gridFSBucket = new GridFSBucket(db, { bucketName: "bankSlips" });
+    console.log("GridFS bucket created successfully");
+  } else {
+    console.log("Using existing GridFS bucket");
   }
+
   return gridFSBucket;
 }
 
@@ -347,44 +359,69 @@ async function uploadFileToGridFS(
 async function downloadFileFromGridFS(
   fileId: string
 ): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
-  const bucket = await getGridFSBucket();
-  const objectId = new ObjectId(fileId);
+  console.log("downloadFileFromGridFS called with fileId:", fileId);
 
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
+  try {
+    const bucket = await getGridFSBucket();
+    console.log("GridFS bucket obtained");
 
-    const downloadStream = bucket.openDownloadStream(objectId);
+    const objectId = new ObjectId(fileId);
+    console.log("ObjectId created:", objectId);
 
-    downloadStream.on("data", (chunk) => {
-      chunks.push(chunk);
-    });
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
 
-    downloadStream.on("end", async () => {
-      try {
-        const buffer = Buffer.concat(chunks);
+      const downloadStream = bucket.openDownloadStream(objectId);
+      console.log("Download stream opened");
 
-        // Get file info
-        const files = await bucket.find({ _id: objectId }).toArray();
-        if (files.length === 0) {
-          reject(new Error("File not found"));
-          return;
+      downloadStream.on("data", (chunk) => {
+        chunks.push(chunk);
+        console.log("Received chunk, size:", chunk.length);
+      });
+
+      downloadStream.on("end", async () => {
+        console.log("Download stream ended, total chunks:", chunks.length);
+        try {
+          const buffer = Buffer.concat(chunks);
+          console.log("Buffer concatenated, total size:", buffer.length);
+
+          // Get file info
+          const files = await bucket.find({ _id: objectId }).toArray();
+          console.log("Found files:", files.length);
+
+          if (files.length === 0) {
+            console.log("No files found with ID:", objectId);
+            reject(new Error("File not found"));
+            return;
+          }
+
+          const file = files[0];
+          console.log("File metadata:", {
+            filename: file.filename,
+            contentType: file.contentType,
+            length: file.length,
+          });
+
+          resolve({
+            buffer,
+            filename: file.filename,
+            contentType: file.contentType || "application/octet-stream",
+          });
+        } catch (error) {
+          console.error("Error in downloadStream.end handler:", error);
+          reject(error);
         }
+      });
 
-        const file = files[0];
-        resolve({
-          buffer,
-          filename: file.filename,
-          contentType: file.contentType || "application/octet-stream",
-        });
-      } catch (error) {
+      downloadStream.on("error", (error) => {
+        console.error("Download stream error:", error);
         reject(error);
-      }
+      });
     });
-
-    downloadStream.on("error", (error) => {
-      reject(error);
-    });
-  });
+  } catch (error) {
+    console.error("Error in downloadFileFromGridFS:", error);
+    throw error;
+  }
 }
 
 function validateBankSlipFile(contentType: string, filename: string): boolean {
@@ -901,12 +938,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Public file access endpoint (for bank slip preview/download)
-    if (url?.match(/\/files\/[a-fA-F0-9]{24}$/) && method === "GET") {
-      const fileId = url.split("/files/")[1];
+    if (url?.match(/\/files\/[a-fA-F0-9]{24}/) && method === "GET") {
+      console.log("File endpoint hit:", url);
+      console.log("Query params:", req.query);
+
+      // Extract file ID, handling query parameters
+      const match = url.match(/\/files\/([a-fA-F0-9]{24})/);
+      const fileId = match ? match[1] : null;
+
+      console.log("Extracted file ID:", fileId);
+
+      if (!fileId) {
+        console.log("Invalid file ID");
+        return res.status(400).json({ message: "Invalid file ID" });
+      }
+
       const download = req.query?.download === "true";
+      console.log("Download mode:", download);
 
       try {
+        console.log("Attempting to download file from GridFS:", fileId);
         const fileData = await downloadFileFromGridFS(fileId);
+        console.log("File data retrieved:", {
+          filename: fileData.filename,
+          contentType: fileData.contentType,
+          bufferSize: fileData.buffer.length,
+        });
 
         const disposition = download ? "attachment" : "inline";
         res.setHeader("Content-Type", fileData.contentType);
@@ -917,11 +974,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         res.setHeader("Content-Length", fileData.buffer.length);
         res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
 
+        console.log("Sending file response");
         res.status(200).send(fileData.buffer);
         return;
       } catch (error) {
         console.error("Error accessing file:", error);
-        res.status(404).json({ message: "File not found" });
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        res
+          .status(404)
+          .json({ message: "File not found", error: errorMessage });
         return;
       }
     }

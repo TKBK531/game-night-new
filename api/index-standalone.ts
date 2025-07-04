@@ -525,7 +525,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Public file access endpoint (for bank slip preview/download)
-    if (url?.match(/\/files\/[a-fA-F0-9]{24}$/) && method === "GET") {
+    if (url?.match(/\/files\/[a-fA-F0-9]{24}/) && method === "GET") {
       // For the standalone API, we don't have full GridFS implementation
       // So we'll return a not implemented response
       return res.status(501).json({
