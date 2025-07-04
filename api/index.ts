@@ -900,6 +900,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Public file access endpoint (for bank slip preview/download)
+    if (url?.match(/\/files\/[a-fA-F0-9]{24}$/) && method === "GET") {
+      const fileId = url.split("/files/")[1];
+      const download = req.query?.download === "true";
+
+      try {
+        const fileData = await downloadFileFromGridFS(fileId);
+
+        const disposition = download ? "attachment" : "inline";
+        res.setHeader("Content-Type", fileData.contentType);
+        res.setHeader(
+          "Content-Disposition",
+          `${disposition}; filename="${fileData.filename}"`
+        );
+        res.setHeader("Content-Length", fileData.buffer.length);
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+
+        res.status(200).send(fileData.buffer);
+        return;
+      } catch (error) {
+        console.error("Error accessing file:", error);
+        res.status(404).json({ message: "File not found" });
+        return;
+      }
+    }
+
     // Admin teams endpoint
     if (url?.includes("/admin/teams") && method === "GET" && token) {
       const userSession = verifyToken(token);
@@ -1064,6 +1090,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/teams/stats (GET)",
         "/api/game-scores (POST)",
         "/api/game-scores/leaderboard/:gameType (GET)",
+        "/api/files/:id (GET)",
       ],
       requestedUrl: url,
       method: method,

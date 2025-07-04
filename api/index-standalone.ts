@@ -524,6 +524,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Public file access endpoint (for bank slip preview/download)
+    if (url?.match(/\/files\/[a-fA-F0-9]{24}$/) && method === "GET") {
+      // For the standalone API, we don't have full GridFS implementation
+      // So we'll return a not implemented response
+      return res.status(501).json({
+        message: "File access not implemented in standalone mode",
+      });
+    }
+
     // Admin teams endpoint
     if (url?.includes("/admin/teams") && method === "GET" && token) {
       const userSession = verifyToken(token);
@@ -686,6 +695,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/teams/stats (GET)",
         "/api/game-scores (POST)",
         "/api/game-scores/leaderboard/:gameType (GET)",
+        "/api/files/:id (GET)",
       ],
       requestedUrl: url,
       method: method,
