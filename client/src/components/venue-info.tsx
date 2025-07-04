@@ -10,7 +10,7 @@ export default function VenueInfo() {
       icon: MapPin,
       title: "Address",
       description: `${siteConfig.venue.address}\n${siteConfig.venue.city}, ${siteConfig.venue.state} ${siteConfig.venue.pincode}`,
-      color: "#ffffff"
+      color: "#ff4654"
     },
     {
       icon: Calendar,

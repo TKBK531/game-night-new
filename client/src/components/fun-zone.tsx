@@ -12,13 +12,13 @@ export default function FunZone() {
       icon: Music,
       title: "Gaming Lounge",
       description: "Relax in our gaming lounge with retro arcade machines and consoles",
-      color: "#ba3a46"
+      color: "#ff4654"
     },
     {
       icon: Utensils,
       title: "Gaming Cafe",
       description: "Fuel up with gaming-themed food and energy drinks",
-      color: "#ffffff"
+      color: "#ff4654"
     }
   ];
 
