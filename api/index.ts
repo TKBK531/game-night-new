@@ -49,18 +49,48 @@ const insertTeamSchema = z.object({
   captainPhone: z.string().min(1, "Captain phone is required"),
   player1Name: z.string().min(1, "Player 1 name is required"),
   player1GamingId: z.string().min(1, "Player 1 gaming ID is required"),
+  player1UniversityEmail: z
+    .string()
+    .email("Invalid email format")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "University email must end with pdn.ac.lk",
+    }),
   player1ValorantId: z.string().optional(),
   player2Name: z.string().min(1, "Player 2 name is required"),
   player2GamingId: z.string().min(1, "Player 2 gaming ID is required"),
+  player2UniversityEmail: z
+    .string()
+    .email("Invalid email format")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "University email must end with pdn.ac.lk",
+    }),
   player2ValorantId: z.string().optional(),
   player3Name: z.string().min(1, "Player 3 name is required"),
   player3GamingId: z.string().min(1, "Player 3 gaming ID is required"),
+  player3UniversityEmail: z
+    .string()
+    .email("Invalid email format")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "University email must end with pdn.ac.lk",
+    }),
   player3ValorantId: z.string().optional(),
   player4Name: z.string().min(1, "Player 4 name is required"),
   player4GamingId: z.string().min(1, "Player 4 gaming ID is required"),
+  player4UniversityEmail: z
+    .string()
+    .email("Invalid email format")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "University email must end with pdn.ac.lk",
+    }),
   player4ValorantId: z.string().optional(),
   player5Name: z.string().min(1, "Player 5 name is required"),
   player5GamingId: z.string().min(1, "Player 5 gaming ID is required"),
+  player5UniversityEmail: z
+    .string()
+    .email("Invalid email format")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "University email must end with pdn.ac.lk",
+    }),
   player5ValorantId: z.string().optional(),
   // Make bank slip optional since the frontend might not always send it
   bankSlip: z.any().optional(),

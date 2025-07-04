@@ -3,12 +3,31 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { insertTeamSchema, type InsertTeam } from "../../../shared/mongo-validation";
+import {
+  insertTeamSchema,
+  type InsertTeam,
+} from "../../../shared/mongo-validation";
 import { siteConfig } from "@shared/config";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, Flag, Users, Mail, Phone, Rocket, Crosshair, Target } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Gamepad2,
+  Flag,
+  Users,
+  Mail,
+  Phone,
+  Rocket,
+  Crosshair,
+  Target,
+} from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -24,7 +43,8 @@ export default function TeamRegistration() {
   const [showRulesPopup, setShowRulesPopup] = useState(false);
   const [showRulesPage, setShowRulesPage] = useState(false);
   const [hasAcceptedRules, setHasAcceptedRules] = useState(false);
-  const [pendingRegistrationData, setPendingRegistrationData] = useState<InsertTeam | null>(null);
+  const [pendingRegistrationData, setPendingRegistrationData] =
+    useState<InsertTeam | null>(null);
 
   const form = useForm<InsertTeam>({
     resolver: zodResolver(insertTeamSchema),
@@ -35,18 +55,23 @@ export default function TeamRegistration() {
       captainPhone: "",
       player1Name: "",
       player1GamingId: "",
+      player1UniversityEmail: "",
       player1ValorantId: "",
       player2Name: "",
       player2GamingId: "",
+      player2UniversityEmail: "",
       player2ValorantId: "",
       player3Name: "",
       player3GamingId: "",
+      player3UniversityEmail: "",
       player3ValorantId: "",
       player4Name: "",
       player4GamingId: "",
+      player4UniversityEmail: "",
       player4ValorantId: "",
       player5Name: "",
       player5GamingId: "",
+      player5UniversityEmail: "",
       player5ValorantId: "",
       bankSlip: undefined,
     },
@@ -59,7 +84,7 @@ export default function TeamRegistration() {
 
       // Add all form fields to FormData
       Object.entries(data).forEach(([key, value]) => {
-        if (key === 'bankSlip' && value instanceof File) {
+        if (key === "bankSlip" && value instanceof File) {
           formData.append(key, value);
         } else if (value !== undefined && value !== null) {
           formData.append(key, String(value));
@@ -83,20 +108,25 @@ export default function TeamRegistration() {
     onSuccess: () => {
       toast({
         title: "Team Registered Successfully!",
-        description: "Your team has been registered for the tournament. Get ready to compete!",
+        description:
+          "Your team has been registered for the tournament. Get ready to compete!",
       });
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/teams/stats'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams/stats"] });
     },
     onError: (error: any) => {
       console.error("Registration error:", error);
 
       // Handle validation errors with specific field messages
       if (error.errors && Array.isArray(error.errors)) {
-        const errorMessages = error.errors.map((err: any) => err.message).join(", ");
+        const errorMessages = error.errors
+          .map((err: any) => err.message)
+          .join(", ");
         toast({
           title: "Registration Failed",
-          description: `${error.message || "Validation errors:"} ${errorMessages}`,
+          description: `${
+            error.message || "Validation errors:"
+          } ${errorMessages}`,
           variant: "destructive",
         });
 
@@ -105,7 +135,7 @@ export default function TeamRegistration() {
           if (err.field) {
             form.setError(err.field as any, {
               type: "manual",
-              message: err.message
+              message: err.message,
             });
           }
         });
@@ -113,7 +143,8 @@ export default function TeamRegistration() {
         // Handle other errors (like duplicate team name)
         toast({
           title: "Registration Failed",
-          description: error.message || "Something went wrong. Please try again.",
+          description:
+            error.message || "Something went wrong. Please try again.",
           variant: "destructive",
         });
 
@@ -121,7 +152,7 @@ export default function TeamRegistration() {
         if (error.field === "teamName") {
           form.setError("teamName", {
             type: "manual",
-            message: error.message
+            message: error.message,
           });
         }
       }
@@ -196,7 +227,10 @@ export default function TeamRegistration() {
             transition={{ duration: 0.2 }}
           >
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 {/* Game Selection */}
                 <FormField
                   control={form.control}
@@ -214,42 +248,62 @@ export default function TeamRegistration() {
                           className="grid md:grid-cols-2 gap-4"
                         >
                           <div>
-                            <RadioGroupItem value="valorant" id="valorant" className="sr-only" />
+                            <RadioGroupItem
+                              value="valorant"
+                              id="valorant"
+                              className="sr-only"
+                            />
                             <Label
                               htmlFor="valorant"
-                              className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "valorant"
-                                ? "border-[#ff4654] bg-[#ff4654]/20"
-                                : "border-transparent gaming-input hover:border-[#ff4654]"
-                                }`}
+                              className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
+                                selectedGame === "valorant"
+                                  ? "border-[#ff4654] bg-[#ff4654]/20"
+                                  : "border-transparent gaming-input hover:border-[#ff4654]"
+                              }`}
                             >
                               <div className="flex items-center">
                                 <div className="w-12 h-12 bg-[#ff4654]/20 rounded-lg flex items-center justify-center mr-4">
                                   <Crosshair className="text-[#ff4654]" />
                                 </div>
                                 <div>
-                                  <div className="font-semibold text-[#ff4654]">{siteConfig.tournaments.valorant.name}</div>
-                                  <div className="text-sm text-gray-400">{siteConfig.tournaments.valorant.prizePool} Prize Pool</div>
+                                  <div className="font-semibold text-[#ff4654]">
+                                    {siteConfig.tournaments.valorant.name}
+                                  </div>
+                                  <div className="text-sm text-gray-400">
+                                    {siteConfig.tournaments.valorant.prizePool}{" "}
+                                    Prize Pool
+                                  </div>
                                 </div>
                               </div>
                             </Label>
                           </div>
 
                           <div>
-                            <RadioGroupItem value="cod" id="cod" className="sr-only" />
+                            <RadioGroupItem
+                              value="cod"
+                              id="cod"
+                              className="sr-only"
+                            />
                             <Label
                               htmlFor="cod"
-                              className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${selectedGame === "cod"
-                                ? "border-[#ba3a46] bg-[#ba3a46]/20"
-                                : "border-transparent gaming-input hover:border-[#ba3a46]"
-                                }`}
+                              className={`cursor-pointer block p-4 rounded-lg border-2 transition-all hover-lift ${
+                                selectedGame === "cod"
+                                  ? "border-[#ba3a46] bg-[#ba3a46]/20"
+                                  : "border-transparent gaming-input hover:border-[#ba3a46]"
+                              }`}
                             >
                               <div className="flex items-center">
                                 <div className="w-12 h-12 bg-[#ba3a46]/20 rounded-lg flex items-center justify-center mr-4">
                                   <Target className="text-[#ba3a46]" />
                                 </div>
                                 <div>
-                                  <div className="font-semibold text-[#ba3a46]">{siteConfig.tournaments.cod.name}</div>
-                                  <div className="text-sm text-gray-400">{siteConfig.tournaments.cod.prizePool} Prize Pool</div>
+                                  <div className="font-semibold text-[#ba3a46]">
+                                    {siteConfig.tournaments.cod.name}
+                                  </div>
+                                  <div className="text-sm text-gray-400">
+                                    {siteConfig.tournaments.cod.prizePool} Prize
+                                    Pool
+                                  </div>
                                 </div>
                               </div>
                             </Label>
@@ -278,7 +332,9 @@ export default function TeamRegistration() {
                           placeholder="Enter unique team name"
                         />
                       </FormControl>
-                      <p className="text-sm text-gray-400">Team name must be unique and 3-20 characters long</p>
+                      <p className="text-sm text-gray-400">
+                        Team name must be unique and 3-20 characters long
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -294,20 +350,25 @@ export default function TeamRegistration() {
                   <div className="space-y-4">
                     {[1, 2, 3, 4, 5].map((playerNum) => (
                       <div key={playerNum} className="space-y-4">
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="grid md:grid-cols-3 gap-4">
                           <FormField
                             control={form.control}
                             name={`player${playerNum}Name` as keyof InsertTeam}
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-sm font-medium text-gray-300">
-                                  Player {playerNum} Name {playerNum === 1 && "(Team Captain)"}
+                                  Player {playerNum} Name{" "}
+                                  {playerNum === 1 && "(Team Captain)"}
                                 </FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     className="gaming-input p-3 text-white placeholder-gray-400"
-                                    placeholder={playerNum === 1 ? "Team Captain" : "Player name"}
+                                    placeholder={
+                                      playerNum === 1
+                                        ? "Team Captain"
+                                        : "Player name"
+                                    }
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -317,10 +378,14 @@ export default function TeamRegistration() {
 
                           <FormField
                             control={form.control}
-                            name={`player${playerNum}GamingId` as keyof InsertTeam}
+                            name={
+                              `player${playerNum}GamingId` as keyof InsertTeam
+                            }
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-300">Gaming ID</FormLabel>
+                                <FormLabel className="text-sm font-medium text-gray-300">
+                                  Gaming ID
+                                </FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
@@ -332,18 +397,45 @@ export default function TeamRegistration() {
                               </FormItem>
                             )}
                           />
+
+                          <FormField
+                            control={form.control}
+                            name={
+                              `player${playerNum}UniversityEmail` as keyof InsertTeam
+                            }
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium ">
+                                  University Email
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="email"
+                                    className="gaming-input p-3 text-white placeholder-gray-400"
+                                    placeholder="student@pdn.ac.lk"
+                                  />
+                                </FormControl>
+
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
 
                         {/* Valorant User ID - Only show when Valorant is selected */}
                         {selectedGame === "valorant" && (
                           <FormField
                             control={form.control}
-                            name={`player${playerNum}ValorantId` as keyof InsertTeam}
+                            name={
+                              `player${playerNum}ValorantId` as keyof InsertTeam
+                            }
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-sm font-medium text-[#ff4654] flex items-center">
                                   <Crosshair className="mr-1 w-4 h-4" />
-                                  Player {playerNum} Valorant User ID (Required for Valorant)
+                                  Player {playerNum} Valorant User ID (Required
+                                  for Valorant)
                                 </FormLabel>
                                 <FormControl>
                                   <Input
@@ -353,7 +445,8 @@ export default function TeamRegistration() {
                                   />
                                 </FormControl>
                                 <p className="text-xs text-gray-400">
-                                  Your Valorant username with tag (found in game profile)
+                                  Your Valorant username with tag (found in game
+                                  profile)
                                 </p>
                                 <FormMessage />
                               </FormItem>
@@ -420,7 +513,8 @@ export default function TeamRegistration() {
                     <FormItem>
                       <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
                         <Rocket className="mr-2" />
-                        Bank Slip Upload (Registration Fee: {siteConfig.tournaments.valorant.registrationFee})
+                        Bank Slip Upload (Registration Fee:{" "}
+                        {siteConfig.tournaments.valorant.registrationFee})
                       </FormLabel>
                       <FormControl>
                         <div className="space-y-4">
@@ -428,7 +522,9 @@ export default function TeamRegistration() {
                             <input
                               {...field}
                               type="file"
-                              accept={siteConfig.features.teamRegistration.allowedFileTypes.join(",")}
+                              accept={siteConfig.features.teamRegistration.allowedFileTypes.join(
+                                ","
+                              )}
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 onChange(file);
@@ -444,19 +540,31 @@ export default function TeamRegistration() {
                                 <Rocket className="text-2xl text-[#ff4654]" />
                               </div>
                               <div className="text-lg font-semibold text-white mb-2">
-                                {value ? 'File Selected!' : 'Upload Bank Slip'}
+                                {value ? "File Selected!" : "Upload Bank Slip"}
                               </div>
                               <div className="text-sm text-gray-400">
-                                {value ? value.name : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
+                                {value
+                                  ? value.name
+                                  : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
                               </div>
                             </label>
                           </div>
                           <div className="text-sm text-gray-400 space-y-2">
-                            <p>• Bank Details: Account Name: {siteConfig.payment.accountName}</p>
-                            <p>• Account Number: {siteConfig.payment.accountNumber} | IFSC: {siteConfig.payment.ifscCode}</p>
+                            <p>
+                              • Bank Details: Account Name:{" "}
+                              {siteConfig.payment.accountName}
+                            </p>
+                            <p>
+                              • Account Number:{" "}
+                              {siteConfig.payment.accountNumber} | IFSC:{" "}
+                              {siteConfig.payment.ifscCode}
+                            </p>
                             <p>• Bank: {siteConfig.payment.bankName}</p>
                             <p>• UPI ID: {siteConfig.payment.upiId}</p>
-                            <p>• Please upload payment proof to complete registration</p>
+                            <p>
+                              • Please upload payment proof to complete
+                              registration
+                            </p>
                           </div>
                         </div>
                       </FormControl>
@@ -470,10 +578,13 @@ export default function TeamRegistration() {
                   <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4 text-center">
                     <div className="flex items-center justify-center text-[#00ff00]">
                       <Target className="mr-2" size={20} />
-                      <span className="font-semibold">Rules & Regulations Accepted</span>
+                      <span className="font-semibold">
+                        Rules & Regulations Accepted
+                      </span>
                     </div>
                     <p className="text-sm text-gray-300 mt-2">
-                      You have read and agreed to all tournament rules and regulations.
+                      You have read and agreed to all tournament rules and
+                      regulations.
                     </p>
                   </div>
                 )}
@@ -486,10 +597,20 @@ export default function TeamRegistration() {
                     className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                   >
                     <Rocket className="mr-2" />
-                    {isSubmitting ? "Registering..." : hasAcceptedRules ? "Register Team" : "Review Rules & Register Team"}
+                    {isSubmitting
+                      ? "Registering..."
+                      : hasAcceptedRules
+                      ? "Register Team"
+                      : "Review Rules & Register Team"}
                   </button>
                   <p className="text-sm text-gray-400 mt-4">
-                    Registration fee: {selectedGame === "valorant" ? siteConfig.tournaments.valorant.registrationFee : selectedGame === "cod" ? siteConfig.tournaments.cod.registrationFee : "LKR 1,500"} per team • No account creation required
+                    Registration fee:{" "}
+                    {selectedGame === "valorant"
+                      ? siteConfig.tournaments.valorant.registrationFee
+                      : selectedGame === "cod"
+                      ? siteConfig.tournaments.cod.registrationFee
+                      : "LKR 1,500"}{" "}
+                    per team • No account creation required
                   </p>
                   {!hasAcceptedRules && (
                     <p className="text-sm text-[#ff4654] mt-2">
@@ -512,7 +633,9 @@ export default function TeamRegistration() {
         }}
         onAccept={handleRulesAccepted}
         onViewFullRules={handleViewFullRules}
-        onAgreeAndRegister={pendingRegistrationData ? handleAgreeAndRegister : undefined}
+        onAgreeAndRegister={
+          pendingRegistrationData ? handleAgreeAndRegister : undefined
+        }
         isRegistering={isSubmitting}
       />
 
