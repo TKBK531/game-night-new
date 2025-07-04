@@ -9,7 +9,7 @@ export default function Navigation() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
     setIsMenuOpen(false);
   };
@@ -35,21 +35,28 @@ export default function Navigation() {
                   "0 0 10px #ff4654",
                   "0 0 20px #ff4654",
                   "0 0 10px #ff4654",
-                  "0 0 0px #ff4654"
-                ]
+                  "0 0 0px #ff4654",
+                ],
               }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               <motion.div
                 animate={{ rotate: [0, 360] }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 15, repeat: Infinity, ease: "easeIn" }}
                 className="inline-block"
               >
-                <Gamepad2 className="inline mr-2 text-[#ff4654]" />
+                <Gamepad2 className="inline mx-2 text-[#ff4654]" />
               </motion.div>
-              <span className="text-[#ff4654]">{siteConfig.event.name.split(' ')[0]}</span>
-              <span className="text-[#ffffff]"> {siteConfig.event.name.split(' ')[1]}</span>
-              <div className="text-xs text-[#ba3a46] font-bold">{siteConfig.event.title}</div>
+              <span className="text-[#ff4654]">
+                {siteConfig.event.name.split(" ")[0]}
+              </span>
+              <span className="text-[#ffffff]">
+                {" "}
+                {siteConfig.event.name.split(" ")[1]}
+              </span>
+              <div className="text-xs text-[#ba3a46] font-bold">
+                {siteConfig.event.title}
+              </div>
             </motion.div>
           </motion.div>
 
@@ -61,19 +68,19 @@ export default function Navigation() {
                 opacity: 1,
                 transition: {
                   staggerChildren: 0.1,
-                  delayChildren: 0.3
-                }
-              }
+                  delayChildren: 0.3,
+                },
+              },
             }}
             initial="hidden"
             animate="visible"
           >
             <motion.button
-              onClick={() => scrollToSection('tournaments')}
+              onClick={() => scrollToSection("tournaments")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -81,11 +88,11 @@ export default function Navigation() {
               Tournaments
             </motion.button>
             <motion.button
-              onClick={() => scrollToSection('schedule')}
+              onClick={() => scrollToSection("schedule")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -93,11 +100,11 @@ export default function Navigation() {
               Schedule
             </motion.button>
             <motion.button
-              onClick={() => scrollToSection('funzone')}
+              onClick={() => scrollToSection("funzone")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -105,11 +112,11 @@ export default function Navigation() {
               Fun Zone
             </motion.button>
             <motion.button
-              onClick={() => scrollToSection('game')}
+              onClick={() => scrollToSection("game")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -117,11 +124,11 @@ export default function Navigation() {
               Game
             </motion.button>
             <motion.button
-              onClick={() => scrollToSection('register')}
+              onClick={() => scrollToSection("register")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -133,7 +140,7 @@ export default function Navigation() {
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -145,7 +152,7 @@ export default function Navigation() {
               className="hover:text-[#ff4654] transition-colors cursor-pointer text-sm"
               variants={{
                 hidden: { opacity: 0, y: -10 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
@@ -160,7 +167,11 @@ export default function Navigation() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            {isMenuOpen ? <X className="text-xl" /> : <Menu className="text-xl" />}
+            {isMenuOpen ? (
+              <X className="text-xl" />
+            ) : (
+              <Menu className="text-xl" />
+            )}
           </motion.button>
         </div>
 
@@ -172,37 +183,39 @@ export default function Navigation() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-            >              <div className="flex flex-col space-y-2">
+            >
+              {" "}
+              <div className="flex flex-col space-y-2">
                 <motion.button
-                  onClick={() => scrollToSection('tournaments')}
+                  onClick={() => scrollToSection("tournaments")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
                   whileHover={{ x: 10 }}
                 >
                   Tournaments
                 </motion.button>
                 <motion.button
-                  onClick={() => scrollToSection('schedule')}
+                  onClick={() => scrollToSection("schedule")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
                   whileHover={{ x: 10 }}
                 >
                   Schedule
                 </motion.button>
                 <motion.button
-                  onClick={() => scrollToSection('funzone')}
+                  onClick={() => scrollToSection("funzone")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
                   whileHover={{ x: 10 }}
                 >
                   Fun Zone
                 </motion.button>
                 <motion.button
-                  onClick={() => scrollToSection('game')}
+                  onClick={() => scrollToSection("game")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
                   whileHover={{ x: 10 }}
                 >
                   Game
                 </motion.button>
                 <motion.button
-                  onClick={() => scrollToSection('register')}
+                  onClick={() => scrollToSection("register")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
                   whileHover={{ x: 10 }}
                 >
@@ -221,7 +234,8 @@ export default function Navigation() {
                   whileHover={{ x: 10 }}
                 >
                   Admin
-                </motion.a></div>
+                </motion.a>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
