@@ -63,7 +63,7 @@ export default function TournamentShowcase() {
           >
             <div className="relative mb-6 overflow-hidden rounded-lg">
               <motion.img
-                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"
+                src="https://cmsassets.rgpub.io/sanity/images/dsfx7636/news/54d784be3db8503ec574ff45e912ea098cc10352-854x484.png"
                 alt="Valorant gameplay setup"
                 className="w-full h-48 object-cover"
                 whileHover={{ scale: 1.1 }}
@@ -188,7 +188,7 @@ export default function TournamentShowcase() {
           >
             <div className="relative mb-6 overflow-hidden rounded-lg">
               <motion.img
-                src="https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"
+                src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/d96bb958-4e6c-4ce0-9447-fbe226fbbecf/dgg8vm0-9a405c1a-312c-4843-8f02-22932b23a873.jpg"
                 alt="Call of Duty gameplay setup"
                 className="w-full h-48 object-cover"
                 whileHover={{ scale: 1.1 }}
