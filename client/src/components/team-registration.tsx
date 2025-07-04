@@ -237,7 +237,7 @@ export default function TeamRegistration() {
                   name="game"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-[hsl(185,100%,50%)] flex items-center">
+                      <FormLabel className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
                         <Gamepad2 className="mr-2" />
                         Select Tournament
                       </FormLabel>
@@ -321,7 +321,7 @@ export default function TeamRegistration() {
                   name="teamName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                      <FormLabel className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
                         <Flag className="mr-2" />
                         Team Name
                       </FormLabel>
@@ -465,7 +465,7 @@ export default function TeamRegistration() {
                     name="captainEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                        <FormLabel className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
                           <Mail className="mr-2" />
                           Team Captain Email
                         </FormLabel>
@@ -487,7 +487,7 @@ export default function TeamRegistration() {
                     name="captainPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-lg font-semibold text-[hsl(280,100%,70%)] flex items-center">
+                        <FormLabel className="text-lg font-semibold mb-3 text-[#ff4654] flex items-center">
                           <Phone className="mr-2" />
                           Contact Number
                         </FormLabel>
