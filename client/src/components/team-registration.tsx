@@ -550,17 +550,16 @@ export default function TeamRegistration() {
                             </label>
                           </div>
                           <div className="text-sm text-gray-400 space-y-2">
-                            <p>
-                              • Bank Details: Account Name:{" "}
+                            <p>Bank Details: </p>
+                            <p>• Account Name:{" "}
                               {siteConfig.payment.accountName}
                             </p>
                             <p>
                               • Account Number:{" "}
-                              {siteConfig.payment.accountNumber} | IFSC:{" "}
-                              {siteConfig.payment.ifscCode}
+                              {siteConfig.payment.accountNumber}
                             </p>
                             <p>• Bank: {siteConfig.payment.bankName}</p>
-                            <p>• UPI ID: {siteConfig.payment.upiId}</p>
+                            <p>• Branch: {siteConfig.payment.branchName}</p>
                             <p>
                               • Please upload payment proof to complete
                               registration
@@ -609,7 +608,7 @@ export default function TeamRegistration() {
                       ? siteConfig.tournaments.valorant.registrationFee
                       : selectedGame === "cod"
                       ? siteConfig.tournaments.cod.registrationFee
-                      : "LKR 1,500"}{" "}
+                      : "LKR 1,000"}{" "}
                     per team • No account creation required
                   </p>
                   {!hasAcceptedRules && (
