@@ -63,18 +63,24 @@ export const rulesAndRegulations = {
           title: "Team Composition",
           content: [
             "Each team must consist of exactly 5 players",
-            "Teams must have at least 1 substitute player registered",
+            "Teams may register up to 2 substitute players",
+            "Each player can only be registered for one team during the tournament",
             "All team members must be present at the venue during their matches",
-            "Substitutions are only allowed between matches, not during ongoing games",
+            "Substitutions must be informed to Tournament Staff before the match starts",
+            "Substitution is allowed only before or after a map, not mid-game",
+            "Use of non-registered, suspended, or ineligible players will result in disqualification",
+            "Stand-ins are allowed only if presented at the registration desk before use",
+            "Online use of stand-ins is strictly prohibited",
           ],
         },
         {
           id: "match-format",
           title: "Match Format",
           content: [
-            "Qualifier rounds: Best of 1 (BO1)",
+            "Knockout phase begins from the first round",
             "Semi-finals: Best of 3 (BO3)",
             "Finals: Best of 5 (BO5)",
+            "A maximum delay of 10 minutes between maps is allowed",
             "Map selection follows standard competitive rules",
             "Overtime rules apply as per official Valorant competitive settings",
           ],
@@ -84,14 +90,58 @@ export const rulesAndRegulations = {
           title: "Game Settings",
           content: [
             "Tournament mode with standard competitive settings",
-            "All matches played on official Valorant servers",
+            "All matches played on official Valorant servers (default: Singapore 1)",
             "Round time: 100 seconds, Buy time: 30 seconds",
             "First to 13 rounds wins (with overtime if tied 12-12)",
+            "Lobby privacy: Closed, Cheats: Off, Overtime win by two: On",
+            "Observers allowed only for Tournament Staff and official casters",
             "Spectator mode disabled during competitive matches",
+          ],
+        },
+        {
+          id: "coaching",
+          title: "Coaches and Staff",
+          content: [
+            "Teams may have one coach registered",
+            "Coach may communicate only during Agent/Map selection, timeouts, half-times, and between maps",
+            "Coach slot usage may be restricted by Tournament Staff",
+          ],
+        },
+        {
+          id: "map-rules",
+          title: "Map Rules and Veto Process",
+          content: [
+            "Official map pool: Abyss, Ascent, Bind, Haven, Pearl, Split, Sunset",
+            "New agents are restricted for 2 weeks from release",
+            "New maps are restricted for 4 weeks from release",
+            "Map veto is conducted by Tournament Staff with 2 reps from each team",
+            "Veto process may occur earlier with mutual agreement but decisions are final",
+          ],
+        },
+        {
+          id: "fair-play",
+          title: "Fair Play and Restrictions",
+          content: [
+            "Exploiting bugs, glitches, or game flaws is strictly prohibited",
+            "Hacking, scripting, or macro use will lead to disqualification",
+            "Third-party software providing unfair advantages is banned",
+            "Impersonation or account sharing is strictly forbidden",
+            "In-game names must match registration and be identifiable",
+          ],
+        },
+        {
+          id: "collusion",
+          title: "Collusion and Match Integrity",
+          content: [
+            "Collusion, match fixing, bribing, or teaming is banned",
+            "Pre-planned movement or communication with enemy teams is not allowed",
+            "Item dumping or shared strategies with opponents is prohibited",
+            "Violations will lead to disqualification and possible bans",
           ],
         },
       ],
     },
+
     cod: {
       title: "Call of Duty Tournament Rules",
       rules: [
