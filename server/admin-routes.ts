@@ -245,4 +245,15 @@ adminRouter.delete('/scores/:id', requireAuth, async (req: any, res: any) => {
     }
 });
 
+// Get all secret challenges
+adminRouter.get('/secret-challenges', requireAuth, async (req: any, res: any) => {
+    try {
+        const challenges = await storage.getSecretLeaderboard(50); // Get top 50
+        res.json(challenges);
+    } catch (error) {
+        console.error('Get secret challenges error:', error);
+        res.status(500).json({ message: 'Failed to fetch secret challenges' });
+    }
+});
+
 export default adminRouter;

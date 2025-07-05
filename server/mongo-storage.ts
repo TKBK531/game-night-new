@@ -1,5 +1,5 @@
 import { connectToDatabase } from "./mongodb";
-import { Team, GameScore, User, type ITeam, type IGameScore, type IUser, type InsertTeam, type InsertGameScore, type InsertUser, type LoginUser } from "../shared/mongo-schema";
+import { Team, GameScore, User, SecretChallenge, type ITeam, type IGameScore, type IUser, type ISecretChallenge, type InsertTeam, type InsertGameScore, type InsertUser, type InsertSecretChallenge, type LoginUser } from "../shared/mongo-schema";
 import { uploadFileToGridFS, downloadFileFromGridFS, deleteFileFromGridFS, validateBankSlipFile } from "./gridfs";
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
@@ -21,6 +21,11 @@ export interface IStorage {
     getAllScores(): Promise<IGameScore[]>;
     deleteGameScore(scoreId: string): Promise<void>;
     getLeaderboard(gameType: string): Promise<IGameScore[]>;
+
+    // Secret challenge
+    createSecretChallenge(challenge: InsertSecretChallenge): Promise<ISecretChallenge>;
+    getSecretLeaderboard(limit: number): Promise<ISecretChallenge[]>;
+    hasPlayerCompletedSecret(email: string): Promise<boolean>;
 
     // Users
     createUser(user: InsertUser): Promise<IUser>;
@@ -294,6 +299,38 @@ export class MongoDBStorage implements IStorage {
             .limit(20); // Top 20 scores
         
         return scores;
+    }
+
+    // Secret challenge methods
+    async createSecretChallenge(insertChallenge: InsertSecretChallenge): Promise<ISecretChallenge> {
+        await connectToDatabase();
+        
+        // Check if player already completed the challenge
+        const existing = await SecretChallenge.findOne({ playerEmail: insertChallenge.playerEmail });
+        if (existing) {
+            throw new Error("Player has already completed the secret challenge");
+        }
+        
+        const challenge = new SecretChallenge(insertChallenge);
+        await challenge.save();
+        return challenge;
+    }
+
+    async getSecretLeaderboard(limit: number = 10): Promise<ISecretChallenge[]> {
+        await connectToDatabase();
+        
+        const challenges = await SecretChallenge.find()
+            .sort({ score: -1, completedAt: 1 }) // Higher score is better, earlier completion as tiebreaker
+            .limit(limit);
+        
+        return challenges;
+    }
+
+    async hasPlayerCompletedSecret(email: string): Promise<boolean> {
+        await connectToDatabase();
+        
+        const existing = await SecretChallenge.findOne({ playerEmail: email });
+        return !!existing;
     }
 
     // Get all files (for admin)

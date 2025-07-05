@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import RulesPage from "@/pages/rules";
 import AdminFiles from "@/pages/admin-files";
 import AdminDashboard from "@/pages/admin";
+import KonamiCodeChallenge from "@/components/konami-code";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        <KonamiCodeChallenge />
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
