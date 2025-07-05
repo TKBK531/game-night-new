@@ -100,11 +100,21 @@ interface Score {
   createdAt: string;
 }
 
+interface SecretChallenge {
+  _id: string;
+  playerEmail: string;
+  score: number;
+  completedAt: string;
+}
+
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [teams, setTeams] = useState<Team[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
+  const [secretChallenges, setSecretChallenges] = useState<SecretChallenge[]>([]);
+  const [secretChallengeSortBy, setSecretChallengeSortBy] = useState<'score' | 'date'>('score');
+  const [secretChallengeSortOrder, setSecretChallengeSortOrder] = useState<'asc' | 'desc'>('desc');
   const [users, setUsers] = useState<User[]>([]);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
@@ -161,6 +171,15 @@ export default function AdminDashboard() {
       if (scoresResponse.ok) {
         const scoresData = await scoresResponse.json();
         setScores(scoresData);
+      }
+
+      // Load secret challenges
+      const secretChallengesResponse = await fetch("/api/admin/secret-challenges", {
+        credentials: "include",
+      });
+      if (secretChallengesResponse.ok) {
+        const secretChallengesData = await secretChallengesResponse.json();
+        setSecretChallenges(secretChallengesData);
       }
 
       // Load users (only for superuser and elite_board)
@@ -259,6 +278,28 @@ export default function AdminDashboard() {
         description: "Failed to delete score",
         variant: "destructive",
       });
+    }
+  };
+
+  // Sort secret challenges based on current sort settings
+  const sortedSecretChallenges = [...secretChallenges].sort((a, b) => {
+    if (secretChallengeSortBy === 'score') {
+      const scoreA = a.score;
+      const scoreB = b.score;
+      return secretChallengeSortOrder === 'desc' ? scoreB - scoreA : scoreA - scoreB;
+    } else {
+      const dateA = new Date(a.completedAt).getTime();
+      const dateB = new Date(b.completedAt).getTime();
+      return secretChallengeSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    }
+  });
+
+  const handleSecretChallengeSort = (sortBy: 'score' | 'date') => {
+    if (secretChallengeSortBy === sortBy) {
+      setSecretChallengeSortOrder(secretChallengeSortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSecretChallengeSortBy(sortBy);
+      setSecretChallengeSortOrder('desc');
     }
   };
 
@@ -493,6 +534,13 @@ export default function AdminDashboard() {
               <Trophy className="h-4 w-4 mr-2" />
               Scores ({scores.length})
             </TabsTrigger>
+            <TabsTrigger
+              value="secret"
+              className="data-[state=active]:bg-[#ff4654]"
+            >
+              <Target className="h-4 w-4 mr-2" />
+              Secret Challenge
+            </TabsTrigger>
             {(currentUser.role === "superuser" ||
               currentUser.role === "elite_board") && (
               <TabsTrigger
@@ -539,6 +587,23 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-xs text-gray-400">
                     Total reaction time entries
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#111823] border-purple-500/30">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-200">
+                    Secret Challenge
+                  </CardTitle>
+                  <div className="text-purple-400">🎮</div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-400">
+                    {secretChallenges.length}
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Elite gamers discovered
                   </p>
                 </CardContent>
               </Card>
@@ -691,6 +756,113 @@ export default function AdminDashboard() {
                     <p className="text-center text-gray-400 py-8">
                       No scores recorded yet
                     </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="secret" className="space-y-6">
+            <Card className="bg-[#111823] border-[#ff4654]/30">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-[#ff4654]">
+                      Secret Challenge Leaderboard
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Elite gamers who discovered the hidden Konami Code challenge
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleSecretChallengeSort('score')}
+                      variant="outline"
+                      size="sm"
+                      className={`border-purple-500/50 text-purple-200 hover:bg-purple-800/50 ${
+                        secretChallengeSortBy === 'score' ? 'bg-purple-800/50' : ''
+                      }`}
+                    >
+                      Score {secretChallengeSortBy === 'score' && (secretChallengeSortOrder === 'desc' ? '↓' : '↑')}
+                    </Button>
+                    <Button
+                      onClick={() => handleSecretChallengeSort('date')}
+                      variant="outline"
+                      size="sm"
+                      className={`border-purple-500/50 text-purple-200 hover:bg-purple-800/50 ${
+                        secretChallengeSortBy === 'date' ? 'bg-purple-800/50' : ''
+                      }`}
+                    >
+                      Date {secretChallengeSortBy === 'date' && (secretChallengeSortOrder === 'desc' ? '↓' : '↑')}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {sortedSecretChallenges.map((challenge, index) => (
+                    <div
+                      key={challenge._id}
+                      className={`flex items-center justify-between p-4 rounded-lg border ${
+                        index === 0 
+                          ? "bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-500/50"
+                          : index === 1
+                          ? "bg-gradient-to-r from-gray-600/20 to-gray-500/20 border-gray-400/50"
+                          : index === 2
+                          ? "bg-gradient-to-r from-orange-700/20 to-orange-600/20 border-orange-500/50"
+                          : "bg-[#1a2332] border-[#ff4654]/20"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
+                          index === 0 ? "bg-yellow-500/20 text-yellow-400" :
+                          index === 1 ? "bg-gray-500/20 text-gray-300" :
+                          index === 2 ? "bg-orange-500/20 text-orange-400" :
+                          "bg-[#ff4654]/20 text-[#ff4654]"
+                        }`}>
+                          #{index + 1}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-white">
+                            {challenge.playerEmail}
+                          </h3>
+                          <p className="text-sm text-gray-400">
+                            Completed: {new Date(challenge.completedAt).toLocaleDateString()} at{" "}
+                            {new Date(challenge.completedAt).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-[#ff4654]">
+                            {challenge.score} pts
+                          </p>
+                          {index === 0 && (
+                            <p className="text-xs text-yellow-400 font-medium">
+                              🏆 Prize Winner!
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {sortedSecretChallenges.length === 0 && (
+                    <div className="text-center py-8 text-gray-400">
+                      <Target className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                      <p>No one has discovered the secret challenge yet...</p>
+                      <p className="text-sm mt-2 opacity-60">
+                        The Konami Code holds the key: ↑↑↓↓←→←→BA 🎮
+                      </p>
+                      <div className="mt-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+                        <p className="text-xs text-purple-300">
+                          <strong>For players to discover:</strong><br/>
+                          • Look for hints in the footer, CSS comments, and HTML source<br/>
+                          • Enter the classic Konami Code on any page<br/>
+                          • Complete the 30-second target challenge<br/>
+                          • First place wins the exclusive prize!
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
               </CardContent>

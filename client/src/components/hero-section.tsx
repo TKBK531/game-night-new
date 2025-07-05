@@ -31,6 +31,7 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Animated Background */}
+      {/* For true gamers: Some secrets require the perfect sequence of inputs... */}
       <div className="absolute inset-0 z-0">
         {/* Gradient mesh background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#ff4654]/20 via-[#111823] to-[#ba3a46]/20"></div>

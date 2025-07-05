@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { MongoDBStorage } from "./mongo-storage";
-import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
+import { insertTeamSchema, insertGameScoreSchema, insertSecretChallengeSchema } from "../shared/mongo-validation";
 import { z } from "zod";
 import adminRouter from "./admin-routes";
 
@@ -202,6 +202,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(scores);
     } catch (error) {
       console.error("Error in GET /api/game-scores/leaderboard:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Secret challenge endpoints
+  app.post("/api/secret-challenge", async (req, res) => {
+    try {
+      const challengeData = insertSecretChallengeSchema.parse(req.body);
+      const challenge = await storage.createSecretChallenge(challengeData);
+      res.status(201).json({ success: true, message: "Challenge completed!", rank: challenge });
+    } catch (error) {
+      console.error("Error in POST /api/secret-challenge:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      if (error instanceof Error && error.message.includes("already completed")) {
+        return res.status(409).json({ message: "You have already completed this challenge!" });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/secret-challenge/leaderboard", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const leaderboard = await storage.getSecretLeaderboard(limit);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error in GET /api/secret-challenge/leaderboard:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/secret-challenge/check/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      const hasCompleted = await storage.hasPlayerCompletedSecret(email);
+      res.json({ hasCompleted });
+    } catch (error) {
+      console.error("Error in GET /api/secret-challenge/check:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

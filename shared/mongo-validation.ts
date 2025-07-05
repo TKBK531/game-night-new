@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Re-export types from mongo-schema for convenience
-export type { ITeam, IGameScore, IUser } from "./mongo-schema";
+export type { ITeam, IGameScore, IUser, ISecretChallenge } from "./mongo-schema";
 
 // Team validation schema
 export const insertTeamSchema = z
@@ -137,6 +137,14 @@ export const insertGameScoreSchema = z.object({
 
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type InsertGameScore = z.infer<typeof insertGameScoreSchema>;
+
+// Secret challenge validation schema
+export const insertSecretChallengeSchema = z.object({
+  playerEmail: z.string().email("Please enter a valid email address").min(5, "Email too short").max(100, "Email too long"),
+  score: z.number().min(0, "Score must be a positive number").max(2000, "Score seems too high"),
+});
+
+export type InsertSecretChallenge = z.infer<typeof insertSecretChallengeSchema>;
 
 // User validation schemas
 export const loginUserSchema = z.object({

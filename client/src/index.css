@@ -253,3 +253,9 @@
     transform: translateX(0); 
   }
 }
+
+/* 
+ * For the elite gamers who inspect the source:
+ * The classic 30-life code still works... if you know where to use it.
+ * Hint: ↑↑↓↓←→←→BA
+ */
