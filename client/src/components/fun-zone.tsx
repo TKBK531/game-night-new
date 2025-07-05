@@ -4,8 +4,8 @@ export default function FunZone() {
   const activities = [
     {
       icon: Headphones,
-      title: "VR Gaming",
-      description: "Experience immersive virtual reality gaming with latest VR headsets",
+      title: "Console Gaming",
+      description: "Enjoy competitive matches on popular consoles like PlayStation and Xbox",
       color: "#ff4654"
     },
     {

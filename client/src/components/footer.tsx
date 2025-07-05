@@ -1,5 +1,5 @@
 import { Gamepad2, Mail, Phone, MapPin } from "lucide-react";
-import { FaDiscord, FaTwitch, FaYoutube, FaInstagram } from "react-icons/fa";
+import { FaDiscord, FaTwitch, FaYoutube, FaInstagram, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { siteConfig } from "../../../shared/config";
 import { ScrollReveal } from "./ui/scroll-reveal";
@@ -146,23 +146,26 @@ export default function Footer() {
             <h4 className="font-semibold text-[#ffffff] mb-4">Follow Us</h4>
             <motion.div className="flex space-x-4">
               <motion.a
-                href="#"
+                href="https://www.facebook.com/CsupFB"
+                target="_blank"
                 className="text-gray-400 hover:text-[#ff4654] transition-colors"
                 whileHover={{ scale: 1.2, rotate: 15 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <FaDiscord className="text-2xl" />
+                <FaFacebook className="text-2xl" />
               </motion.a>
               <motion.a
-                href="#"
+                href="https://www.linkedin.com/company/computer-society-university-of-peradeniya-csup/"
+                target="_blank"
                 className="text-gray-400 hover:text-[#ba3a46] transition-colors"
                 whileHover={{ scale: 1.2, rotate: -15 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <FaTwitch className="text-2xl" />
+                <FaLinkedin className="text-2xl" />
               </motion.a>
               <motion.a
-                href="#"
+                href="https://youtube.com/@csup-computersocietyuniver1554?si=BXlLHmY5bIPBfcCF"
+                target="_blank"
                 className="text-gray-400 hover:text-[#ff4654] transition-colors"
                 whileHover={{ scale: 1.2, rotate: 15 }}
                 whileTap={{ scale: 0.9 }}
@@ -170,7 +173,8 @@ export default function Footer() {
                 <FaYoutube className="text-2xl" />
               </motion.a>
               <motion.a
-                href="#"
+                href="https://www.instagram.com/csup_insta/"
+                target="_blank"
                 className="text-gray-400 hover:text-[#ffffff] transition-colors"
                 whileHover={{ scale: 1.2, rotate: -15 }}
                 whileTap={{ scale: 0.9 }}

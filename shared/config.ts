@@ -13,12 +13,12 @@ export const siteConfig = {
   // Event Schedule & Dates
   schedule: {
     registrationStart: "2025-07-01",
-    registrationEnd: "2025-07-10",
+    registrationEnd: "2025-07-14",
     eventDate: "2025-07-25",
     eventDateFormatted: "Friday, July 25, 2025", // Human readable format
     eventDayName: "Game Night", // Name for the event day
-    eventStartTime: "05:00 PM",
-    eventEndTime: "11:00 PM",
+    eventStartTime: "04:00 PM",
+    eventEndTime: "11:30 PM",
     timezone: "IST",
   },
 
@@ -38,10 +38,10 @@ export const siteConfig = {
 
   // Contact Information
   contact: {
-    email: "info@gamezoneevents.com",
-    phone: "+91 9876543210",
-    whatsapp: "+91 9876543210",
-    website: "https://gamezoneevents.com",
+    email: "president.csup@soc.pdn.ac.lk",
+    phone: "+94 763853141",
+    whatsapp: "+94 763853141",
+    website: "https://gamenight.csup.site/",
     socialMedia: {
       instagram: "@gamezoneevents",
       twitter: "@gamezoneevents",
@@ -53,10 +53,10 @@ export const siteConfig = {
   tournaments: {
     valorant: {
       name: "Valorant Championship",
-      prizePool: "LKR 20,000",
+      prizePool: "LKR 30,000",
       maxTeams: 8,
       teamSize: 5,
-      registrationFee: "LKR 1500",
+      registrationFee: "LKR 1000",
       rules: [
         "Each team must have exactly 5 players",
         "All players must be present during the tournament",
@@ -66,10 +66,10 @@ export const siteConfig = {
     },
     cod: {
       name: "Call of Duty",
-      prizePool: "LKR 20,000",
+      prizePool: "LKR 30,000",
       maxTeams: 8,
       teamSize: 5,
-      registrationFee: "LKR 1500",
+      registrationFee: "LKR 1000",
       rules: [
         "Each team must have exactly 5 players",
         "All players must be present during the tournament",
@@ -81,11 +81,11 @@ export const siteConfig = {
 
   // Payment Information
   payment: {
-    accountName: "GameZone Events",
-    accountNumber: "1234567890",
+    accountName: "Computer Society",
+    accountNumber: "1283667",
     ifscCode: "BANK0001234",
     bankName: "Bank of Celyon",
-    branchName: "Tech City Branch",
+    branchName: "Peradeniya",
     upiId: "gamezone@paytm",
     instructions: [
       "Pay the registration fee to complete your team registration",
@@ -153,40 +153,45 @@ export const siteConfig = {
 
   // Event Timeline
   timeline: [
-    {
-      time: "09:00 AM",
-      event: "Registration & Check-in",
-      description: "Team verification and final preparations",
-    },
-    {
-      time: "10:00 AM",
-      event: "Opening Ceremony",
-      description: "Welcome address and tournament briefing",
-    },
-    {
-      time: "11:00 AM",
-      event: "Qualifier Rounds Begin",
-      description: "Initial elimination rounds",
-    },
-    {
-      time: "02:00 PM",
-      event: "Lunch Break",
-      description: "Food and networking session",
-    },
-    {
-      time: "03:00 PM",
-      event: "Semi-Finals",
-      description: "Top teams compete for finals",
-    },
-    {
-      time: "06:00 PM",
-      event: "Finals",
-      description: "Championship matches",
-    },
-    {
-      time: "09:00 PM",
-      event: "Prize Distribution",
-      description: "Awards ceremony and closing",
-    },
-  ],
+  {
+    time: "04:00 PM",
+    event: "Registration & Check-in",
+    description: "Team verification and final preparations",
+  },
+  {
+    time: "04:30 PM",
+    event: "Opening Ceremony",
+    description: "Welcome address and tournament briefing",
+  },
+  {
+    time: "05:00 PM",
+    event: "Qualifier Rounds Begin",
+    description: "Initial elimination rounds for Valorant and COD",
+  },
+  {
+    time: "06:30 PM",
+    event: "Quarter-Finals",
+    description: "Top teams face off in Valorant and COD",
+  },
+  {
+    time: "07:45 PM",
+    event: "Dinner Break",
+    description: "Food and networking session",
+  },
+  {
+    time: "08:15 PM",
+    event: "Semi-Finals",
+    description: "Winners from quarters compete in semi-final matches",
+  },
+  {
+    time: "09:30 PM",
+    event: "Finals",
+    description: "Valorant and COD finals — the ultimate showdown",
+  },
+  {
+    time: "11:00 PM",
+    event: "Prize Distribution",
+    description: "Awards ceremony and closing",
+  },
+],
 };
