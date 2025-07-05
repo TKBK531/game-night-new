@@ -514,7 +514,7 @@ export default function TeamRegistration() {
                       <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
                         <Rocket className="mr-2" />
                         Bank Slip Upload (Registration Fee:{" "}
-                        {siteConfig.tournaments.valorant.registrationFee})
+                        {siteConfig.tournaments.valorant.registrationFee} (Dinner Included))
                       </FormLabel>
                       <FormControl>
                         <div className="space-y-4">

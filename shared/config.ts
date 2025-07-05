@@ -38,7 +38,7 @@ export const siteConfig = {
 
   // Contact Information
   contact: {
-    email: "president.csup@soc.pdn.ac.lj",
+    email: "president.csup@soc.pdn.ac.lk",
     phone: "+94 763853141",
     whatsapp: "+94 763853141",
     website: "https://gamenight.csup.site/",
