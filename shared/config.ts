@@ -81,11 +81,11 @@ export const siteConfig = {
 
   // Payment Information
   payment: {
-    accountName: "Computer Society",
-    accountNumber: "1283667",
+    accountName: "Vidusha Sanidu",
+    accountNumber: "049200370189421",
     ifscCode: "BANK0001234",
-    bankName: "Bank of Celyon",
-    branchName: "Peradeniya",
+    bankName: "Peoples Bank",
+    branchName: "Homagama",
     upiId: "gamezone@paytm",
     instructions: [
       "Pay the registration fee to complete your team registration",
