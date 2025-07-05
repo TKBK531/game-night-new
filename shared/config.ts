@@ -12,10 +12,10 @@ export const siteConfig = {
 
   // Event Schedule & Dates
   schedule: {
-    registrationStart: "2025-07-01",
+    registrationStart: "2025-07-05",
     registrationEnd: "2025-07-14",
-    eventDate: "2025-07-25",
-    eventDateFormatted: "Friday, July 25, 2025", // Human readable format
+    eventDate: "2025-07-18",
+    eventDateFormatted: "Friday, July 18, 2025", // Human readable format
     eventDayName: "Game Night", // Name for the event day
     eventStartTime: "04:00 PM",
     eventEndTime: "11:30 PM",
