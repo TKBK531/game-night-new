@@ -48,9 +48,10 @@ export default function TeamRegistration() {
 
   const form = useForm<InsertTeam>({
     resolver: zodResolver(insertTeamSchema),
+    mode: "onSubmit", // Validate on submit to catch missing tournament selection
     defaultValues: {
       teamName: "",
-      game: undefined,
+      game: undefined, // Explicitly set to undefined so validation can catch missing selection
       captainEmail: "",
       captainPhone: "",
       player1Name: "",
@@ -175,6 +176,30 @@ export default function TeamRegistration() {
     registerTeamMutation.mutate(data);
   };
 
+  // Handle form submission with additional validation
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Trigger form validation
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      // Check specifically for tournament selection error
+      const gameValue = form.getValues("game");
+      if (!gameValue) {
+        toast({
+          title: "Tournament Required",
+          description: "Please select a tournament (Valorant or Call of Duty) to register for.",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
+    
+    // If validation passes, proceed with normal form submission
+    form.handleSubmit(onSubmit)(e);
+  };
+
   const handleRulesAccepted = () => {
     setHasAcceptedRules(true);
     setShowRulesPopup(false);
@@ -228,7 +253,7 @@ export default function TeamRegistration() {
           >
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={handleFormSubmit}
                 className="space-y-6"
               >
                 {/* Game Selection */}
@@ -311,6 +336,12 @@ export default function TeamRegistration() {
                         </RadioGroup>
                       </FormControl>
                       <FormMessage />
+                      {/* Additional error display for tournament selection */}
+                      {form.formState.isSubmitted && !selectedGame && (
+                        <p className="text-sm font-medium text-destructive mt-2">
+                          Please select a tournament to register for
+                        </p>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -560,6 +591,9 @@ export default function TeamRegistration() {
                             </p>
                             <p>• Bank: {siteConfig.payment.bankName}</p>
                             <p>• Branch: {siteConfig.payment.branchName}</p>
+                            <p>
+                              • Remark : GameNight - TeamName
+                            </p>
                             <p>
                               • Please upload payment proof to complete
                               registration

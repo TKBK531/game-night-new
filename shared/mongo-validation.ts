@@ -11,7 +11,8 @@ export const insertTeamSchema = z
       .min(3, "Team name must be at least 3 characters")
       .max(20, "Team name must be at most 20 characters"),
     game: z.enum(["valorant", "cod"], {
-      required_error: "Please select a game",
+      required_error: "Please select a tournament to register for",
+      invalid_type_error: "Please select a valid tournament",
     }),
     captainEmail: z.string().email("Please enter a valid email address"),
     captainPhone: z
