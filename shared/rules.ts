@@ -63,11 +63,11 @@ export const rulesAndRegulations = {
           title: "Team Composition",
           content: [
             "Each team must consist of exactly 5 players",
-            "Teams may register up to 2 substitute players",
+            // "Teams may register up to 2 substitute players",
             "Each player can only be registered for one team during the tournament",
             "All team members must be present at the venue during their matches",
-            "Substitutions must be informed to Tournament Staff before the match starts",
-            "Substitution is allowed only before or after a map, not mid-game",
+            // "Substitutions must be informed to Tournament Staff before the match starts",
+            // "Substitution is allowed only before or after a map, not mid-game",
             "Use of non-registered, suspended, or ineligible players will result in disqualification",
             "Stand-ins are allowed only if presented at the registration desk before use",
             "Online use of stand-ins is strictly prohibited",
@@ -79,7 +79,7 @@ export const rulesAndRegulations = {
           content: [
             "Knockout phase begins from the first round",
             "Semi-finals: Best of 3 (BO3)",
-            "Finals: Best of 5 (BO5)",
+            "Finals: Best of 3 (BO3)",
             "A maximum delay of 10 minutes between maps is allowed",
             "Map selection follows standard competitive rules",
             "Overtime rules apply as per official Valorant competitive settings",
@@ -98,15 +98,15 @@ export const rulesAndRegulations = {
             "Spectator mode disabled during competitive matches",
           ],
         },
-        {
-          id: "coaching",
-          title: "Coaches and Staff",
-          content: [
-            "Teams may have one coach registered",
-            "Coach may communicate only during Agent/Map selection, timeouts, half-times, and between maps",
-            "Coach slot usage may be restricted by Tournament Staff",
-          ],
-        },
+        // {
+        //   id: "coaching",
+        //   title: "Coaches and Staff",
+        //   content: [
+        //     "Teams may have one coach registered",
+        //     "Coach may communicate only during Agent/Map selection, timeouts, half-times, and between maps",
+        //     "Coach slot usage may be restricted by Tournament Staff",
+        //   ],
+        // },
         {
           id: "map-rules",
           title: "Map Rules and Veto Process",
