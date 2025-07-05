@@ -153,40 +153,45 @@ export const siteConfig = {
 
   // Event Timeline
   timeline: [
-    {
-      time: "09:00 AM",
-      event: "Registration & Check-in",
-      description: "Team verification and final preparations",
-    },
-    {
-      time: "10:00 AM",
-      event: "Opening Ceremony",
-      description: "Welcome address and tournament briefing",
-    },
-    {
-      time: "11:00 AM",
-      event: "Qualifier Rounds Begin",
-      description: "Initial elimination rounds",
-    },
-    {
-      time: "02:00 PM",
-      event: "Lunch Break",
-      description: "Food and networking session",
-    },
-    {
-      time: "03:00 PM",
-      event: "Semi-Finals",
-      description: "Top teams compete for finals",
-    },
-    {
-      time: "06:00 PM",
-      event: "Finals",
-      description: "Championship matches",
-    },
-    {
-      time: "09:00 PM",
-      event: "Prize Distribution",
-      description: "Awards ceremony and closing",
-    },
-  ],
+  {
+    time: "04:00 PM",
+    event: "Registration & Check-in",
+    description: "Team verification and final preparations",
+  },
+  {
+    time: "04:30 PM",
+    event: "Opening Ceremony",
+    description: "Welcome address and tournament briefing",
+  },
+  {
+    time: "05:00 PM",
+    event: "Qualifier Rounds Begin",
+    description: "Initial elimination rounds for Valorant and COD",
+  },
+  {
+    time: "06:30 PM",
+    event: "Quarter-Finals",
+    description: "Top teams face off in Valorant and COD",
+  },
+  {
+    time: "07:45 PM",
+    event: "Dinner Break",
+    description: "Food and networking session",
+  },
+  {
+    time: "08:15 PM",
+    event: "Semi-Finals",
+    description: "Winners from quarters compete in semi-final matches",
+  },
+  {
+    time: "09:30 PM",
+    event: "Finals",
+    description: "Valorant and COD finals — the ultimate showdown",
+  },
+  {
+    time: "11:00 PM",
+    event: "Prize Distribution",
+    description: "Awards ceremony and closing",
+  },
+],
 };
