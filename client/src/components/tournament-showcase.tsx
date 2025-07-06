@@ -282,7 +282,7 @@ export default function TournamentShowcase() {
             </motion.div>
 
             <motion.button
-              onClick={() => scrollToSection('register')}
+              // onClick={() => scrollToSection('register')}
               className="w-full gaming-button py-3 rounded-lg font-semibold"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -290,7 +290,7 @@ export default function TournamentShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Register for COD
+              Register for COD is Closed for Now
             </motion.button>
           </motion.div>
         </motion.div>
