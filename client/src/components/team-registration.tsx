@@ -302,7 +302,7 @@ export default function TeamRegistration() {
                               </div>
                             </Label>
                           </div>
-
+                          {/*
                           <div>
                             <RadioGroupItem
                               value="cod"
@@ -332,7 +332,7 @@ export default function TeamRegistration() {
                                 </div>
                               </div>
                             </Label>
-                          </div>
+                          </div>*/}
                         </RadioGroup>
                       </FormControl>
                       <FormMessage />
