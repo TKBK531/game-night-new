@@ -290,7 +290,7 @@ export default function TournamentShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Register for COD is Closed for Now
+              Registerations for COD is Closed for Now
             </motion.button>
           </motion.div>
         </motion.div>
