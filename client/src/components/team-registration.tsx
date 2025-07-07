@@ -19,6 +19,9 @@ import {
   Rocket,
   Crosshair,
   Target,
+  ArrowRight,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import {
   Form,
@@ -39,6 +42,14 @@ import RulesPage from "../pages/rules";
 export default function TeamRegistration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [currentStep, setCurrentStep] = useState<"details" | "payment">("details");
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [availabilityStatus, setAvailabilityStatus] = useState<{
+    isAvailable: boolean;
+    message: string;
+    registered: number;
+    maxTeams: number;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRulesPopup, setShowRulesPopup] = useState(false);
   const [showRulesPage, setShowRulesPage] = useState(false);
@@ -113,6 +124,8 @@ export default function TeamRegistration() {
           "Your team has been registered for the tournament. Get ready to compete!",
       });
       form.reset();
+      setCurrentStep("details");
+      setAvailabilityStatus(null);
       queryClient.invalidateQueries({ queryKey: ["/api/teams/stats"] });
     },
     onError: (error: any) => {
@@ -164,6 +177,58 @@ export default function TeamRegistration() {
     },
   });
 
+  // Check registration availability
+  const checkAvailability = async (game: string) => {
+    setIsCheckingAvailability(true);
+    try {
+      const response = await fetch(`/api/teams/check-availability/${game}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to check availability");
+      }
+      
+      setAvailabilityStatus(data);
+      
+      if (data.isAvailable) {
+        setCurrentStep("payment");
+        toast({
+          title: "Registration Available!",
+          description: data.message,
+        });
+      } else {
+        toast({
+          title: "Registration Closed",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error checking availability:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check registration availability. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
+
+  // Handle proceed button
+  const handleProceed = async (data: InsertTeam) => {
+    if (!data.game) {
+      toast({
+        title: "Tournament Required",
+        description: "Please select a tournament (Valorant or Call of Duty) to register for.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    await checkAvailability(data.game);
+  };
+
   const onSubmit = async (data: InsertTeam) => {
     // Check if rules have been accepted
     if (!hasAcceptedRules) {
@@ -176,7 +241,7 @@ export default function TeamRegistration() {
     registerTeamMutation.mutate(data);
   };
 
-  // Handle form submission with additional validation
+  // Handle form submission with step logic
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -196,8 +261,15 @@ export default function TeamRegistration() {
       return;
     }
     
-    // If validation passes, proceed with normal form submission
-    form.handleSubmit(onSubmit)(e);
+    const formData = form.getValues();
+    
+    if (currentStep === "details") {
+      // First step: proceed to check availability
+      await handleProceed(formData);
+    } else {
+      // Second step: submit the form
+      form.handleSubmit(onSubmit)(e);
+    }
   };
 
   const handleRulesAccepted = () => {
@@ -302,7 +374,6 @@ export default function TeamRegistration() {
                               </div>
                             </Label>
                           </div>
-                          {/*
                           <div>
                             <RadioGroupItem
                               value="cod"
@@ -332,7 +403,7 @@ export default function TeamRegistration() {
                                 </div>
                               </div>
                             </Label>
-                          </div>*/}
+                          </div>
                         </RadioGroup>
                       </FormControl>
                       <FormMessage />
@@ -536,75 +607,107 @@ export default function TeamRegistration() {
                   />
                 </div>
 
-                {/* Bank Slip Upload */}
-                <FormField
-                  control={form.control}
-                  name="bankSlip"
-                  render={({ field: { onChange, value, ...field } }) => (
-                    <FormItem>
-                      <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
-                        <Rocket className="mr-2" />
-                        Bank Slip Upload (Registration Fee:{" "}
-                        {siteConfig.tournaments.valorant.registrationFee} (Dinner Included))
-                      </FormLabel>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <div className="gaming-border rounded-lg p-6 text-center hover-lift">
-                            <input
-                              {...field}
-                              type="file"
-                              accept={siteConfig.features.teamRegistration.allowedFileTypes.join(
-                                ","
-                              )}
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                onChange(file);
-                              }}
-                              className="hidden"
-                              id="bankSlip"
-                            />
-                            <label
-                              htmlFor="bankSlip"
-                              className="cursor-pointer block"
-                            >
-                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff4654]/20 flex items-center justify-center">
-                                <Rocket className="text-2xl text-[#ff4654]" />
-                              </div>
-                              <div className="text-lg font-semibold text-white mb-2">
-                                {value ? "File Selected!" : "Upload Bank Slip"}
-                              </div>
-                              <div className="text-sm text-gray-400">
-                                {value
-                                  ? value.name
-                                  : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
-                              </div>
-                            </label>
+                {/* Availability Status */}
+                {availabilityStatus && (
+                  <div className={`rounded-lg p-4 text-center ${
+                    availabilityStatus.isAvailable 
+                      ? "bg-[#00ff00]/10 border border-[#00ff00]/30" 
+                      : "bg-[#ff4654]/10 border border-[#ff4654]/30"
+                  }`}>
+                    <div className={`flex items-center justify-center ${
+                      availabilityStatus.isAvailable ? "text-[#00ff00]" : "text-[#ff4654]"
+                    }`}>
+                      {availabilityStatus.isAvailable ? (
+                        <CheckCircle className="mr-2" size={20} />
+                      ) : (
+                        <XCircle className="mr-2" size={20} />
+                      )}
+                      <span className="font-semibold">
+                        {availabilityStatus.isAvailable ? "Registration Open" : "Registration Closed"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300 mt-2">
+                      {availabilityStatus.message}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {availabilityStatus.registered}/{availabilityStatus.maxTeams} teams registered
+                    </p>
+                  </div>
+                )}
+
+                {/* Bank Slip Upload - Only show if registration is available */}
+                {currentStep === "payment" && availabilityStatus?.isAvailable && (
+                  <FormField
+                    control={form.control}
+                    name="bankSlip"
+                    render={({ field: { onChange, value, ...field } }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg font-semibold text-[#ff4654] flex items-center">
+                          <Rocket className="mr-2" />
+                          Bank Slip Upload (Registration Fee:{" "}
+                          {selectedGame === "valorant" 
+                            ? siteConfig.tournaments.valorant.registrationFee 
+                            : siteConfig.tournaments.cod.registrationFee} (Dinner Included))
+                        </FormLabel>
+                        <FormControl>
+                          <div className="space-y-4">
+                            <div className="gaming-border rounded-lg p-6 text-center hover-lift">
+                              <input
+                                {...field}
+                                type="file"
+                                accept={siteConfig.features.teamRegistration.allowedFileTypes.join(
+                                  ","
+                                )}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  onChange(file);
+                                }}
+                                className="hidden"
+                                id="bankSlip"
+                              />
+                              <label
+                                htmlFor="bankSlip"
+                                className="cursor-pointer block"
+                              >
+                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff4654]/20 flex items-center justify-center">
+                                  <Rocket className="text-2xl text-[#ff4654]" />
+                                </div>
+                                <div className="text-lg font-semibold text-white mb-2">
+                                  {value ? "File Selected!" : "Upload Bank Slip"}
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  {value
+                                    ? value.name
+                                    : `Click to select image or PDF (Max ${siteConfig.features.teamRegistration.maxFileSize})`}
+                                </div>
+                              </label>
+                            </div>
+                            <div className="text-sm text-gray-400 space-y-2">
+                              <p>Bank Details: </p>
+                              <p>• Account Name:{" "}
+                                {siteConfig.payment.accountName}
+                              </p>
+                              <p>
+                                • Account Number:{" "}
+                                {siteConfig.payment.accountNumber}
+                              </p>
+                              <p>• Bank: {siteConfig.payment.bankName}</p>
+                              <p>• Branch: {siteConfig.payment.branchName}</p>
+                              <p>
+                                • Remark : GameNight - TeamName
+                              </p>
+                              <p>
+                                • Please upload payment proof to complete
+                                registration
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-400 space-y-2">
-                            <p>Bank Details: </p>
-                            <p>• Account Name:{" "}
-                              {siteConfig.payment.accountName}
-                            </p>
-                            <p>
-                              • Account Number:{" "}
-                              {siteConfig.payment.accountNumber}
-                            </p>
-                            <p>• Bank: {siteConfig.payment.bankName}</p>
-                            <p>• Branch: {siteConfig.payment.branchName}</p>
-                            <p>
-                              • Remark : GameNight - TeamName
-                            </p>
-                            <p>
-                              • Please upload payment proof to complete
-                              registration
-                            </p>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 {/* Rules Acceptance Status */}
                 {hasAcceptedRules && (
@@ -626,29 +729,59 @@ export default function TeamRegistration() {
                 <div className="text-center pt-6">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isCheckingAvailability || (availabilityStatus?.isAvailable === false)}
                     className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                   >
-                    <Rocket className="mr-2" />
-                    {isSubmitting
-                      ? "Registering..."
-                      : hasAcceptedRules
-                      ? "Register Team"
-                      : "Review Rules & Register Team"}
+                    {currentStep === "details" ? (
+                      <>
+                        <ArrowRight className="mr-2" />
+                        {isCheckingAvailability ? "Checking Availability..." : "Proceed"}
+                      </>
+                    ) : (
+                      <>
+                        <Rocket className="mr-2" />
+                        {isSubmitting
+                          ? "Registering..."
+                          : hasAcceptedRules
+                          ? "Register Team"
+                          : "Review Rules & Register Team"}
+                      </>
+                    )}
                   </button>
-                  <p className="text-sm text-gray-400 mt-4">
-                    Registration fee:{" "}
-                    {selectedGame === "valorant"
-                      ? siteConfig.tournaments.valorant.registrationFee
-                      : selectedGame === "cod"
-                      ? siteConfig.tournaments.cod.registrationFee
-                      : "LKR 1,000"}{" "}
-                    per team • No account creation required
-                  </p>
-                  {!hasAcceptedRules && (
-                    <p className="text-sm text-[#ff4654] mt-2">
-                      Click to review rules & complete registration in one step
+                  
+                  {currentStep === "details" && (
+                    <p className="text-sm text-gray-400 mt-4">
+                      Fill all details and click Proceed to check registration availability
                     </p>
+                  )}
+                  
+                  {currentStep === "payment" && (
+                    <>
+                      <p className="text-sm text-gray-400 mt-4">
+                        Registration fee:{" "}
+                        {selectedGame === "valorant"
+                          ? siteConfig.tournaments.valorant.registrationFee
+                          : selectedGame === "cod"
+                          ? siteConfig.tournaments.cod.registrationFee
+                          : "LKR 1,000"}{" "}
+                        per team • No account creation required
+                      </p>
+                      {!hasAcceptedRules && (
+                        <p className="text-sm text-[#ff4654] mt-2">
+                          Click to review rules & complete registration in one step
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentStep("details");
+                          setAvailabilityStatus(null);
+                        }}
+                        className="text-sm text-gray-400 hover:text-white underline mt-2"
+                      >
+                        ← Go back to edit details
+                      </button>
+                    </>
                   )}
                 </div>
               </form>

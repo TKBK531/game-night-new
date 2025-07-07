@@ -50,6 +50,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const teamData = insertTeamSchema.parse(formData);
 
+      // Check team registration limits
+      const currentTeamCount = await storage.getTeamCount(teamData.game);
+      const maxTeams = teamData.game === "valorant" ? 8 : 12;
+      
+      if (currentTeamCount >= maxTeams) {
+        // If team limit reached and we have a file, clean up the temp file
+        if (req.file) {
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch (e) {
+            console.error('Error deleting temp file:', e);
+          }
+        }
+        return res.status(400).json({
+          message: `Registration is closed for ${teamData.game}. Maximum ${maxTeams} teams allowed.`,
+          field: "game"
+        });
+      }
+
       // Check if team name is unique
       const existingTeam = await storage.getTeamByName(teamData.teamName);
       if (existingTeam) {
@@ -160,6 +179,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check registration availability for a specific game
+  app.get("/api/teams/check-availability/:game", async (req, res) => {
+    try {
+      const { game } = req.params;
+      
+      if (!["valorant", "cod"].includes(game)) {
+        return res.status(400).json({ message: "Invalid game type" });
+      }
+
+      const teamCount = await storage.getTeamCount(game);
+      const maxTeams = game === "valorant" ? 8 : 12;
+      const isAvailable = teamCount < maxTeams;
+
+      res.json({
+        game,
+        registered: teamCount,
+        maxTeams,
+        isAvailable,
+        message: isAvailable 
+          ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
+          : "Registration is closed for this tournament."
+      });
+    } catch (error) {
+      console.error("Error in /api/teams/check-availability:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Get team statistics
   app.get("/api/teams/stats", async (req, res) => {
     try {
@@ -167,8 +214,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const codCount = await storage.getTeamCount("cod");
 
       res.json({
-        valorant: { registered: valorantCount, total: 32 },
-        cod: { registered: codCount, total: 32 }
+        valorant: { registered: valorantCount, total: 8 },
+        cod: { registered: codCount, total: 12 }
       });
     } catch (error) {
       console.error("Error in /api/teams/stats:", error);
