@@ -41,6 +41,12 @@ export interface ITeam extends Document {
   bankSlipFileName?: string; // Original filename of the uploaded file
   bankSlipContentType?: string; // MIME type of the uploaded file
   registeredAt: Date;
+  // New fields for COD queue system
+  status: "confirmed" | "queued" | "approved" | "rejected";
+  queuedAt?: Date;
+  paymentDeadline?: Date;
+  approvedBy?: string;
+  approvedAt?: Date;
 }
 
 // Game Score Interface
@@ -192,6 +198,17 @@ const TeamSchema = new Schema<ITeam>({
     },
   },
   registeredAt: { type: Date, default: Date.now },
+  // New fields for COD queue system
+  status: {
+    type: String,
+    required: true,
+    enum: ["confirmed", "queued", "approved", "rejected"],
+    default: "confirmed", // Default to confirmed for backward compatibility
+  },
+  queuedAt: { type: Date },
+  paymentDeadline: { type: Date },
+  approvedBy: { type: String },
+  approvedAt: { type: Date },
 });
 
 // Game Score Schema

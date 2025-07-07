@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import AdminLogin from "@/components/admin-login";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,6 +91,11 @@ interface Team {
   bankSlipFileName?: string;
   bankSlipContentType?: string;
   registeredAt: string;
+  status?: "confirmed" | "queued" | "approved" | "rejected";
+  queuedAt?: string;
+  paymentDeadline?: string;
+  approvedBy?: string;
+  approvedAt?: string;
 }
 
 interface Score {
@@ -111,6 +117,7 @@ export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [queuedTeams, setQueuedTeams] = useState<Team[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
   const [secretChallenges, setSecretChallenges] = useState<SecretChallenge[]>([]);
   const [secretChallengeSortBy, setSecretChallengeSortBy] = useState<'score' | 'date'>('score');
@@ -121,6 +128,7 @@ export default function AdminDashboard() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isTeamDetailsDialogOpen, setIsTeamDetailsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const createUserForm = useForm<InsertUser>({
     resolver: zodResolver(insertUserSchema),
@@ -162,6 +170,15 @@ export default function AdminDashboard() {
       if (teamsResponse.ok) {
         const teamsData = await teamsResponse.json();
         setTeams(teamsData);
+      }
+
+      // Load COD queued teams
+      const queueResponse = await fetch("/api/admin/cod-queue", {
+        credentials: "include",
+      });
+      if (queueResponse.ok) {
+        const queueData = await queueResponse.json();
+        setQueuedTeams(queueData);
       }
 
       // Load scores
@@ -211,6 +228,7 @@ export default function AdminDashboard() {
 
       setCurrentUser(null);
       setTeams([]);
+      setQueuedTeams([]);
       setScores([]);
       setUsers([]);
 
@@ -488,6 +506,84 @@ export default function AdminDashboard() {
     );
   };
 
+  // COD Queue Management Functions
+  const approveTeamRegistration = async (teamId: string) => {
+    try {
+      const response = await fetch(`/api/admin/approve-team/${teamId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ approvedBy: currentUser?.username }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Team Approved",
+          description:
+            "Team registration has been approved after payment verification.",
+        });
+
+        // Reload data
+        if (currentUser) {
+          loadDashboardData(currentUser);
+        }
+        
+        // Invalidate stats query to update main page
+        queryClient.invalidateQueries({ queryKey: ['/api/teams/stats'] });
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.message || "Failed to approve team",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to approve team",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const rejectTeam = async (teamId: string) => {
+    try {
+      const response = await fetch(`/api/admin/reject-team/${teamId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Team Rejected",
+          description: "Team has been rejected.",
+        });
+
+        // Reload data
+        if (currentUser) {
+          loadDashboardData(currentUser);
+        }
+        
+        // Invalidate stats query to update main page
+        queryClient.invalidateQueries({ queryKey: ['/api/teams/stats'] });
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.message || "Failed to reject team",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reject team",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0f1a] flex items-center justify-center">
@@ -555,6 +651,13 @@ export default function AdminDashboard() {
             >
               <Users className="h-4 w-4 mr-2" />
               Teams ({teams.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="cod-queue"
+              className="data-[state=active]:bg-[#ba3a46]"
+            >
+              <Target className="h-4 w-4 mr-2" />
+              COD Queue ({queuedTeams.length})
             </TabsTrigger>
             <TabsTrigger
               value="scores"
@@ -690,6 +793,16 @@ export default function AdminDashboard() {
                           >
                             {team.game.toUpperCase()}
                           </Badge>
+                          {team.status === "approved" && (
+                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                              Approved
+                            </Badge>
+                          )}
+                          {(team.status === "confirmed" || !team.status) && (
+                            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                              Confirmed
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-gray-400 mt-1">
                           {team.captainEmail} • {team.captainPhone}
@@ -1093,6 +1206,110 @@ export default function AdminDashboard() {
               </Card>
             </TabsContent>
           )}
+
+          {/* COD Queue Management */}
+          <TabsContent value="cod-queue" className="space-y-6">
+            <Card className="bg-[#111823] border-[#ba3a46]/30">
+              <CardHeader>
+                <CardTitle className="text-[#ba3a46]">
+                  COD Registration Queue
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Manage COD team registration queue and approve teams for payment
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {queuedTeams.length === 0 ? (
+                    <p className="text-center text-gray-400 py-8">
+                      No teams in COD queue
+                    </p>
+                  ) : (
+                    queuedTeams.map((team) => (
+                      <div
+                        key={team._id}
+                        className="flex items-center justify-between p-4 bg-[#1a2332] rounded-lg border border-[#ba3a46]/20"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h3 className="font-semibold text-white">
+                              {team.teamName}
+                            </h3>
+                            <Badge
+                              className={
+                                team.status === "queued"
+                                  ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                  : team.status === "approved"
+                                  ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                  : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                              }
+                            >
+                              {team.status?.toUpperCase()}
+                            </Badge>
+                            <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+                              COD
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-1">
+                            {team.captainEmail} • {team.captainPhone}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Queued:{" "}
+                            {team.queuedAt
+                              ? new Date(team.queuedAt).toLocaleDateString()
+                              : "N/A"}
+                          </p>
+                          {team.paymentDeadline && (
+                            <p className="text-xs text-yellow-400">
+                              Payment deadline:{" "}
+                              {new Date(team.paymentDeadline).toLocaleString()}
+                            </p>
+                          )}
+                          {team.approvedBy && (
+                            <p className="text-xs text-blue-400">
+                              Approved by: {team.approvedBy}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            onClick={() => handleViewTeamDetails(team)}
+                            variant="outline"
+                            size="sm"
+                            className="border-[#ba3a46]/30 text-[#ba3a46] hover:bg-[#ba3a46]/10"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Details
+                          </Button>
+
+                          {team.status === "queued" && (
+                            <>
+                              <Button
+                                onClick={() => approveTeamRegistration(team._id)}
+                                variant="outline"
+                                size="sm"
+                                className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+                              >
+                                Approve Team
+                              </Button>
+                              <Button
+                                onClick={() => rejectTeam(team._id)}
+                                variant="outline"
+                                size="sm"
+                                className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 

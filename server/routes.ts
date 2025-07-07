@@ -51,22 +51,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const teamData = insertTeamSchema.parse(formData);
 
       // Check team registration limits
-      const currentTeamCount = await storage.getTeamCount(teamData.game);
-      const maxTeams = teamData.game === "valorant" ? 8 : 12;
-      
-      if (currentTeamCount >= maxTeams) {
-        // If team limit reached and we have a file, clean up the temp file
-        if (req.file) {
-          try {
-            fs.unlinkSync(req.file.path);
-          } catch (e) {
-            console.error('Error deleting temp file:', e);
+      if (teamData.game === "valorant") {
+        const currentTeamCount = await storage.getConfirmedTeamCount(teamData.game);
+        const maxTeams = 8;
+        
+        if (currentTeamCount >= maxTeams) {
+          // If team limit reached and we have a file, clean up the temp file
+          if (req.file) {
+            try {
+              fs.unlinkSync(req.file.path);
+            } catch (e) {
+              console.error('Error deleting temp file:', e);
+            }
           }
+          return res.status(400).json({
+            message: `Registration is closed for ${teamData.game}. Maximum ${maxTeams} teams allowed.`,
+            field: "game"
+          });
         }
-        return res.status(400).json({
-          message: `Registration is closed for ${teamData.game}. Maximum ${maxTeams} teams allowed.`,
-          field: "game"
-        });
+      } else {
+        // COD queue system
+        const confirmedCount = await storage.getConfirmedTeamCount(teamData.game);
+        const queuedCount = await storage.getQueuedTeamCount(teamData.game);
+        const maxTeams = 12;
+        const maxQueue = 5;
+        
+        if (confirmedCount >= maxTeams) {
+          if (req.file) {
+            try {
+              fs.unlinkSync(req.file.path);
+            } catch (e) {
+              console.error('Error deleting temp file:', e);
+            }
+          }
+          return res.status(400).json({
+            message: `Registration is closed for ${teamData.game}. Tournament is full.`,
+            field: "game"
+          });
+        }
+        
+        if (queuedCount >= maxQueue) {
+          if (req.file) {
+            try {
+              fs.unlinkSync(req.file.path);
+            } catch (e) {
+              console.error('Error deleting temp file:', e);
+            }
+          }
+          return res.status(400).json({
+            message: `Registration queue is full for ${teamData.game}. Please try again later.`,
+            field: "game"
+          });
+        }
       }
 
       // Check if team name is unique
@@ -127,7 +163,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const team = await storage.createTeam(finalTeamData);
-      res.status(201).json(team);
+      
+      // Return different response based on game type
+      if (teamData.game === "cod") {
+        res.status(201).json({
+          ...team,
+          message: "Your team has been added to the COD registration queue. Due to high demand, the first teams to register will be notified with bank details and have 24 hours to complete payment. You will receive an email notification if selected.",
+          isQueued: true
+        });
+      } else {
+        res.status(201).json(team);
+      }
     } catch (error) {
       console.error("Error in POST /api/teams:", error);
       console.error("Error details:", {
@@ -188,19 +234,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid game type" });
       }
 
-      const teamCount = await storage.getTeamCount(game);
-      const maxTeams = game === "valorant" ? 8 : 12;
-      const isAvailable = teamCount < maxTeams;
+      if (game === "valorant") {
+        const teamCount = await storage.getConfirmedTeamCount(game); // Use confirmed count
+        const maxTeams = 8;
+        const isAvailable = teamCount < maxTeams;
 
-      res.json({
-        game,
-        registered: teamCount,
-        maxTeams,
-        isAvailable,
-        message: isAvailable 
-          ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
-          : "Registration is closed for this tournament."
-      });
+        res.json({
+          game,
+          registered: teamCount,
+          maxTeams,
+          isAvailable,
+          message: isAvailable 
+            ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
+            : "Registration is closed for this tournament."
+        });
+      } else {
+        // COD queue system
+        const confirmedCount = await storage.getConfirmedTeamCount(game);
+        const queuedCount = await storage.getQueuedTeamCount(game);
+        const maxTeams = 12;
+        const maxQueue = 5;
+        
+        const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
+
+        res.json({
+          game,
+          confirmed: confirmedCount,
+          queued: queuedCount,
+          maxTeams,
+          maxQueue,
+          isAvailable: isRegistrationOpen,
+          message: isRegistrationOpen 
+            ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
+            : confirmedCount >= maxTeams 
+              ? "Registration is closed. Tournament is full."
+              : "Registration queue is full. Please try again later."
+        });
+      }
     } catch (error) {
       console.error("Error in /api/teams/check-availability:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -210,12 +280,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get team statistics
   app.get("/api/teams/stats", async (req, res) => {
     try {
-      const valorantCount = await storage.getTeamCount("valorant");
-      const codCount = await storage.getTeamCount("cod");
+      const valorantCount = await storage.getConfirmedTeamCount("valorant");
+      const codConfirmedCount = await storage.getConfirmedTeamCount("cod");
+      const codQueuedCount = await storage.getQueuedTeamCount("cod");
 
       res.json({
         valorant: { registered: valorantCount, total: 8 },
-        cod: { registered: codCount, total: 12 }
+        cod: { 
+          confirmed: codConfirmedCount, 
+          queued: codQueuedCount, 
+          total: 12,
+          maxQueue: 5 
+        }
       });
     } catch (error) {
       console.error("Error in /api/teams/stats:", error);
@@ -369,6 +445,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error accessing file:", error);
       res.status(500).json({ message: "Error accessing file" });
+    }
+  });
+
+  // Admin endpoints for COD queue management
+  app.get("/api/admin/cod-queue", async (req, res) => {
+    try {
+      const queuedTeams = await storage.getQueuedTeams("cod");
+      res.json(queuedTeams);
+    } catch (error) {
+      console.error("Error in /api/admin/cod-queue:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/approve-team/:teamId", async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const { approvedBy } = req.body;
+      
+      if (!approvedBy) {
+        return res.status(400).json({ message: "Approver information required" });
+      }
+
+      const team = await storage.approveTeamForPayment(teamId, approvedBy);
+      res.json(team);
+    } catch (error) {
+      console.error("Error in /api/admin/approve-team:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/confirm-team/:teamId", async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const team = await storage.confirmTeamRegistration(teamId);
+      res.json(team);
+    } catch (error) {
+      console.error("Error in /api/admin/confirm-team:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/reject-team/:teamId", async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      await storage.rejectTeam(teamId);
+      res.json({ message: "Team rejected successfully" });
+    } catch (error) {
+      console.error("Error in /api/admin/reject-team:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Migration endpoint - run once to update existing teams
+  app.post("/api/admin/migrate-teams", async (req, res) => {
+    try {
+      await storage.migrateExistingTeams();
+      res.json({ message: "Teams migrated successfully" });
+    } catch (error) {
+      console.error("Error in /api/admin/migrate-teams:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

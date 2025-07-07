@@ -120,6 +120,20 @@ export const insertTeamSchema = z
         "Valorant user IDs are required for all players when registering for Valorant tournament",
       path: ["game"],
     }
+  )
+  .refine(
+    (data) => {
+      // If game is Valorant, require bank slip
+      if (data.game === "valorant") {
+        return data.bankSlip !== undefined && data.bankSlip !== null;
+      }
+      // COD doesn't require bank slip initially
+      return true;
+    },
+    {
+      message: "Bank slip is required for Valorant tournament registration",
+      path: ["bankSlip"],
+    }
   );
 
 // Game score validation schema

@@ -268,16 +268,22 @@ export default function TournamentShowcase() {
               transition={{ delay: 0.6, duration: 0.5 }}
             >
               <div className="flex justify-between text-sm mb-2">
-                <span>Teams Registered</span>
-                <span>{(stats as any)?.cod?.registered || 0}/{siteConfig.tournaments.cod.maxTeams}</span>
+                <span>Teams Confirmed</span>
+                <span>{(stats as any)?.cod?.confirmed || 0}/{siteConfig.tournaments.cod.maxTeams}</span>
               </div>
               <div className="w-full bg-[#242d3d] rounded-full h-3 overflow-hidden">
                 <motion.div
                   className="bg-gradient-to-r from-[#ba3a46] to-[#ff4654] h-3 rounded-full"
                   initial={{ width: 0 }}
-                  whileInView={{ width: `${(((stats as any)?.cod?.registered || 0) / siteConfig.tournaments.cod.maxTeams) * 100}%` }}
+                  whileInView={{ width: `${(((stats as any)?.cod?.confirmed || 0) / siteConfig.tournaments.cod.maxTeams) * 100}%` }}
                   transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 ></motion.div>
+              </div>
+              
+              {/* Queue Information */}
+              <div className="flex justify-between text-xs mt-2 text-gray-400">
+                <span>In Queue</span>
+                <span>{(stats as any)?.cod?.queued || 0}/{(stats as any)?.cod?.maxQueue || 5}</span>
               </div>
             </motion.div>
 

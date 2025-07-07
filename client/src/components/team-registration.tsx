@@ -47,8 +47,11 @@ export default function TeamRegistration() {
   const [availabilityStatus, setAvailabilityStatus] = useState<{
     isAvailable: boolean;
     message: string;
-    registered: number;
-    maxTeams: number;
+    registered?: number;
+    maxTeams?: number;
+    confirmed?: number;
+    queued?: number;
+    maxQueue?: number;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRulesPopup, setShowRulesPopup] = useState(false);
@@ -117,12 +120,19 @@ export default function TeamRegistration() {
 
       return responseData;
     },
-    onSuccess: () => {
-      toast({
-        title: "Team Registered Successfully!",
-        description:
-          "Your team has been registered for the tournament. Get ready to compete!",
-      });
+    onSuccess: (data) => {
+      if (data.isQueued) {
+        toast({
+          title: "Added to Registration Queue!",
+          description: data.message,
+          duration: 8000,
+        });
+      } else {
+        toast({
+          title: "Team Registered Successfully!",
+          description: "Your team has been registered for the tournament. Get ready to compete!",
+        });
+      }
       form.reset();
       setCurrentStep("details");
       setAvailabilityStatus(null);
@@ -629,14 +639,21 @@ export default function TeamRegistration() {
                     <p className="text-sm text-gray-300 mt-2">
                       {availabilityStatus.message}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {availabilityStatus.registered}/{availabilityStatus.maxTeams} teams registered
-                    </p>
+                    {availabilityStatus.registered !== undefined ? (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {availabilityStatus.registered}/{availabilityStatus.maxTeams} teams registered
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Confirmed: {availabilityStatus.confirmed}/{availabilityStatus.maxTeams} | 
+                        Queue: {availabilityStatus.queued}/{availabilityStatus.maxQueue}
+                      </p>
+                    )}
                   </div>
                 )}
 
-                {/* Bank Slip Upload - Only show if registration is available */}
-                {currentStep === "payment" && availabilityStatus?.isAvailable && (
+                {/* Bank Slip Upload - Only show for Valorant or when registration is available */}
+                {currentStep === "payment" && availabilityStatus?.isAvailable && selectedGame === "valorant" && (
                   <FormField
                     control={form.control}
                     name="bankSlip"
@@ -709,6 +726,32 @@ export default function TeamRegistration() {
                   />
                 )}
 
+                {/* COD Queue Information */}
+                {currentStep === "payment" && availabilityStatus?.isAvailable && selectedGame === "cod" && (
+                  <div className="bg-[#ba3a46]/10 border border-[#ba3a46]/30 rounded-lg p-6 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ba3a46]/20 flex items-center justify-center">
+                      <Target className="text-2xl text-[#ba3a46]" />
+                    </div>
+                    <div className="text-lg font-semibold text-[#ba3a46] mb-2">
+                      COD Registration Queue
+                    </div>
+                    <div className="text-sm text-gray-300 space-y-2">
+                      <p>
+                        <strong>No payment required at this time.</strong>
+                      </p>
+                      <p>
+                        Your team will be added to the registration queue. Due to high demand, the first teams to register will be notified with bank details.
+                      </p>
+                      <p>
+                        <strong>If selected:</strong> You will have 24 hours to complete payment after notification.
+                      </p>
+                      <p>
+                        Registration fee: <strong>{siteConfig.tournaments.cod.registrationFee}</strong> (if selected)
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Rules Acceptance Status */}
                 {hasAcceptedRules && (
                   <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4 text-center">
@@ -741,10 +784,10 @@ export default function TeamRegistration() {
                       <>
                         <Rocket className="mr-2" />
                         {isSubmitting
-                          ? "Registering..."
+                          ? (selectedGame === "cod" ? "Joining Queue..." : "Registering...")
                           : hasAcceptedRules
-                          ? "Register Team"
-                          : "Review Rules & Register Team"}
+                          ? (selectedGame === "cod" ? "Join COD Queue" : "Register Team")
+                          : (selectedGame === "cod" ? "Review Rules & Join Queue" : "Review Rules & Register Team")}
                       </>
                     )}
                   </button>
@@ -758,17 +801,24 @@ export default function TeamRegistration() {
                   {currentStep === "payment" && (
                     <>
                       <p className="text-sm text-gray-400 mt-4">
-                        Registration fee:{" "}
-                        {selectedGame === "valorant"
-                          ? siteConfig.tournaments.valorant.registrationFee
-                          : selectedGame === "cod"
-                          ? siteConfig.tournaments.cod.registrationFee
-                          : "LKR 1,000"}{" "}
-                        per team • No account creation required
+                        {selectedGame === "valorant" ? (
+                          <>
+                            Registration fee:{" "}
+                            {siteConfig.tournaments.valorant.registrationFee}
+                            {" per team • No account creation required"}
+                          </>
+                        ) : (
+                          "COD registration will be queued - no payment required initially"
+                        )}
                       </p>
-                      {!hasAcceptedRules && (
+                      {!hasAcceptedRules && selectedGame === "valorant" && (
                         <p className="text-sm text-[#ff4654] mt-2">
                           Click to review rules & complete registration in one step
+                        </p>
+                      )}
+                      {selectedGame === "cod" && (
+                        <p className="text-sm text-[#ba3a46] mt-2">
+                          Click to join the COD registration queue
                         </p>
                       )}
                       <button

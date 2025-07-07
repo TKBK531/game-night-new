@@ -256,4 +256,50 @@ adminRouter.get('/secret-challenges', requireAuth, async (req: any, res: any) =>
     }
 });
 
+// COD Queue Management (all authenticated users can view, but only certain roles can approve)
+adminRouter.get('/cod-queue', requireAuth, async (req: any, res: any) => {
+    try {
+        const queuedTeams = await storage.getQueuedTeams('cod');
+        res.json(queuedTeams);
+    } catch (error) {
+        console.error('Error fetching COD queue:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+adminRouter.post('/approve-team/:teamId', requireRole(['superuser', 'elite_board']), async (req: any, res: any) => {
+    try {
+        const { teamId } = req.params;
+        const { approvedBy } = req.body;
+        
+        const team = await storage.approveTeamForPayment(teamId, approvedBy);
+        res.json(team);
+    } catch (error) {
+        console.error('Error approving team:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+adminRouter.post('/reject-team/:teamId', requireRole(['superuser', 'elite_board']), async (req: any, res: any) => {
+    try {
+        const { teamId } = req.params;
+        await storage.rejectTeam(teamId);
+        res.json({ message: 'Team rejected successfully' });
+    } catch (error) {
+        console.error('Error rejecting team:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Migration endpoint for updating existing teams
+adminRouter.post('/migrate-teams', requireRole(['superuser']), async (req: any, res: any) => {
+    try {
+        await storage.migrateExistingTeams();
+        res.json({ message: 'Teams migrated successfully' });
+    } catch (error) {
+        console.error('Error migrating teams:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 export default adminRouter;
