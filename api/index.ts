@@ -138,6 +138,17 @@ const TeamSchema = new mongoose.Schema({
   bankSlipFileName: { type: String },
   bankSlipContentType: { type: String },
   registeredAt: { type: Date, default: Date.now },
+  // New fields for COD queue system
+  status: {
+    type: String,
+    required: true,
+    enum: ["confirmed", "queued", "approved", "rejected"],
+    default: "confirmed", // Default to confirmed for backward compatibility
+  },
+  queuedAt: { type: Date },
+  paymentDeadline: { type: Date },
+  approvedBy: { type: String },
+  approvedAt: { type: Date },
 });
 
 const GameScoreSchema = new mongoose.Schema({
@@ -220,6 +231,22 @@ class MongoDBStorage {
         console.error("Failed to upload bank slip file:", error);
         throw new Error("Failed to upload bank slip file");
       }
+    }
+
+    // Set team status based on game type and COD queue logic
+    if (teamDoc.game === "cod") {
+      // Check if COD queue is full
+      const queuedCount = await Team.countDocuments({ game: "cod", status: "queued" });
+      if (queuedCount >= 5) {
+        throw new Error("COD registration queue is full. Please try again later.");
+      }
+      
+      // Add to COD queue
+      teamDoc.status = "queued";
+      teamDoc.queuedAt = new Date();
+    } else {
+      // Valorant teams are confirmed immediately (with payment)
+      teamDoc.status = "confirmed";
     }
 
     const team = new Team(teamDoc);
@@ -912,12 +939,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log("Teams stats endpoint hit");
         await connectToDatabase();
 
-        const valorantCount = await Team.countDocuments({ game: "valorant" });
-        const codCount = await Team.countDocuments({ game: "cod" });
+        // Count confirmed teams for Valorant (all Valorant teams are confirmed)
+        const valorantCount = await Team.countDocuments({ 
+          game: "valorant", 
+          $or: [
+            { status: 'confirmed' },
+            { status: { $exists: false } },
+            { status: null }
+          ]
+        });
+
+        // Count confirmed + approved teams for COD
+        const codConfirmedCount = await Team.countDocuments({ 
+          game: "cod", 
+          $or: [
+            { status: 'confirmed' },
+            { status: 'approved' },
+            { status: { $exists: false } },
+            { status: null }
+          ]
+        });
+
+        // Count queued teams for COD
+        const codQueuedCount = await Team.countDocuments({ 
+          game: "cod", 
+          status: "queued" 
+        });
 
         const stats = {
-          valorant: { registered: valorantCount, total: 32 },
-          cod: { registered: codCount, total: 32 },
+          valorant: { registered: valorantCount, total: 8 },
+          cod: { 
+            confirmed: codConfirmedCount, 
+            queued: codQueuedCount, 
+            total: 12,
+            maxQueue: 5 
+          }
         };
 
         console.log("Returning stats:", stats);
@@ -1318,6 +1374,142 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // COD Queue Management Endpoints
+    else if (url?.includes("/admin/cod-queue") && method === "GET" && token) {
+      try {
+        const queuedTeams = await Team.find({ status: "queued" }).sort({
+          queuedAt: 1,
+        });
+        const serializedTeams = queuedTeams.map((team) => ({
+          ...team.toObject(),
+          _id: team._id.toString(),
+          bankSlipFileId: team.bankSlipFileId
+            ? team.bankSlipFileId.toString()
+            : undefined,
+        }));
+        res.json(serializedTeams);
+        return;
+      } catch (error) {
+        console.error("Error fetching COD queue:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+    else if (url?.includes("/admin/approve-team/") && method === "POST" && token) {
+      try {
+        const teamId = url.split("/admin/approve-team/")[1];
+        const { approvedBy } = req.body;
+
+        const team = await Team.findByIdAndUpdate(
+          teamId,
+          {
+            status: "approved",
+            approvedBy,
+            approvedAt: new Date(),
+          },
+          { new: true }
+        );
+
+        if (!team) {
+          res.status(404).json({ message: "Team not found" });
+          return;
+        }
+
+        res.json(team);
+        return;
+      } catch (error) {
+        console.error("Error approving team:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+    else if (url?.includes("/admin/reject-team/") && method === "POST" && token) {
+      try {
+        const teamId = url.split("/admin/reject-team/")[1];
+
+        await Team.findByIdAndUpdate(teamId, { status: "rejected" });
+
+        res.json({ message: "Team rejected successfully" });
+        return;
+      } catch (error) {
+        console.error("Error rejecting team:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+    // Check team availability endpoint
+    else if (url?.includes("/teams/check-availability/") && method === "GET") {
+      try {
+        const game = url.split("/teams/check-availability/")[1];
+        
+        if (!["valorant", "cod"].includes(game)) {
+          res.status(400).json({ message: "Invalid game type" });
+          return;
+        }
+
+        if (game === "valorant") {
+          const teamCount = await Team.countDocuments({ 
+            game: "valorant", 
+            $or: [
+              { status: 'confirmed' },
+              { status: { $exists: false } },
+              { status: null }
+            ]
+          });
+          const maxTeams = 8;
+          const isAvailable = teamCount < maxTeams;
+
+          res.json({
+            game,
+            registered: teamCount,
+            maxTeams,
+            isAvailable,
+            message: isAvailable 
+              ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
+              : "Registration is closed for this tournament."
+          });
+        } else {
+          // COD queue system
+          const confirmedCount = await Team.countDocuments({ 
+            game: "cod", 
+            $or: [
+              { status: 'confirmed' },
+              { status: 'approved' },
+              { status: { $exists: false } },
+              { status: null }
+            ]
+          });
+          const queuedCount = await Team.countDocuments({ 
+            game: "cod", 
+            status: "queued" 
+          });
+          const maxTeams = 12;
+          const maxQueue = 5;
+          
+          const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
+
+          res.json({
+            game,
+            confirmed: confirmedCount,
+            queued: queuedCount,
+            maxTeams,
+            maxQueue,
+            isAvailable: isRegistrationOpen,
+            message: isRegistrationOpen 
+              ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
+              : confirmedCount >= maxTeams 
+                ? "Registration is closed. Tournament is full."
+                : "Registration queue is full. Please try again later."
+          });
+        }
+        return;
+      } catch (error) {
+        console.error("Error in /api/teams/check-availability:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
     // Default response for unmatched routes
     res.status(404).json({
       error: "API endpoint not found",
@@ -1336,8 +1528,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/admin/scores/:id (DELETE)",
         "/api/admin/users/:id (DELETE)",
         "/api/admin/secret-challenges/:id (DELETE)",
+        "/api/admin/cod-queue (GET)",
+        "/api/admin/approve-team/:id (POST)",
+        "/api/admin/reject-team/:id (POST)",
         "/api/teams (POST)",
         "/api/teams/check/:teamName (GET)",
+        "/api/teams/check-availability/:game (GET)",
         "/api/teams/stats (GET)",
         "/api/game-scores (POST)",
         "/api/game-scores/leaderboard/:gameType (GET)",
