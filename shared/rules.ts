@@ -21,7 +21,7 @@ export const rulesAndRegulations = {
         id: "registration",
         title: "Registration Requirements",
         content: [
-          "All team registrations must be completed before the deadline: July 14, 2025",
+          "All team registrations must be completed before the deadline: July 12, 2025",
           "Registration fee must be paid in full (LKR 1,000 per team)",
           "Valid payment proof must be uploaded during registration",
           "Team rosters cannot be changed after registration confirmation",
@@ -32,7 +32,7 @@ export const rulesAndRegulations = {
         id: "conduct",
         title: "Code of Conduct",
         content: [
-          "All participants must maintain respectful and sportsmanlike behavior",
+          "All participants must maintain respectful and sportsman like behavior",
           "Use of inappropriate language, harassment, or toxic behavior will result in immediate disqualification",
           "Cheating, hacking, or exploitation of game bugs is strictly prohibited",
           "Players must respect tournament officials, organizers, and fellow competitors",
@@ -150,9 +150,9 @@ export const rulesAndRegulations = {
           title: "Team Composition",
           content: [
             "Each team must consist of exactly 5 players",
-            "Teams must have at least 1 or 2 substitute player registered",
+            // "Teams must have at least 1 or 2 substitute player registered",
             "All team members must be present at the venue during their matches",
-            "Substitutions are only allowed between matches, not during ongoing games",
+            // "Substitutions are only allowed between matches, not during ongoing games",
           ],
         },
         {
