@@ -191,6 +191,7 @@ export default function TeamRegistration() {
   const checkAvailability = async (game: string) => {
     setIsCheckingAvailability(true);
     try {
+      // Both Valorant and COD need to check availability from backend
       const response = await fetch(`/api/teams/check-availability/${game}`);
       const data = await response.json();
       
@@ -200,18 +201,36 @@ export default function TeamRegistration() {
       
       setAvailabilityStatus(data);
       
-      if (data.isAvailable) {
-        setCurrentStep("payment");
-        toast({
-          title: "Registration Available!",
-          description: data.message,
-        });
+      if (game === "valorant") {
+        // For Valorant: Direct registration if slots available
+        if (data.isAvailable) {
+          setCurrentStep("payment");
+          toast({
+            title: "Registration Available!",
+            description: data.message,
+          });
+        } else {
+          toast({
+            title: "Registration Full",
+            description: "Valorant tournament is full. All 8 slots have been taken.",
+            variant: "destructive",
+          });
+        }
       } else {
-        toast({
-          title: "Registration Closed",
-          description: data.message,
-          variant: "destructive",
-        });
+        // For COD: Queue system
+        if (data.isAvailable) {
+          setCurrentStep("payment");
+          toast({
+            title: "Registration Available!",
+            description: data.message,
+          });
+        } else {
+          toast({
+            title: "Registration Closed",
+            description: data.message,
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Error checking availability:", error);
@@ -236,6 +255,16 @@ export default function TeamRegistration() {
       return;
     }
 
+    // If we've already checked and it's not available, don't check again
+    if (availabilityStatus && !availabilityStatus.isAvailable) {
+      toast({
+        title: "Registration Not Available",
+        description: availabilityStatus.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
     await checkAvailability(data.game);
   };
 
@@ -255,28 +284,80 @@ export default function TeamRegistration() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Trigger form validation
-    const isValid = await form.trigger();
+    console.log("Form submitted, current step:", currentStep);
+    console.log("Selected game:", form.getValues("game"));
     
-    if (!isValid) {
-      // Check specifically for tournament selection error
+    if (currentStep === "details") {
+      // For details step, only validate basic fields (not bank slip or Valorant IDs for now)
       const gameValue = form.getValues("game");
       if (!gameValue) {
+        console.log("No game selected");
         toast({
           title: "Tournament Required",
           description: "Please select a tournament (Valorant or Call of Duty) to register for.",
           variant: "destructive"
         });
+        return;
       }
-      return;
-    }
-    
-    const formData = form.getValues();
-    
-    if (currentStep === "details") {
+
+      // Basic validation for required fields
+      const fieldsToValidate = [
+        "teamName",
+        "game", 
+        "captainEmail",
+        "captainPhone",
+        "player1Name",
+        "player1GamingId", 
+        "player1UniversityEmail",
+        "player2Name",
+        "player2GamingId",
+        "player2UniversityEmail", 
+        "player3Name",
+        "player3GamingId",
+        "player3UniversityEmail",
+        "player4Name", 
+        "player4GamingId",
+        "player4UniversityEmail",
+        "player5Name",
+        "player5GamingId",
+        "player5UniversityEmail"
+      ];
+
+      // Add Valorant IDs to validation if Valorant is selected
+      if (gameValue === "valorant") {
+        fieldsToValidate.push(
+          "player1ValorantId",
+          "player2ValorantId", 
+          "player3ValorantId",
+          "player4ValorantId",
+          "player5ValorantId"
+        );
+      }
+
+      const isValid = await form.trigger(fieldsToValidate as any);
+      console.log("Partial form validation result:", isValid);
+      
+      if (!isValid) {
+        console.log("Form validation failed");
+        return;
+      }
+      
+      const formData = form.getValues();
+      console.log("Form data:", formData);
+      console.log("Proceeding to check availability for:", formData.game);
+      
       // First step: proceed to check availability
       await handleProceed(formData);
     } else {
+      console.log("Submitting final registration");
+      // Second step: validate everything including bank slip for Valorant
+      const isValid = await form.trigger();
+      
+      if (!isValid) {
+        console.log("Final form validation failed");
+        return;
+      }
+      
       // Second step: submit the form
       form.handleSubmit(onSubmit)(e);
     }
@@ -639,7 +720,7 @@ export default function TeamRegistration() {
                     <p className="text-sm text-gray-300 mt-2">
                       {availabilityStatus.message}
                     </p>
-                    {availabilityStatus.registered !== undefined ? (
+                    {selectedGame === "valorant" ? (
                       <p className="text-xs text-gray-400 mt-1">
                         {availabilityStatus.registered}/{availabilityStatus.maxTeams} teams registered
                       </p>
@@ -651,7 +732,7 @@ export default function TeamRegistration() {
                   </div>
                 )}
 
-                {/* Bank Slip Upload - Only show for Valorant or when registration is available */}
+                {/* Bank Slip Upload - Show for Valorant when available, or COD when in queue */}
                 {currentStep === "payment" && availabilityStatus?.isAvailable && selectedGame === "valorant" && (
                   <FormField
                     control={form.control}
@@ -771,7 +852,10 @@ export default function TeamRegistration() {
                 <div className="text-center pt-6">
                   <button
                     type="submit"
-                    disabled={isSubmitting || isCheckingAvailability || (availabilityStatus?.isAvailable === false)}
+                    disabled={
+                      isSubmitting || 
+                      isCheckingAvailability
+                    }
                     className="gaming-button px-12 py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                   >
                     {currentStep === "details" ? (
