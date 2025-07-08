@@ -377,6 +377,11 @@ class MongoDBStorage {
     const challenges = await SecretChallenge.find({}).sort({ score: -1, completedAt: 1 });
     return challenges;
   }
+
+  async deleteSecretChallenge(challengeId: string) {
+    await connectToDatabase();
+    await SecretChallenge.findByIdAndDelete(challengeId);
+  }
 }
 
 // GridFS functions for file storage
@@ -1281,6 +1286,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Delete secret challenge endpoint
+    if (
+      url?.match(/\/admin\/secret-challenges\/[a-fA-F0-9]{24}$/) &&
+      method === "DELETE" &&
+      token
+    ) {
+      const userSession = verifyToken(token);
+      if (
+        !userSession ||
+        !["admin", "superuser", "elite_board"].includes(userSession.role)
+      ) {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      const challengeId = url.split("/admin/secret-challenges/")[1];
+      try {
+        await storage.deleteSecretChallenge(challengeId);
+        res.status(200).json({ message: "Secret challenge deleted successfully" });
+        return;
+      } catch (error) {
+        console.error("Error deleting secret challenge:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
     // Default response for unmatched routes
     res.status(404).json({
       error: "API endpoint not found",
@@ -1298,6 +1329,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/admin/teams/:id (DELETE)",
         "/api/admin/scores/:id (DELETE)",
         "/api/admin/users/:id (DELETE)",
+        "/api/admin/secret-challenges/:id (DELETE)",
         "/api/teams (POST)",
         "/api/teams/check/:teamName (GET)",
         "/api/teams/stats (GET)",

@@ -281,6 +281,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const deleteSecretChallenge = async (challengeId: string) => {
+    if (!window.confirm("Are you sure you want to delete this secret challenge score?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/secret-challenges/${challengeId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setSecretChallenges(secretChallenges.filter((challenge) => challenge._id !== challengeId));
+        toast({
+          title: "Secret challenge deleted",
+          description: "Secret challenge score has been deleted successfully",
+        });
+      } else {
+        throw new Error("Failed to delete secret challenge");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete secret challenge",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Sort secret challenges based on current sort settings
   const sortedSecretChallenges = [...secretChallenges].sort((a, b) => {
     if (secretChallengeSortBy === 'score') {
@@ -843,6 +872,14 @@ export default function AdminDashboard() {
                             </p>
                           )}
                         </div>
+                        <Button
+                          onClick={() => deleteSecretChallenge(challenge._id)}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
