@@ -136,6 +136,15 @@ export default function KonamiCodeChallenge() {
       return;
     }
 
+    if (!playerEmail.endsWith('pdn.ac.lk')) {
+      toast({
+        title: "University Email Required",
+        description: "Only university emails ending with 'pdn.ac.lk' are allowed to participate in this secret challenge.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (hasCompleted?.hasCompleted) {
       toast({
         title: "Already Completed",
@@ -259,11 +268,14 @@ export default function KonamiCodeChallenge() {
                   <label className="text-sm font-medium text-purple-200">Your Email</label>
                   <Input
                     type="email"
-                    placeholder="Enter your email to compete"
+                    placeholder="Enter your university email (ending with pdn.ac.lk)"
                     value={playerEmail}
                     onChange={(e) => setPlayerEmail(e.target.value)}
                     className="bg-purple-800/50 border-purple-500/50 text-white placeholder:text-purple-300"
                   />
+                  <p className="text-xs text-purple-300">
+                    📧 Only university emails ending with 'pdn.ac.lk' are allowed
+                  </p>
                   {hasCompleted?.hasCompleted && (
                     <p className="text-sm text-yellow-400">
                       ⚠️ This email has already completed the challenge!

@@ -103,7 +103,13 @@ const insertGameScoreSchema = z.object({
 });
 
 const insertSecretChallengeSchema = z.object({
-  playerEmail: z.string().email("Please enter a valid email address").min(5, "Email too short").max(100, "Email too long"),
+  playerEmail: z.string()
+    .email("Please enter a valid email address")
+    .min(5, "Email too short")
+    .max(100, "Email too long")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "Only PDN university emails (ending with pdn.ac.lk) are allowed for this challenge",
+    }),
   score: z.number().min(0, "Score must be a positive number").max(2000, "Score seems too high"),
 });
 
