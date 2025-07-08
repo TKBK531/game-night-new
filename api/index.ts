@@ -1510,6 +1510,211 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Excel export endpoint
+    if (url?.includes("/admin/export-teams") && method === "GET" && token) {
+      try {
+        const XLSX = require('xlsx');
+        
+        // Get all teams with full details
+        const teams = await Team.find({
+          $or: [
+            { status: { $in: ["confirmed", "approved"] } },
+            { status: { $exists: false } },
+            { status: null }
+          ]
+        }).sort({ registeredAt: -1 });
+        
+        // Format data for Excel
+        const excelData = teams.map((team, index) => ({
+          'S.No': index + 1,
+          'Team Name': team.teamName,
+          'Game': team.game.toUpperCase(),
+          'Status': team.status || 'confirmed',
+          'Captain Email': team.captainEmail,
+          'Captain Phone': team.captainPhone,
+          'Player 1 Name': team.player1Name,
+          'Player 1 Gaming ID': team.player1GamingId,
+          'Player 1 University Email': team.player1UniversityEmail,
+          'Player 1 Valorant ID': team.player1ValorantId || 'N/A',
+          'Player 2 Name': team.player2Name,
+          'Player 2 Gaming ID': team.player2GamingId,
+          'Player 2 University Email': team.player2UniversityEmail,
+          'Player 2 Valorant ID': team.player2ValorantId || 'N/A',
+          'Player 3 Name': team.player3Name,
+          'Player 3 Gaming ID': team.player3GamingId,
+          'Player 3 University Email': team.player3UniversityEmail,
+          'Player 3 Valorant ID': team.player3ValorantId || 'N/A',
+          'Player 4 Name': team.player4Name,
+          'Player 4 Gaming ID': team.player4GamingId,
+          'Player 4 University Email': team.player4UniversityEmail,
+          'Player 4 Valorant ID': team.player4ValorantId || 'N/A',
+          'Player 5 Name': team.player5Name,
+          'Player 5 Gaming ID': team.player5GamingId,
+          'Player 5 University Email': team.player5UniversityEmail,
+          'Player 5 Valorant ID': team.player5ValorantId || 'N/A',
+          'Bank Slip Uploaded': team.bankSlipFileId ? 'Yes' : 'No',
+          'Registration Date': new Date(team.registeredAt).toLocaleDateString(),
+          'Approved By': team.approvedBy || 'N/A',
+          'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A',
+          'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
+        }));
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Auto-size columns
+        const columnWidths = [
+          { wch: 5 },   // S.No
+          { wch: 20 },  // Team Name
+          { wch: 10 },  // Game
+          { wch: 12 },  // Status
+          { wch: 25 },  // Captain Email
+          { wch: 15 },  // Captain Phone
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 15 },  // Bank Slip
+          { wch: 15 },  // Registration Date
+          { wch: 15 },  // Approved By
+          { wch: 15 },  // Approved Date
+          { wch: 15 }   // Queued Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Teams');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Set response headers
+        const fileName = `game-night-teams-${new Date().toISOString().split('T')[0]}.xlsx`;
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        // Send file
+        res.send(excelBuffer);
+        return;
+      } catch (error) {
+        console.error("Error exporting teams:", error);
+        res.status(500).json({ message: "Failed to export teams" });
+        return;
+      }
+    }
+
+    // COD Queue Excel export endpoint
+    if (url?.includes("/admin/export-cod-queue") && method === "GET" && token) {
+      try {
+        const XLSX = require('xlsx');
+        
+        // Get all COD teams in queue or approved status
+        const codTeams = await Team.find({
+          game: 'cod',
+          status: { $in: ["queued", "approved"] }
+        }).sort({ queuedAt: 1 }); // Sort by queue time
+        
+        // Format data for Excel
+        const excelData = codTeams.map((team, index) => ({
+          'Queue Position': index + 1,
+          'Team Name': team.teamName,
+          'Status': team.status,
+          'Captain Email': team.captainEmail,
+          'Captain Phone': team.captainPhone,
+          'Player 1 Name': team.player1Name,
+          'Player 1 Gaming ID': team.player1GamingId,
+          'Player 1 University Email': team.player1UniversityEmail,
+          'Player 2 Name': team.player2Name,
+          'Player 2 Gaming ID': team.player2GamingId,
+          'Player 2 University Email': team.player2UniversityEmail,
+          'Player 3 Name': team.player3Name,
+          'Player 3 Gaming ID': team.player3GamingId,
+          'Player 3 University Email': team.player3UniversityEmail,
+          'Player 4 Name': team.player4Name,
+          'Player 4 Gaming ID': team.player4GamingId,
+          'Player 4 University Email': team.player4UniversityEmail,
+          'Player 5 Name': team.player5Name,
+          'Player 5 Gaming ID': team.player5GamingId,
+          'Player 5 University Email': team.player5UniversityEmail,
+          'Bank Slip Uploaded': team.bankSlipFileId ? 'Yes' : 'No',
+          'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A',
+          'Payment Deadline': team.paymentDeadline ? new Date(team.paymentDeadline).toLocaleDateString() : 'N/A',
+          'Approved By': team.approvedBy || 'N/A',
+          'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A'
+        }));
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Auto-size columns
+        const columnWidths = [
+          { wch: 8 },   // Queue Position
+          { wch: 20 },  // Team Name
+          { wch: 12 },  // Status
+          { wch: 25 },  // Captain Email
+          { wch: 15 },  // Captain Phone
+          { wch: 20 },  // Player names and gaming IDs
+          { wch: 20 },
+          { wch: 30 },  // University emails
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 15 },  // Bank Slip
+          { wch: 15 },  // Queued Date
+          { wch: 15 },  // Payment Deadline
+          { wch: 15 },  // Approved By
+          { wch: 15 }   // Approved Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'COD Queue');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Set response headers
+        const fileName = `cod-queue-${new Date().toISOString().split('T')[0]}.xlsx`;
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        // Send file
+        res.send(excelBuffer);
+        return;
+      } catch (error) {
+        console.error("Error exporting COD queue:", error);
+        res.status(500).json({ message: "Failed to export COD queue" });
+        return;
+      }
+    }
+
     // Default response for unmatched routes
     res.status(404).json({
       error: "API endpoint not found",
@@ -1531,6 +1736,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/admin/cod-queue (GET)",
         "/api/admin/approve-team/:id (POST)",
         "/api/admin/reject-team/:id (POST)",
+        "/api/admin/export-teams (GET)",
+        "/api/admin/export-cod-queue (GET)",
         "/api/teams (POST)",
         "/api/teams/check/:teamName (GET)",
         "/api/teams/check-availability/:game (GET)",

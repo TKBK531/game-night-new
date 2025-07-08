@@ -584,6 +584,106 @@ export default function AdminDashboard() {
     }
   };
 
+  // Download teams as Excel
+  const downloadTeamsExcel = async () => {
+    try {
+      const response = await fetch("/api/admin/export-teams", {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Get the filename from response headers or use default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'game-night-teams.xlsx';
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        // Create blob and download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+          title: "Export Successful",
+          description: "Teams data has been downloaded as Excel file.",
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.message || "Failed to export teams",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download teams data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Function to export COD queue teams
+  const downloadCodQueueExcel = async () => {
+    try {
+      const response = await fetch("/api/admin/export-cod-queue", {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Get the filename from response headers or use default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'cod-queue-teams.xlsx';
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        // Create blob and download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+          title: "Export Successful",
+          description: "COD queue data has been downloaded as Excel file.",
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.message || "Failed to export COD queue",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download COD queue data",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0f1a] flex items-center justify-center">
@@ -765,12 +865,25 @@ export default function AdminDashboard() {
           <TabsContent value="teams" className="space-y-6">
             <Card className="bg-[#111823] border-[#ff4654]/30">
               <CardHeader>
-                <CardTitle className="text-[#ff4654]">
-                  Registered Teams
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  Manage tournament team registrations
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-[#ff4654]">
+                      Registered Teams
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Manage tournament team registrations
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={downloadTeamsExcel}
+                    variant="outline"
+                    size="sm"
+                    className="border-[#ff4654]/30 text-[#ff4654] hover:bg-[#ff4654]/10"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Excel
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1211,12 +1324,25 @@ export default function AdminDashboard() {
           <TabsContent value="cod-queue" className="space-y-6">
             <Card className="bg-[#111823] border-[#ba3a46]/30">
               <CardHeader>
-                <CardTitle className="text-[#ba3a46]">
-                  COD Registration Queue
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  Manage COD team registration queue and approve teams for payment
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-[#ba3a46]">
+                      COD Registration Queue
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Manage COD team registration queue and approve teams for payment
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={downloadCodQueueExcel}
+                    variant="outline"
+                    size="sm"
+                    className="border-[#ba3a46]/30 text-[#ba3a46] hover:bg-[#ba3a46]/10"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Queue
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
