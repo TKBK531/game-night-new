@@ -102,6 +102,17 @@ const insertGameScoreSchema = z.object({
   gameType: z.string().min(1, "Game type is required"),
 });
 
+const insertSecretChallengeSchema = z.object({
+  playerEmail: z.string()
+    .email("Please enter a valid email address")
+    .min(5, "Email too short")
+    .max(100, "Email too long")
+    .refine((email) => email.endsWith("pdn.ac.lk"), {
+      message: "Only PDN university emails (ending with pdn.ac.lk) are allowed for this challenge",
+    }),
+  score: z.number().min(0, "Score must be a positive number").max(2000, "Score seems too high"),
+});
+
 // MongoDB Schemas
 const TeamSchema = new mongoose.Schema({
   teamName: { type: String, required: true, unique: true },
@@ -149,11 +160,18 @@ const UserSchema = new mongoose.Schema({
   lastLogin: { type: Date },
 });
 
+const SecretChallengeSchema = new mongoose.Schema({
+  playerEmail: { type: String, required: true, unique: true },
+  score: { type: Number, required: true, min: 0 },
+  completedAt: { type: Date, default: Date.now },
+});
+
 // Models
 const Team = mongoose.models.Team || mongoose.model("Team", TeamSchema);
 const GameScore =
   mongoose.models.GameScore || mongoose.model("GameScore", GameScoreSchema);
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
+const SecretChallenge = mongoose.models.SecretChallenge || mongoose.model("SecretChallenge", SecretChallengeSchema);
 
 // Storage class implementation
 class MongoDBStorage {
@@ -326,6 +344,49 @@ class MongoDBStorage {
     // This would need GridFS implementation for file retrieval
     // For now, return null
     return null;
+  }
+
+  // Secret challenge methods
+  async createSecretChallenge(challengeData: any) {
+    await connectToDatabase();
+    
+    // Check if player has already completed the challenge
+    const existingChallenge = await SecretChallenge.findOne({ 
+      playerEmail: challengeData.playerEmail 
+    });
+    
+    if (existingChallenge) {
+      throw new Error("You have already completed this challenge!");
+    }
+
+    const secretChallenge = new SecretChallenge(challengeData);
+    await secretChallenge.save();
+    return secretChallenge;
+  }
+
+  async getSecretLeaderboard(limit: number = 10) {
+    await connectToDatabase();
+    const challenges = await SecretChallenge.find({})
+      .sort({ score: -1, completedAt: 1 }) // Sort by highest score, then earliest completion
+      .limit(limit);
+    return challenges;
+  }
+
+  async hasPlayerCompletedSecret(email: string) {
+    await connectToDatabase();
+    const challenge = await SecretChallenge.findOne({ playerEmail: email });
+    return !!challenge;
+  }
+
+  async getAllSecretChallenges() {
+    await connectToDatabase();
+    const challenges = await SecretChallenge.find({}).sort({ score: -1, completedAt: 1 });
+    return challenges;
+  }
+
+  async deleteSecretChallenge(challengeId: string) {
+    await connectToDatabase();
+    await SecretChallenge.findByIdAndDelete(challengeId);
   }
 }
 
@@ -912,6 +973,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Secret challenge endpoints
+    if (url?.includes("/secret-challenge") && method === "POST") {
+      try {
+        const challengeData = insertSecretChallengeSchema.parse(req.body);
+        const challenge = await storage.createSecretChallenge(challengeData);
+        res.status(201).json({ success: true, message: "Challenge completed!", challenge });
+        return;
+      } catch (error) {
+        console.error("Error in POST /api/secret-challenge:", error);
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({
+            message: "Validation error",
+            errors: error.errors
+          });
+        }
+        if (error instanceof Error && error.message.includes("already completed")) {
+          return res.status(409).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    if (url?.includes("/secret-challenge/leaderboard") && method === "GET") {
+      try {
+        const limit = parseInt((req.query?.limit as string) || "10");
+        const leaderboard = await storage.getSecretLeaderboard(limit);
+        res.json(leaderboard);
+        return;
+      } catch (error) {
+        console.error("Error in GET /api/secret-challenge/leaderboard:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    if (url?.includes("/secret-challenge/check/") && method === "GET") {
+      try {
+        const email = url.split("/secret-challenge/check/")[1];
+        const decodedEmail = decodeURIComponent(email);
+        const hasCompleted = await storage.hasPlayerCompletedSecret(decodedEmail);
+        res.json({ hasCompleted });
+        return;
+      } catch (error) {
+        console.error("Error in GET /api/secret-challenge/check:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
     // Admin files endpoint
     if (url?.includes("/admin/files") && method === "GET" && token) {
       const userSession = verifyToken(token);
@@ -1060,6 +1171,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Admin secret challenges endpoint
+    if (url?.includes("/admin/secret-challenges") && method === "GET" && token) {
+      const userSession = verifyToken(token);
+      if (
+        !userSession ||
+        !["admin", "superuser", "elite_board"].includes(userSession.role)
+      ) {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      try {
+        const challenges = await storage.getAllSecretChallenges();
+        res.status(200).json(challenges);
+        return;
+      } catch (error) {
+        console.error("Error getting secret challenges:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
     // Admin users endpoint
     if (url?.includes("/admin/users") && token) {
       const userSession = verifyToken(token);
@@ -1160,6 +1292,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Delete secret challenge endpoint
+    if (
+      url?.match(/\/admin\/secret-challenges\/[a-fA-F0-9]{24}$/) &&
+      method === "DELETE" &&
+      token
+    ) {
+      const userSession = verifyToken(token);
+      if (
+        !userSession ||
+        !["admin", "superuser", "elite_board"].includes(userSession.role)
+      ) {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      const challengeId = url.split("/admin/secret-challenges/")[1];
+      try {
+        await storage.deleteSecretChallenge(challengeId);
+        res.status(200).json({ message: "Secret challenge deleted successfully" });
+        return;
+      } catch (error) {
+        console.error("Error deleting secret challenge:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
     // Default response for unmatched routes
     res.status(404).json({
       error: "API endpoint not found",
@@ -1177,11 +1335,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/admin/teams/:id (DELETE)",
         "/api/admin/scores/:id (DELETE)",
         "/api/admin/users/:id (DELETE)",
+        "/api/admin/secret-challenges/:id (DELETE)",
         "/api/teams (POST)",
         "/api/teams/check/:teamName (GET)",
         "/api/teams/stats (GET)",
         "/api/game-scores (POST)",
         "/api/game-scores/leaderboard/:gameType (GET)",
+        "/api/secret-challenge (POST)",
+        "/api/secret-challenge/leaderboard (GET)",
+        "/api/secret-challenge/check/:email (GET)",
+        "/api/admin/secret-challenges (GET)",
         "/api/files/:id (GET)",
       ],
       requestedUrl: url,

@@ -52,6 +52,14 @@ export interface IGameScore extends Document {
   createdAt: Date;
 }
 
+// Secret Konami Code Challenge Interface
+export interface ISecretChallenge extends Document {
+  _id: string;
+  playerEmail: string;
+  score: number;
+  completedAt: Date;
+}
+
 // User Interface for Admin System
 export interface IUser extends Document {
   _id: string;
@@ -205,6 +213,22 @@ const GameScoreSchema = new Schema<IGameScore>({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Secret Challenge Schema
+const SecretChallengeSchema = new Schema<ISecretChallenge>({
+  playerEmail: {
+    type: String,
+    required: true,
+    unique: true,
+    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  },
+  score: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  completedAt: { type: Date, default: Date.now },
+});
+
 // User Schema
 const UserSchema = new Schema<IUser>({
   username: {
@@ -238,6 +262,8 @@ TeamSchema.index({ registeredAt: -1 });
 GameScoreSchema.index({ gameType: 1, score: 1 });
 GameScoreSchema.index({ createdAt: -1 });
 
+SecretChallengeSchema.index({ playerEmail: 1 });
+
 // Note: username index is automatically created by unique: true in schema definition
 UserSchema.index({ role: 1 });
 
@@ -246,6 +272,10 @@ export const Team = mongoose.model<ITeam>("Team", TeamSchema);
 export const GameScore = mongoose.model<IGameScore>(
   "GameScore",
   GameScoreSchema
+);
+export const SecretChallenge = mongoose.model<ISecretChallenge>(
+  "SecretChallenge",
+  SecretChallengeSchema
 );
 export const User = mongoose.model<IUser>("User", UserSchema);
 
