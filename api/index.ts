@@ -1496,7 +1496,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             maxQueue,
             isAvailable: isRegistrationOpen,
             message: isRegistrationOpen 
-              ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
+              ? "Registration is open. You will be added to the registration queue."
               : confirmedCount >= maxTeams 
                 ? "Registration is closed. Tournament is full."
                 : "Registration queue is full. Please try again later."

@@ -645,8 +645,7 @@ export default function TeamRegistration() {
                       </p>
                     ) : (
                       <p className="text-xs text-gray-400 mt-1">
-                        Confirmed: {availabilityStatus.confirmed}/{availabilityStatus.maxTeams} | 
-                        Queue: {availabilityStatus.queued}/{availabilityStatus.maxQueue}
+                        {availabilityStatus.confirmed}/{availabilityStatus.maxTeams} teams confirmed
                       </p>
                     )}
                   </div>

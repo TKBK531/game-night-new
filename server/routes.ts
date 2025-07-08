@@ -265,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxQueue,
           isAvailable: isRegistrationOpen,
           message: isRegistrationOpen 
-            ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
+            ? "Registration is open. You will be added to the registration queue."
             : confirmedCount >= maxTeams 
               ? "Registration is closed. Tournament is full."
               : "Registration queue is full. Please try again later."
@@ -472,17 +472,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(team);
     } catch (error) {
       console.error("Error in /api/admin/approve-team:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.post("/api/admin/confirm-team/:teamId", async (req, res) => {
-    try {
-      const { teamId } = req.params;
-      const team = await storage.confirmTeamRegistration(teamId);
-      res.json(team);
-    } catch (error) {
-      console.error("Error in /api/admin/confirm-team:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

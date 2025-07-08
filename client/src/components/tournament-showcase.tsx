@@ -280,15 +280,10 @@ export default function TournamentShowcase() {
                 ></motion.div>
               </div>
               
-              {/* Queue Information */}
-              <div className="flex justify-between text-xs mt-2 text-gray-400">
-                <span>In Queue</span>
-                <span>{(stats as any)?.cod?.queued || 0}/{(stats as any)?.cod?.maxQueue || 5}</span>
-              </div>
             </motion.div>
 
             <motion.button
-              // onClick={() => scrollToSection('register')}
+              onClick={() => scrollToSection('register')}
               className="w-full gaming-button py-3 rounded-lg font-semibold"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -296,7 +291,7 @@ export default function TournamentShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Registerations for COD is Closed for Now
+              Register for COD
             </motion.button>
           </motion.div>
         </motion.div>
