@@ -138,6 +138,17 @@ const TeamSchema = new mongoose.Schema({
   bankSlipFileName: { type: String },
   bankSlipContentType: { type: String },
   registeredAt: { type: Date, default: Date.now },
+  // New fields for COD queue system
+  status: {
+    type: String,
+    required: true,
+    enum: ["confirmed", "queued", "approved", "rejected"],
+    default: "confirmed", // Default to confirmed for backward compatibility
+  },
+  queuedAt: { type: Date },
+  paymentDeadline: { type: Date },
+  approvedBy: { type: String },
+  approvedAt: { type: Date },
 });
 
 const GameScoreSchema = new mongoose.Schema({
@@ -220,6 +231,22 @@ class MongoDBStorage {
         console.error("Failed to upload bank slip file:", error);
         throw new Error("Failed to upload bank slip file");
       }
+    }
+
+    // Set team status based on game type and COD queue logic
+    if (teamDoc.game === "cod") {
+      // Check if COD queue is full
+      const queuedCount = await Team.countDocuments({ game: "cod", status: "queued" });
+      if (queuedCount >= 5) {
+        throw new Error("COD registration queue is full. Please try again later.");
+      }
+      
+      // Add to COD queue
+      teamDoc.status = "queued";
+      teamDoc.queuedAt = new Date();
+    } else {
+      // Valorant teams are confirmed immediately (with payment)
+      teamDoc.status = "confirmed";
     }
 
     const team = new Team(teamDoc);
@@ -912,12 +939,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log("Teams stats endpoint hit");
         await connectToDatabase();
 
-        const valorantCount = await Team.countDocuments({ game: "valorant" });
-        const codCount = await Team.countDocuments({ game: "cod" });
+        // Count confirmed teams for Valorant (all Valorant teams are confirmed)
+        const valorantCount = await Team.countDocuments({ 
+          game: "valorant", 
+          $or: [
+            { status: 'confirmed' },
+            { status: { $exists: false } },
+            { status: null }
+          ]
+        });
+
+        // Count confirmed + approved teams for COD
+        const codConfirmedCount = await Team.countDocuments({ 
+          game: "cod", 
+          $or: [
+            { status: 'confirmed' },
+            { status: 'approved' },
+            { status: { $exists: false } },
+            { status: null }
+          ]
+        });
+
+        // Count queued teams for COD
+        const codQueuedCount = await Team.countDocuments({ 
+          game: "cod", 
+          status: "queued" 
+        });
 
         const stats = {
-          valorant: { registered: valorantCount, total: 32 },
-          cod: { registered: codCount, total: 32 },
+          valorant: { registered: valorantCount, total: 8 },
+          cod: { 
+            confirmed: codConfirmedCount, 
+            queued: codQueuedCount, 
+            total: 12,
+            maxQueue: 5 
+          }
         };
 
         console.log("Returning stats:", stats);
@@ -1318,6 +1374,347 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // COD Queue Management Endpoints.
+    else if (url?.includes("/admin/cod-queue") && method === "GET" && token) {
+      try {
+        const queuedTeams = await Team.find({ status: "queued" }).sort({
+          queuedAt: 1,
+        });
+        const serializedTeams = queuedTeams.map((team) => ({
+          ...team.toObject(),
+          _id: team._id.toString(),
+          bankSlipFileId: team.bankSlipFileId
+            ? team.bankSlipFileId.toString()
+            : undefined,
+        }));
+        res.json(serializedTeams);
+        return;
+      } catch (error) {
+        console.error("Error fetching COD queue:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+    else if (url?.includes("/admin/approve-team/") && method === "POST" && token) {
+      try {
+        const teamId = url.split("/admin/approve-team/")[1];
+        const { approvedBy } = req.body;
+
+        const team = await Team.findByIdAndUpdate(
+          teamId,
+          {
+            status: "approved",
+            approvedBy,
+            approvedAt: new Date(),
+          },
+          { new: true }
+        );
+
+        if (!team) {
+          res.status(404).json({ message: "Team not found" });
+          return;
+        }
+
+        res.json(team);
+        return;
+      } catch (error) {
+        console.error("Error approving team:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+    else if (url?.includes("/admin/reject-team/") && method === "POST" && token) {
+      try {
+        const teamId = url.split("/admin/reject-team/")[1];
+
+        await Team.findByIdAndUpdate(teamId, { status: "rejected" });
+
+        res.json({ message: "Team rejected successfully" });
+        return;
+      } catch (error) {
+        console.error("Error rejecting team:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+    // Check team availability endpoint
+    else if (url?.includes("/teams/check-availability/") && method === "GET") {
+      try {
+        const game = url.split("/teams/check-availability/")[1];
+        
+        if (!["valorant", "cod"].includes(game)) {
+          res.status(400).json({ message: "Invalid game type" });
+          return;
+        }
+
+        if (game === "valorant") {
+          const teamCount = await Team.countDocuments({ 
+            game: "valorant", 
+            $or: [
+              { status: 'confirmed' },
+              { status: { $exists: false } },
+              { status: null }
+            ]
+          });
+          const maxTeams = 8;
+          const isAvailable = teamCount < maxTeams;
+
+          res.json({
+            game,
+            registered: teamCount,
+            maxTeams,
+            isAvailable,
+            message: isAvailable 
+              ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
+              : "Registration is closed for this tournament."
+          });
+        } else {
+          // COD queue system
+          const confirmedCount = await Team.countDocuments({ 
+            game: "cod", 
+            $or: [
+              { status: 'confirmed' },
+              { status: 'approved' },
+              { status: { $exists: false } },
+              { status: null }
+            ]
+          });
+          const queuedCount = await Team.countDocuments({ 
+            game: "cod", 
+            status: "queued" 
+          });
+          const maxTeams = 12;
+          const maxQueue = 5;
+          
+          const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
+
+          res.json({
+            game,
+            confirmed: confirmedCount,
+            queued: queuedCount,
+            maxTeams,
+            maxQueue,
+            isAvailable: isRegistrationOpen,
+            message: isRegistrationOpen 
+              ? "Registration is open. You will be added to the registration queue."
+              : confirmedCount >= maxTeams 
+                ? "Registration is closed. Tournament is full."
+                : "Registration queue is full. Please try again later."
+          });
+        }
+        return;
+      } catch (error) {
+        console.error("Error in /api/teams/check-availability:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    // Excel export endpoint
+    if (url?.includes("/admin/export-teams") && method === "GET" && token) {
+      try {
+        const XLSX = require('xlsx');
+        
+        // Get all teams with full details
+        const teams = await Team.find({
+          $or: [
+            { status: { $in: ["confirmed", "approved"] } },
+            { status: { $exists: false } },
+            { status: null }
+          ]
+        }).sort({ registeredAt: -1 });
+        
+        // Format data for Excel
+        const excelData = teams.map((team, index) => ({
+          'S.No': index + 1,
+          'Team Name': team.teamName,
+          'Game': team.game.toUpperCase(),
+          'Status': team.status || 'confirmed',
+          'Captain Email': team.captainEmail,
+          'Captain Phone': team.captainPhone,
+          'Player 1 Name': team.player1Name,
+          'Player 1 Gaming ID': team.player1GamingId,
+          'Player 1 University Email': team.player1UniversityEmail,
+          'Player 1 Valorant ID': team.player1ValorantId || 'N/A',
+          'Player 2 Name': team.player2Name,
+          'Player 2 Gaming ID': team.player2GamingId,
+          'Player 2 University Email': team.player2UniversityEmail,
+          'Player 2 Valorant ID': team.player2ValorantId || 'N/A',
+          'Player 3 Name': team.player3Name,
+          'Player 3 Gaming ID': team.player3GamingId,
+          'Player 3 University Email': team.player3UniversityEmail,
+          'Player 3 Valorant ID': team.player3ValorantId || 'N/A',
+          'Player 4 Name': team.player4Name,
+          'Player 4 Gaming ID': team.player4GamingId,
+          'Player 4 University Email': team.player4UniversityEmail,
+          'Player 4 Valorant ID': team.player4ValorantId || 'N/A',
+          'Player 5 Name': team.player5Name,
+          'Player 5 Gaming ID': team.player5GamingId,
+          'Player 5 University Email': team.player5UniversityEmail,
+          'Player 5 Valorant ID': team.player5ValorantId || 'N/A',
+          'Bank Slip Uploaded': team.bankSlipFileId ? 'Yes' : 'No',
+          'Registration Date': new Date(team.registeredAt).toLocaleDateString(),
+          'Approved By': team.approvedBy || 'N/A',
+          'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A',
+          'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
+        }));
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Auto-size columns
+        const columnWidths = [
+          { wch: 5 },   // S.No
+          { wch: 20 },  // Team Name
+          { wch: 10 },  // Game
+          { wch: 12 },  // Status
+          { wch: 25 },  // Captain Email
+          { wch: 15 },  // Captain Phone
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 20 },  // Player names
+          { wch: 20 },  // Gaming IDs
+          { wch: 30 },  // University emails
+          { wch: 20 },  // Valorant IDs
+          { wch: 15 },  // Bank Slip
+          { wch: 15 },  // Registration Date
+          { wch: 15 },  // Approved By
+          { wch: 15 },  // Approved Date
+          { wch: 15 }   // Queued Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Teams');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Set response headers
+        const fileName = `game-night-teams-${new Date().toISOString().split('T')[0]}.xlsx`;
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        // Send file
+        res.send(excelBuffer);
+        return;
+      } catch (error) {
+        console.error("Error exporting teams:", error);
+        res.status(500).json({ message: "Failed to export teams" });
+        return;
+      }
+    }
+
+    // COD Queue Excel export endpoint
+    if (url?.includes("/admin/export-cod-queue") && method === "GET" && token) {
+      try {
+        const XLSX = require('xlsx');
+        
+        // Get all COD teams in queue or approved status
+        const codTeams = await Team.find({
+          game: 'cod',
+          status: { $in: ["queued", "approved"] }
+        }).sort({ queuedAt: 1 }); // Sort by queue time
+        
+        // Format data for Excel
+        const excelData = codTeams.map((team, index) => ({
+          'Queue Position': index + 1,
+          'Team Name': team.teamName,
+          'Status': team.status,
+          'Captain Email': team.captainEmail,
+          'Captain Phone': team.captainPhone,
+          'Player 1 Name': team.player1Name,
+          'Player 1 Gaming ID': team.player1GamingId,
+          'Player 1 University Email': team.player1UniversityEmail,
+          'Player 2 Name': team.player2Name,
+          'Player 2 Gaming ID': team.player2GamingId,
+          'Player 2 University Email': team.player2UniversityEmail,
+          'Player 3 Name': team.player3Name,
+          'Player 3 Gaming ID': team.player3GamingId,
+          'Player 3 University Email': team.player3UniversityEmail,
+          'Player 4 Name': team.player4Name,
+          'Player 4 Gaming ID': team.player4GamingId,
+          'Player 4 University Email': team.player4UniversityEmail,
+          'Player 5 Name': team.player5Name,
+          'Player 5 Gaming ID': team.player5GamingId,
+          'Player 5 University Email': team.player5UniversityEmail,
+          'Bank Slip Uploaded': team.bankSlipFileId ? 'Yes' : 'No',
+          'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A',
+          'Payment Deadline': team.paymentDeadline ? new Date(team.paymentDeadline).toLocaleDateString() : 'N/A',
+          'Approved By': team.approvedBy || 'N/A',
+          'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A'
+        }));
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Auto-size columns
+        const columnWidths = [
+          { wch: 8 },   // Queue Position
+          { wch: 20 },  // Team Name
+          { wch: 12 },  // Status
+          { wch: 25 },  // Captain Email
+          { wch: 15 },  // Captain Phone
+          { wch: 20 },  // Player names and gaming IDs
+          { wch: 20 },
+          { wch: 30 },  // University emails
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 30 },
+          { wch: 15 },  // Bank Slip
+          { wch: 15 },  // Queued Date
+          { wch: 15 },  // Payment Deadline
+          { wch: 15 },  // Approved By
+          { wch: 15 }   // Approved Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'COD Queue');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Set response headers
+        const fileName = `cod-queue-${new Date().toISOString().split('T')[0]}.xlsx`;
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        // Send file
+        res.send(excelBuffer);
+        return;
+      } catch (error) {
+        console.error("Error exporting COD queue:", error);
+        res.status(500).json({ message: "Failed to export COD queue" });
+        return;
+      }
+    }
+
     // Default response for unmatched routes
     res.status(404).json({
       error: "API endpoint not found",
@@ -1336,8 +1733,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/admin/scores/:id (DELETE)",
         "/api/admin/users/:id (DELETE)",
         "/api/admin/secret-challenges/:id (DELETE)",
+        "/api/admin/cod-queue (GET)",
+        "/api/admin/approve-team/:id (POST)",
+        "/api/admin/reject-team/:id (POST)",
+        "/api/admin/export-teams (GET)",
+        "/api/admin/export-cod-queue (GET)",
         "/api/teams (POST)",
         "/api/teams/check/:teamName (GET)",
+        "/api/teams/check-availability/:game (GET)",
         "/api/teams/stats (GET)",
         "/api/game-scores (POST)",
         "/api/game-scores/leaderboard/:gameType (GET)",

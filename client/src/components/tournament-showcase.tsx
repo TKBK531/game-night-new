@@ -268,21 +268,22 @@ export default function TournamentShowcase() {
               transition={{ delay: 0.6, duration: 0.5 }}
             >
               <div className="flex justify-between text-sm mb-2">
-                <span>Teams Registered</span>
-                <span>{(stats as any)?.cod?.registered || 0}/{siteConfig.tournaments.cod.maxTeams}</span>
+                <span>Teams Confirmed</span>
+                <span>{(stats as any)?.cod?.confirmed || 0}/{siteConfig.tournaments.cod.maxTeams}</span>
               </div>
               <div className="w-full bg-[#242d3d] rounded-full h-3 overflow-hidden">
                 <motion.div
                   className="bg-gradient-to-r from-[#ba3a46] to-[#ff4654] h-3 rounded-full"
                   initial={{ width: 0 }}
-                  whileInView={{ width: `${(((stats as any)?.cod?.registered || 0) / siteConfig.tournaments.cod.maxTeams) * 100}%` }}
+                  whileInView={{ width: `${(((stats as any)?.cod?.confirmed || 0) / siteConfig.tournaments.cod.maxTeams) * 100}%` }}
                   transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 ></motion.div>
               </div>
+              
             </motion.div>
 
             <motion.button
-              // onClick={() => scrollToSection('register')}
+              onClick={() => scrollToSection('register')}
               className="w-full gaming-button py-3 rounded-lg font-semibold"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -290,7 +291,7 @@ export default function TournamentShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Registerations for COD is Closed for Now
+              Register for COD
             </motion.button>
           </motion.div>
         </motion.div>

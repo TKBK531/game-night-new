@@ -80,6 +80,17 @@ export function setupServerlessRoutes(app: Express): void {
 
             const teamData = insertTeamSchema.parse(formData);
 
+            // Check team registration limits
+            const currentTeamCount = await storage.getTeamCount(teamData.game);
+            const maxTeams = teamData.game === "valorant" ? 8 : 12;
+            
+            if (currentTeamCount >= maxTeams) {
+                return res.status(400).json({
+                    message: `Registration is closed for ${teamData.game}. Maximum ${maxTeams} teams allowed.`,
+                    field: "game"
+                });
+            }
+
             // Check if team name is unique
             const existingTeam = await storage.getTeamByName(teamData.teamName);
             if (existingTeam) {
@@ -163,15 +174,73 @@ export function setupServerlessRoutes(app: Express): void {
         }
     });
 
+    // Check registration availability for a specific game
+    app.get("/api/teams/check-availability/:game", async (req, res) => {
+        try {
+            const { game } = req.params;
+            
+            if (!["valorant", "cod"].includes(game)) {
+                return res.status(400).json({ message: "Invalid game type" });
+            }
+
+            if (game === "valorant") {
+                const teamCount = await storage.getConfirmedTeamCount(game);
+                const maxTeams = 8;
+                const isAvailable = teamCount < maxTeams;
+
+                res.json({
+                    game,
+                    registered: teamCount,
+                    maxTeams,
+                    isAvailable,
+                    message: isAvailable 
+                        ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
+                        : "Registration is closed for this tournament."
+                });
+            } else {
+                // COD queue system
+                const confirmedCount = await storage.getConfirmedTeamCount(game);
+                const queuedCount = await storage.getQueuedTeamCount(game);
+                const maxTeams = 12;
+                const maxQueue = 5;
+                
+                const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
+
+                res.json({
+                    game,
+                    confirmed: confirmedCount,
+                    queued: queuedCount,
+                    maxTeams,
+                    maxQueue,
+                    isAvailable: isRegistrationOpen,
+                    message: isRegistrationOpen 
+                        ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
+                        : confirmedCount >= maxTeams 
+                          ? "Registration is closed. Tournament is full."
+                          : "Registration queue is full. Please try again later."
+                });
+            }
+        } catch (error) {
+            console.error("Error in /api/teams/check-availability:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
     // Get team statistics
     app.get("/api/teams/stats", async (req, res) => {
         try {
-            const valorantCount = await storage.getTeamCount("valorant");
-            const codCount = await storage.getTeamCount("cod");
+            const valorantCount = await storage.getConfirmedTeamCount("valorant");
+            const codConfirmedCount = await storage.getConfirmedTeamCount("cod");
+            const codQueuedCount = await storage.getQueuedTeamCount("cod");
 
             res.json({
-                valorant: { registered: valorantCount, total: 32 },
-                cod: { registered: codCount, total: 32 }
+                valorant: { registered: valorantCount, total: 8 },
+                cod: { 
+                    confirmed: codConfirmedCount, 
+                    queued: codQueuedCount, 
+                    total: 12,
+                    maxQueue: 5 
+                }
             });
         } catch (error) {
             console.error("Error in /api/teams/stats:", error);

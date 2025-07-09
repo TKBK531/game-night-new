@@ -8,8 +8,17 @@ async function initializeSuperuser() {
         await connectToDatabase();
         console.log('🔌 Connected to MongoDB');
 
+        // Get superuser credentials from environment variables
+        const superuserUsername = process.env.SUPERUSER_USERNAME;
+        const superuserPassword = process.env.SUPERUSER_PASSWORD;
+
+        if (!superuserUsername || !superuserPassword) {
+            console.error('❌ SUPERUSER_USERNAME and SUPERUSER_PASSWORD must be set in environment variables');
+            return;
+        }
+
         // Check if superuser already exists
-        const existingSuperuser = await User.findOne({ username: 'TKBK531' });
+        const existingSuperuser = await User.findOne({ username: superuserUsername });
 
         if (existingSuperuser) {
             console.log('✅ Superuser already exists');
@@ -17,11 +26,11 @@ async function initializeSuperuser() {
         }
 
         // Hash the password
-        const hashedPassword = await bcrypt.hash('Kasthuri@1971', 10);
+        const hashedPassword = await bcrypt.hash(superuserPassword, 10);
 
         // Create superuser
         const superuser = new User({
-            username: 'TKBK531',
+            username: superuserUsername,
             password: hashedPassword,
             role: 'superuser',
             isActive: true
@@ -29,8 +38,7 @@ async function initializeSuperuser() {
 
         await superuser.save();
         console.log('✅ Superuser created successfully');
-        console.log('Username: TKBK531');
-        console.log('Password: Kasthuri@1971');
+        console.log(`Username: ${superuserUsername}`);
         console.log('Role: superuser');
 
     } catch (error) {

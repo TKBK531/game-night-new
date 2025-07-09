@@ -2,6 +2,7 @@ import express from 'express';
 import { storage } from './mongo-storage';
 import { loginUserSchema, insertUserSchema } from '../shared/mongo-validation';
 import { z } from 'zod';
+import * as XLSX from 'xlsx';
 
 const adminRouter = express.Router();
 
@@ -253,6 +254,258 @@ adminRouter.get('/secret-challenges', requireAuth, async (req: any, res: any) =>
     } catch (error) {
         console.error('Get secret challenges error:', error);
         res.status(500).json({ message: 'Failed to fetch secret challenges' });
+    }
+});
+
+// COD Queue Management (all authenticated users can view, but only certain roles can approve)
+adminRouter.get('/cod-queue', requireAuth, async (req: any, res: any) => {
+    try {
+        const queuedTeams = await storage.getQueuedTeams('cod');
+        res.json(queuedTeams);
+    } catch (error) {
+        console.error('Error fetching COD queue:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+adminRouter.post('/approve-team/:teamId', requireRole(['superuser', 'elite_board']), async (req: any, res: any) => {
+    try {
+        const { teamId } = req.params;
+        const { approvedBy } = req.body;
+        
+        const team = await storage.approveTeamForPayment(teamId, approvedBy);
+        res.json(team);
+    } catch (error) {
+        console.error('Error approving team:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+adminRouter.post('/reject-team/:teamId', requireRole(['superuser', 'elite_board']), async (req: any, res: any) => {
+    try {
+        const { teamId } = req.params;
+        await storage.rejectTeam(teamId);
+        res.json({ message: 'Team rejected successfully' });
+    } catch (error) {
+        console.error('Error rejecting team:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Migration endpoint for updating existing teams
+adminRouter.post('/migrate-teams', requireRole(['superuser']), async (req: any, res: any) => {
+    try {
+        await storage.migrateExistingTeams();
+        res.json({ message: 'Teams migrated successfully' });
+    } catch (error) {
+        console.error('Error migrating teams:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Excel export endpoint
+adminRouter.get('/export-teams', requireAuth, async (req: any, res: any) => {
+    try {
+        console.log('Excel export request received');
+        
+        // Get all teams with full details
+        console.log('Fetching teams from storage...');
+        const teams = await storage.getAllTeams();
+        console.log(`Found ${teams.length} teams`);
+        
+        // Format data for Excel
+        console.log('Formatting data for Excel...');
+        const excelData = teams.map((team, index) => ({
+            'S.No': index + 1,
+            'Team Name': team.teamName,
+            'Game': team.game.toUpperCase(),
+            'Status': team.status || 'confirmed',
+            'Captain Email': team.captainEmail,
+            'Captain Phone': team.captainPhone,
+            'Player 1 Name': team.player1Name,
+            'Player 1 Gaming ID': team.player1GamingId,
+            'Player 1 University Email': team.player1UniversityEmail,
+            'Player 1 Valorant ID': team.player1ValorantId || 'N/A',
+            'Player 2 Name': team.player2Name,
+            'Player 2 Gaming ID': team.player2GamingId,
+            'Player 2 University Email': team.player2UniversityEmail,
+            'Player 2 Valorant ID': team.player2ValorantId || 'N/A',
+            'Player 3 Name': team.player3Name,
+            'Player 3 Gaming ID': team.player3GamingId,
+            'Player 3 University Email': team.player3UniversityEmail,
+            'Player 3 Valorant ID': team.player3ValorantId || 'N/A',
+            'Player 4 Name': team.player4Name,
+            'Player 4 Gaming ID': team.player4GamingId,
+            'Player 4 University Email': team.player4UniversityEmail,
+            'Player 4 Valorant ID': team.player4ValorantId || 'N/A',
+            'Player 5 Name': team.player5Name,
+            'Player 5 Gaming ID': team.player5GamingId,
+            'Player 5 University Email': team.player5UniversityEmail,
+            'Player 5 Valorant ID': team.player5ValorantId || 'N/A',
+            'Bank Slip Uploaded': team.bankSlipFileId ? 'Yes' : 'No',
+            'Registration Date': new Date(team.registeredAt).toLocaleDateString(),
+            'Approved By': team.approvedBy || 'N/A',
+            'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A',
+            'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
+        }));
+        console.log(`Formatted ${excelData.length} rows for Excel`);
+        
+        // Create workbook and worksheet
+        console.log('Creating workbook...');
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        console.log('Worksheet created');
+        
+        // Auto-size columns
+        const columnWidths = [
+            { wch: 5 },   // S.No
+            { wch: 20 },  // Team Name
+            { wch: 10 },  // Game
+            { wch: 12 },  // Status
+            { wch: 25 },  // Captain Email
+            { wch: 15 },  // Captain Phone
+            { wch: 20 },  // Player names
+            { wch: 20 },  // Gaming IDs
+            { wch: 30 },  // University emails
+            { wch: 20 },  // Valorant IDs
+            { wch: 20 },  // Player names
+            { wch: 20 },  // Gaming IDs
+            { wch: 30 },  // University emails
+            { wch: 20 },  // Valorant IDs
+            { wch: 20 },  // Player names
+            { wch: 20 },  // Gaming IDs
+            { wch: 30 },  // University emails
+            { wch: 20 },  // Valorant IDs
+            { wch: 20 },  // Player names
+            { wch: 20 },  // Gaming IDs
+            { wch: 30 },  // University emails
+            { wch: 20 },  // Valorant IDs
+            { wch: 20 },  // Player names
+            { wch: 20 },  // Gaming IDs
+            { wch: 30 },  // University emails
+            { wch: 20 },  // Valorant IDs
+            { wch: 15 },  // Bank Slip
+            { wch: 15 },  // Registration Date
+            { wch: 15 },  // Approved By
+            { wch: 15 },  // Approved Date
+            { wch: 15 }   // Queued Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        console.log('Column widths set');
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Teams');
+        console.log('Worksheet appended to workbook');
+        
+        // Generate Excel file buffer
+        console.log('Generating Excel buffer...');
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        console.log(`Excel buffer generated, size: ${excelBuffer.length} bytes`);
+        
+        // Set response headers
+        const fileName = `game-night-teams-${new Date().toISOString().split('T')[0]}.xlsx`;
+        console.log(`Setting response headers, filename: ${fileName}`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        // Send file
+        console.log('Sending file...');
+        res.send(excelBuffer);
+        console.log('File sent successfully');
+    } catch (error) {
+        console.error('Error exporting teams:', error);
+        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        res.status(500).json({ 
+            message: 'Failed to export teams', 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+        });
+    }
+});
+
+// Excel export endpoint for COD queue only
+adminRouter.get('/export-cod-queue', requireAuth, async (req: any, res: any) => {
+    try {
+        console.log('COD queue export request received');
+        
+        // Get COD queued teams only
+        console.log('Fetching COD queued teams from storage...');
+        const queuedTeams = await storage.getQueuedTeams('cod');
+        console.log(`Found ${queuedTeams.length} COD queued teams`);
+        
+        // Format data for Excel
+        const excelData = queuedTeams.map((team, index) => ({
+            'S.No': index + 1,
+            'Team Name': team.teamName,
+            'Status': team.status,
+            'Captain Email': team.captainEmail,
+            'Captain Phone': team.captainPhone,
+            'Player 1 Name': team.player1Name,
+            'Player 1 Gaming ID': team.player1GamingId,
+            'Player 1 University Email': team.player1UniversityEmail,
+            'Player 2 Name': team.player2Name,
+            'Player 2 Gaming ID': team.player2GamingId,
+            'Player 2 University Email': team.player2UniversityEmail,
+            'Player 3 Name': team.player3Name,
+            'Player 3 Gaming ID': team.player3GamingId,
+            'Player 3 University Email': team.player3UniversityEmail,
+            'Player 4 Name': team.player4Name,
+            'Player 4 Gaming ID': team.player4GamingId,
+            'Player 4 University Email': team.player4UniversityEmail,
+            'Player 5 Name': team.player5Name,
+            'Player 5 Gaming ID': team.player5GamingId,
+            'Player 5 University Email': team.player5UniversityEmail,
+            'Registration Date': new Date(team.registeredAt).toLocaleDateString(),
+            'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
+        }));
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Auto-size columns
+        const columnWidths = [
+            { wch: 5 },   // S.No
+            { wch: 20 },  // Team Name
+            { wch: 12 },  // Status
+            { wch: 25 },  // Captain Email
+            { wch: 15 },  // Captain Phone
+            { wch: 20 },  // Player names and details
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 15 },  // Registration Date
+            { wch: 15 }   // Queued Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'COD Queue');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Set response headers
+        const fileName = `cod-queue-${new Date().toISOString().split('T')[0]}.xlsx`;
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        // Send file
+        res.send(excelBuffer);
+        console.log('COD queue export completed successfully');
+    } catch (error) {
+        console.error('Error exporting COD queue:', error);
+        res.status(500).json({ message: 'Failed to export COD queue' });
     }
 });
 

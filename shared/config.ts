@@ -67,7 +67,7 @@ export const siteConfig = {
     cod: {
       name: "Call of Duty",
       prizePool: "LKR 30,000",
-      maxTeams: 8,
+      maxTeams: 12,
       teamSize: 5,
       registrationFee: "LKR 1000",
       rules: [

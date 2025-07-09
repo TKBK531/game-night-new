@@ -11,9 +11,19 @@ export interface IStorage {
     getTeamsByGame(game: string): Promise<ITeam[]>;
     getAllTeams(): Promise<ITeam[]>;
     getTeamCount(game: string): Promise<number>;
+    getQueuedTeamCount(game: string): Promise<number>;
+    getConfirmedTeamCount(game: string): Promise<number>;
     deleteTeam(teamId: string): Promise<void>;
     teamExists(teamName: string): Promise<boolean>;
     getTeamStats(): Promise<{ totalTeams: number; valorantTeams: number; csTeams: number }>;
+
+    // Queue management
+    getQueuedTeams(game: string): Promise<ITeam[]>;
+    approveTeamForPayment(teamId: string, approvedBy: string): Promise<ITeam>;
+    rejectTeam(teamId: string): Promise<void>;
+    
+    // Migration
+    migrateExistingTeams(): Promise<void>;
 
     // Game scores
     createGameScore(score: InsertGameScore): Promise<IGameScore>;
@@ -51,6 +61,14 @@ export class MongoDBStorage implements IStorage {
         const { bankSlip, bankSlipFile, bankSlipFileName, bankSlipContentType, ...teamData } = insertTeam;
 
         let teamDoc: any = { ...teamData };
+
+        // Set initial status based on game type
+        if (teamData.game === "cod") {
+            teamDoc.status = "queued";
+            teamDoc.queuedAt = new Date();
+        } else {
+            teamDoc.status = "confirmed"; // Valorant teams are confirmed immediately after payment
+        }
 
         // Handle file upload to GridFS if file buffer is provided
         if (bankSlipFile && bankSlipFileName && bankSlipContentType) {
@@ -100,14 +118,47 @@ export class MongoDBStorage implements IStorage {
     async getAllTeams(): Promise<ITeam[]> {
         await connectToDatabase();
 
-        const teams = await Team.find({}).sort({ registeredAt: -1 });
+        // Return teams that should appear in the registered teams list:
+        // - Teams with status "confirmed" or "approved"
+        // - Teams without status field (legacy teams, considered confirmed)
+        const teams = await Team.find({
+            $or: [
+                { status: { $in: ["confirmed", "approved"] } },
+                { status: { $exists: false } },
+                { status: null }
+            ]
+        }).sort({ registeredAt: -1 });
         return teams;
     }
 
     async getTeamCount(game: string): Promise<number> {
         await connectToDatabase();
 
+        // Count all teams for the game (for backward compatibility)
         const count = await Team.countDocuments({ game });
+        return count;
+    }
+
+    async getQueuedTeamCount(game: string): Promise<number> {
+        await connectToDatabase();
+
+        const count = await Team.countDocuments({ game, status: 'queued' });
+        return count;
+    }
+
+    async getConfirmedTeamCount(game: string): Promise<number> {
+        await connectToDatabase();
+
+        // Count confirmed teams, approved teams, AND teams without status (existing teams)
+        const count = await Team.countDocuments({ 
+            game, 
+            $or: [
+                { status: 'confirmed' },
+                { status: 'approved' },
+                { status: { $exists: false } },
+                { status: null }
+            ]
+        });
         return count;
     }
 
@@ -365,6 +416,47 @@ export class MongoDBStorage implements IStorage {
             console.error('Failed to get file by ID:', error);
             return null;
         }
+    }
+
+    async getQueuedTeams(game: string): Promise<ITeam[]> {
+        await connectToDatabase();
+        const teams = await Team.find({ game, status: 'queued' }).sort({ queuedAt: 1 });
+        return teams;
+    }
+
+    async approveTeamForPayment(teamId: string, approvedBy: string): Promise<ITeam> {
+        await connectToDatabase();
+        
+        const team = await Team.findByIdAndUpdate(teamId, {
+            status: 'approved',
+            approvedBy,
+            approvedAt: new Date(),
+        }, { new: true });
+
+        if (!team) throw new Error('Team not found');
+        return team;
+    }
+
+    async rejectTeam(teamId: string): Promise<void> {
+        await connectToDatabase();
+        await Team.findByIdAndUpdate(teamId, { status: 'rejected' });
+    }
+
+    // Migration method to update existing teams
+    async migrateExistingTeams(): Promise<void> {
+        await connectToDatabase();
+        
+        // Update all existing teams without status to be confirmed
+        await Team.updateMany(
+            { status: { $exists: false } },
+            { status: 'confirmed' }
+        );
+        
+        // Update all existing teams with null status to be confirmed
+        await Team.updateMany(
+            { status: null },
+            { status: 'confirmed' }
+        );
     }
 }
 
