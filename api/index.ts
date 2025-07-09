@@ -1374,7 +1374,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // COD Queue Management Endpoints
+    // COD Queue Management Endpoints.
     else if (url?.includes("/admin/cod-queue") && method === "GET" && token) {
       try {
         const queuedTeams = await Team.find({ status: "queued" }).sort({
