@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { MongoDBStorage } from "./mongo-storage";
 import { insertTeamSchema, insertGameScoreSchema, insertSecretChallengeSchema } from "../shared/mongo-validation";
+import { siteConfig } from "../shared/config";
 import { z } from "zod";
 import adminRouter from "./admin-routes";
 

@@ -20,6 +20,7 @@ export const siteConfig = {
     eventStartTime: "04:00 PM",
     eventEndTime: "11:30 PM",
     timezone: "IST",
+    registrationOpen: false, // Set to false to close registration
   },
 
   // Venue Information

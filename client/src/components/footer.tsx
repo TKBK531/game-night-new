@@ -97,10 +97,10 @@ export default function Footer() {
               </li>
               <li>
                 <button
-                  onClick={() => scrollToSection('register')}
+                  onClick={() => scrollToSection('countdown')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
-                  Register
+                  Countdown
                 </button>
               </li>
             </ul>
@@ -188,7 +188,7 @@ export default function Footer() {
         <ScrollReveal variant="fadeInUp" delay={0.8}>
           <div className="border-t border-[#242d3d] mt-12 pt-8 text-center text-gray-400">
             <p>&copy; {siteConfig.event.year} {siteConfig.event.name}. All rights reserved.</p>
-            <p className="text-xs mt-2 opacity-40 hover:opacity-80 transition-opacity duration-300">
+            <p className="text-xs text-white mt-2 opacity-40 hover:opacity-80 transition-opacity duration-300">
               ↑↑↓↓←→←→BA - Legends know the way...
             </p>
           </div>

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { IncomingForm } from "formidable";
 import { GridFSBucket, ObjectId } from "mongodb";
 import * as fs from "fs";
+import { siteConfig } from "../shared/config";
 
 // Environment validation
 if (!process.env.MONGODB_URI) {

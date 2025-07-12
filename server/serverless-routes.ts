@@ -4,6 +4,7 @@ import path from "path";
 import { MongoDBStorage } from "../server/mongo-storage";
 import { connectToDatabase } from "../server/mongodb";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
+import { siteConfig } from "../shared/config";
 import { z } from "zod";
 import adminRouter from "./admin-routes";
 
