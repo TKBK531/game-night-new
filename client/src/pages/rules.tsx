@@ -289,7 +289,7 @@ export default function RulesPage({ onBack }: RulesPageProps) {
                 <section className="mb-12">
                     <div className="text-center">
                         <p className="text-xs text-gray-600 opacity-50 hover:opacity-100 transition-opacity duration-500">
-                            "Some challenges are hidden from plain sight... True gamers know the classics."
+                            "Some challenges are hidden from plain sight... Use the Kanomi Code to reveal them."
                         </p>
                     </div>
                 </section>
