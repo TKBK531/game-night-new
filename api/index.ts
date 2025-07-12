@@ -6,6 +6,7 @@ import { z } from "zod";
 import { IncomingForm } from "formidable";
 import { GridFSBucket, ObjectId } from "mongodb";
 import * as fs from "fs";
+import { siteConfig } from "../shared/config";
 
 // Environment validation
 if (!process.env.MONGODB_URI) {
@@ -862,6 +863,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log("Processing team data:", teamData);
 
+        // Check if registration is globally enabled
+        if (!siteConfig.schedule.registrationOpen) {
+          return res.status(400).json({
+            message: "Tournament registration is currently closed.",
+            field: "general"
+          });
+        }
+
         // Validate team data
         const validatedData = insertTeamSchema.parse(teamData);
         console.log("Validation passed for team:", validatedData.teamName);
@@ -1444,6 +1453,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         if (!["valorant", "cod"].includes(game)) {
           res.status(400).json({ message: "Invalid game type" });
+          return;
+        }
+
+        // Check if registration is globally enabled
+        if (!siteConfig.schedule.registrationOpen) {
+          res.json({
+            game,
+            isAvailable: false,
+            message: "Tournament registration is currently closed."
+          });
           return;
         }
 

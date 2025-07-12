@@ -97,10 +97,10 @@ export default function Footer() {
               </li>
               <li>
                 <button
-                  onClick={() => scrollToSection('register')}
+                  onClick={() => scrollToSection('countdown')}
                   className="hover:text-[hsl(280,100%,70%)] transition-colors cursor-pointer"
                 >
-                  Register
+                  Countdown
                 </button>
               </li>
             </ul>

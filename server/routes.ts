@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { MongoDBStorage } from "./mongo-storage";
 import { insertTeamSchema, insertGameScoreSchema, insertSecretChallengeSchema } from "../shared/mongo-validation";
+import { siteConfig } from "../shared/config";
 import { z } from "zod";
 import adminRouter from "./admin-routes";
 
@@ -42,6 +43,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Team registration endpoint with file upload
   app.post("/api/teams", upload.single('bankSlip'), async (req, res) => {
     try {
+      // Check if registration is globally enabled
+      if (!siteConfig.schedule.registrationOpen) {
+        // If registration is closed and we have a file, clean up the temp file
+        if (req.file) {
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch (e) {
+            console.error('Error deleting temp file:', e);
+          }
+        }
+        return res.status(400).json({
+          message: "Tournament registration is currently closed.",
+          field: "general"
+        });
+      }
+
       // Parse form data first to get team information
       const formData = {
         ...req.body,
@@ -232,6 +249,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!["valorant", "cod"].includes(game)) {
         return res.status(400).json({ message: "Invalid game type" });
+      }
+
+      // Check if registration is globally enabled
+      if (!siteConfig.schedule.registrationOpen) {
+        return res.json({
+          game,
+          isAvailable: false,
+          message: "Tournament registration is currently closed."
+        });
       }
 
       if (game === "valorant") {

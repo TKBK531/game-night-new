@@ -125,7 +125,7 @@ export default function Navigation() {
               Game
             </motion.button>
             <motion.button
-              onClick={() => scrollToSection("register")}
+              onClick={() => scrollToSection("countdown")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
                 hidden: { opacity: 0, y: -10 },
@@ -134,7 +134,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, color: "#ff4654" }}
               whileTap={{ scale: 0.95 }}
             >
-              Register
+              Countdown
             </motion.button>
             <motion.a
               href="/rules"
@@ -216,11 +216,11 @@ export default function Navigation() {
                   Game
                 </motion.button>
                 <motion.button
-                  onClick={() => scrollToSection("register")}
+                  onClick={() => scrollToSection("countdown")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
                   whileHover={{ x: 10 }}
                 >
-                  Register
+                  Countdown
                 </motion.button>
                 <motion.a
                   href="/rules"

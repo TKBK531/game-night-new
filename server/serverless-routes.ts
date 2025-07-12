@@ -4,6 +4,7 @@ import path from "path";
 import { MongoDBStorage } from "../server/mongo-storage";
 import { connectToDatabase } from "../server/mongodb";
 import { insertTeamSchema, insertGameScoreSchema } from "../shared/mongo-validation";
+import { siteConfig } from "../shared/config";
 import { z } from "zod";
 import adminRouter from "./admin-routes";
 
@@ -72,6 +73,14 @@ export function setupServerlessRoutes(app: Express): void {
     // Team registration endpoint with file upload to MongoDB GridFS
     app.post("/api/teams", upload.single('bankSlip'), async (req, res) => {
         try {
+            // Check if registration is globally enabled
+            if (!siteConfig.schedule.registrationOpen) {
+                return res.status(400).json({
+                    message: "Tournament registration is currently closed.",
+                    field: "general"
+                });
+            }
+
             // Parse form data first to get team information
             const formData = {
                 ...req.body,
@@ -181,6 +190,15 @@ export function setupServerlessRoutes(app: Express): void {
             
             if (!["valorant", "cod"].includes(game)) {
                 return res.status(400).json({ message: "Invalid game type" });
+            }
+
+            // Check if registration is globally enabled
+            if (!siteConfig.schedule.registrationOpen) {
+                return res.json({
+                    game,
+                    isAvailable: false,
+                    message: "Tournament registration is currently closed."
+                });
             }
 
             if (game === "valorant") {

@@ -157,15 +157,15 @@ export default function TournamentShowcase() {
             </motion.div>
 
             <motion.button
-              onClick={() => scrollToSection('register')}
-              className="w-full gaming-button py-3 rounded-lg font-semibold"
+              onClick={() => scrollToSection('countdown')}
+              className="w-full bg-[#ff4654]/20 border border-[#ff4654] text-[#ff4654] py-3 rounded-lg font-semibold hover:bg-[#ff4654]/30 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Register for Valorant
+              Registration Closed
             </motion.button>
           </motion.div>
 
@@ -283,15 +283,15 @@ export default function TournamentShowcase() {
             </motion.div>
 
             <motion.button
-              onClick={() => scrollToSection('register')}
-              className="w-full gaming-button py-3 rounded-lg font-semibold"
+              onClick={() => scrollToSection('countdown')}
+              className="w-full bg-[#ba3a46]/20 border border-[#ba3a46] text-[#ba3a46] py-3 rounded-lg font-semibold hover:bg-[#ba3a46]/30 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Register for COD
+              Registration Closed
             </motion.button>
           </motion.div>
         </motion.div>

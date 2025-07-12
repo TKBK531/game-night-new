@@ -4,7 +4,7 @@ import TournamentShowcase from "@/components/tournament-showcase";
 import EventSchedule from "@/components/event-schedule";
 import FunZone from "@/components/fun-zone";
 import ReactionGame from "@/components/reaction-game";
-import TeamRegistration from "@/components/team-registration";
+import CountdownTimer from "@/components/countdown-timer";
 import VenueInfo from "@/components/venue-info";
 import Footer from "@/components/footer";
 
@@ -17,7 +17,7 @@ export default function Home() {
       <EventSchedule />
       <FunZone />
       <ReactionGame />
-      <TeamRegistration />
+      <CountdownTimer />
       <VenueInfo />
       <Footer />
     </div>

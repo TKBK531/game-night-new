@@ -111,13 +111,13 @@ export default function HeroSection() {
         <ScrollReveal variant="scaleIn" delay={0.6}>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <motion.button
-              onClick={() => scrollToSection("register")}
-              className="group gaming-button px-10 py-5 rounded-xl font-bold text-xl flex items-center justify-center hover-lift"
+              onClick={() => scrollToSection("countdown")}
+              className="group bg-[#ff4654]/20 border border-[#ff4654] text-[#ff4654] px-10 py-5 rounded-xl font-bold text-xl flex items-center justify-center hover-lift"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Trophy className="mr-3 group-hover:animate-bounce" />
-              Register Your Team
+              Registration Closed
             </motion.button>
             <motion.button
               onClick={() => scrollToSection("schedule")}
