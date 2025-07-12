@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Clock, Calendar, MapPin, Timer } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { siteConfig } from "../../../shared/config";
 import { ScrollReveal } from "./ui/scroll-reveal";
 
@@ -19,6 +20,11 @@ export default function CountdownTimer() {
     seconds: 0,
   });
   const [isEventToday, setIsEventToday] = useState(false);
+
+  // Fetch team statistics
+  const { data: stats } = useQuery({
+    queryKey: ['/api/teams/stats'],
+  });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -201,7 +207,7 @@ export default function CountdownTimer() {
                 transition={{ duration: 0.2 }}
               >
                 <h4 className="text-lg font-semibold text-[#ff4654] mb-2">Valorant Championship</h4>
-                <p className="text-gray-300">4 Teams Registered • {siteConfig.tournaments.valorant.prizePool} Prize Pool</p>
+                <p className="text-gray-300">{(stats as any)?.valorant?.registered || 0} Teams Registered • {siteConfig.tournaments.valorant.prizePool} Prize Pool</p>
               </motion.div>
               
               <motion.div
@@ -210,7 +216,7 @@ export default function CountdownTimer() {
                 transition={{ duration: 0.2 }}
               >
                 <h4 className="text-lg font-semibold text-[#ba3a46] mb-2">Call of Duty Tournament</h4>
-                <p className="text-gray-300">12 Teams Registered • {siteConfig.tournaments.cod.prizePool} Prize Pool</p>
+                <p className="text-gray-300">{(stats as any)?.cod?.confirmed || 0} Teams Registered • {siteConfig.tournaments.cod.prizePool} Prize Pool</p>
               </motion.div>
             </div>
           </motion.div>
