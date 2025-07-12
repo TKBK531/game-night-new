@@ -75,7 +75,7 @@ export default function CountdownTimer() {
               {isEventToday ? "Event is Live!" : "Event Countdown"}
             </motion.h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              {isEventToday 
+              {isEventToday
                 ? "The gaming tournament has begun! Join us for an epic experience!"
                 : "Registration is now closed. Get ready for the ultimate gaming experience!"
               }
@@ -136,8 +136,8 @@ export default function CountdownTimer() {
                 <Timer className="mx-auto mb-4 text-[#ff4654]" size={48} />
                 <h3 className="text-2xl font-bold text-[#ff4654] mb-2">Registration Closed</h3>
                 <p className="text-gray-300">
-                  Team registration has ended. Thank you to all teams who registered! 
-                  The tournament will begin soon.
+                  Team registration has ended. Thank you to all teams who registered!
+                  Good luck to all participants!
                 </p>
               </motion.div>
             </motion.div>
@@ -209,7 +209,7 @@ export default function CountdownTimer() {
                 <h4 className="text-lg font-semibold text-[#ff4654] mb-2">Valorant Championship</h4>
                 <p className="text-gray-300">{(stats as any)?.valorant?.registered || 0} Teams Registered • {siteConfig.tournaments.valorant.prizePool} Prize Pool</p>
               </motion.div>
-              
+
               <motion.div
                 className="bg-[#ba3a46]/10 border border-[#ba3a46]/30 rounded-lg p-4"
                 whileHover={{ scale: 1.05 }}
