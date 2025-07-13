@@ -11,10 +11,10 @@ export default function SupportUsPage() {
 
     // Use bank details from shared config
     const bankDetails = {
-        bankName: siteConfig.payment.bankName,
-        accountName: siteConfig.payment.accountName,
-        accountNumber: siteConfig.payment.accountNumber,
-        branch: siteConfig.payment.branchName,
+        bankName: "Bank of Ceylon",
+        accountName: "Computer Society",
+        accountNumber: "1283667",
+        branch: "Peradeniya",
         ifscCode: siteConfig.payment.ifscCode,
     };
 
