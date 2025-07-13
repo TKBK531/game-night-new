@@ -37,13 +37,13 @@ export default function RulesPage({ onBack }: RulesPageProps) {
                                 Rules & Regulations
                             </h1>
                         </div>
-                        <button
+                        {/* <button
                             onClick={printRules}
                             className="flex items-center px-4 py-2 bg-[#ff4654] text-white rounded-lg hover:bg-[#ba3a46] transition-colors"
                         >
                             <FileText className="mr-2" size={16} />
                             Print Rules
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
