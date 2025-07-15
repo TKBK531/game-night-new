@@ -136,7 +136,7 @@ export default function Navigation() {
             >
               Countdown
             </motion.button>
-            <motion.a
+            {/* <motion.a
               href="/leaderboard"
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
@@ -159,7 +159,7 @@ export default function Navigation() {
               whileTap={{ scale: 0.95 }}
             >
               Live Matches
-            </motion.a>
+            </motion.a> */}
             <motion.a
               href="/rules"
               className="hover:text-[#ff4654] transition-colors cursor-pointer"

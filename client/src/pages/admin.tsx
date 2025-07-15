@@ -42,6 +42,11 @@ import {
   insertUserSchema,
   type InsertUser,
 } from "../../../shared/mongo-validation";
+import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
+
+// Fallback image URL for when team logos fail to load
+const FALLBACK_TEAM_LOGO = "https://raw.githubusercontent.com/TKBK531/game-night-new/refs/heads/leaderboard/images/TeamLogos/DefaultteamLogo.jpg";
+
 import {
   Shield,
   Users,
@@ -1811,7 +1816,19 @@ function LeaderboardManager() {
                           <span className="text-white font-bold">#{index + 1}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-white font-semibold">{team.teamName}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={getTeamLogoUrl(team.teamName)}
+                            alt={team.teamName}
+                            className="w-8 h-8 rounded object-cover border border-[#ff4654]/50"
+                            onError={(e) => {
+                              e.currentTarget.src = FALLBACK_TEAM_LOGO;
+                            }}
+                          />
+                          <span className="text-white font-semibold">{team.teamName}</span>
+                        </div>
+                      </td>
                       <td className="py-3 px-4 text-[#ff4654] font-bold text-lg">{team.score}</td>
                       <td className="py-3 px-4 text-gray-300">
                         {team.matchesWon}W - {team.matchesLost}L ({team.totalMatches} total)
@@ -2320,7 +2337,17 @@ function MatchCard({ match, onEdit, onUpdate, onDelete, getStatusColor }: any) {
 
       <div className="grid grid-cols-3 gap-4 items-center">
         <div className="text-center">
-          <div className="font-semibold text-white">{match.team1Name}</div>
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <img
+              src={getTeamLogoUrl(match.team1Name)}
+              alt={match.team1Name}
+              className="w-8 h-8 rounded object-cover border border-[#ff4654]/50"
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_TEAM_LOGO;
+              }}
+            />
+            <div className="font-semibold text-white">{match.team1Name}</div>
+          </div>
           {match.team1Score !== undefined && (
             <div className="text-2xl font-bold text-[#ff4654]">{match.team1Score}</div>
           )}
@@ -2336,7 +2363,17 @@ function MatchCard({ match, onEdit, onUpdate, onDelete, getStatusColor }: any) {
         </div>
 
         <div className="text-center">
-          <div className="font-semibold text-white">{match.team2Name}</div>
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <img
+              src={getTeamLogoUrl(match.team2Name)}
+              alt={match.team2Name}
+              className="w-8 h-8 rounded object-cover border border-[#ff4654]/50"
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_TEAM_LOGO;
+              }}
+            />
+            <div className="font-semibold text-white">{match.team2Name}</div>
+          </div>
           {match.team2Score !== undefined && (
             <div className="text-2xl font-bold text-[#ff4654]">{match.team2Score}</div>
           )}
