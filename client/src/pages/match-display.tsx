@@ -171,21 +171,7 @@ export default function MatchDisplay() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="grid gap-6">
-                            <AnimatePresence>
-                                {ongoingMatches.map((match, index) => (
-                                    <motion.div
-                                        key={match._id}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    >
-                                        <LiveMatchCard match={match} getTeamLogo={getTeamLogo} />
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
+                        <LiveMatchCarousel matches={ongoingMatches} getTeamLogo={getTeamLogo} />
                     )}
                 </motion.div>
 
@@ -234,6 +220,135 @@ export default function MatchDisplay() {
                         </div>
                     )}
                 </motion.div>
+            </div>
+        </div>
+    );
+}
+
+// Live Match Carousel Component
+function LiveMatchCarousel({ matches, getTeamLogo }: { matches: any[]; getTeamLogo: (teamName: string) => string }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Auto-rotate carousel every 5 seconds
+    useEffect(() => {
+        if (matches.length <= 1) return;
+        
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % matches.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [matches.length]);
+
+    if (matches.length === 1) {
+        return <LiveMatchCard match={matches[0]} getTeamLogo={getTeamLogo} />;
+    }
+
+    return (
+        <div className="relative">
+            {/* Main Carousel */}
+            <div className="overflow-hidden rounded-lg">
+                <motion.div
+                    className="flex"
+                    animate={{
+                        x: `-${currentIndex * 100}%`
+                    }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30
+                    }}
+                >
+                    {matches.map((match) => (
+                        <div key={match._id} className="w-full flex-shrink-0">
+                            <LiveMatchCard match={match} getTeamLogo={getTeamLogo} />
+                        </div>
+                    ))}
+                </motion.div>
+            </div>
+
+            {/* Carousel Indicators */}
+            <div className="flex justify-center mt-6 space-x-3">
+                {matches.map((_, index) => (
+                    <motion.button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`w-4 h-4 rounded-full transition-colors ${
+                            index === currentIndex ? 'bg-green-400' : 'bg-gray-600'
+                        }`}
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                    />
+                ))}
+            </div>
+
+            {/* Compact Match Preview Strip */}
+            <div className="mt-8 bg-gradient-to-r from-gray-800/30 to-gray-900/30 border border-gray-600/30 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-green-400 mb-4 text-center">Live Matches Overview</h3>
+                <div className="flex justify-center space-x-8">
+                    {matches.map((match, index) => (
+                        <motion.div
+                            key={match._id}
+                            className={`flex items-center space-x-4 px-4 py-3 rounded-lg transition-all cursor-pointer ${
+                                index === currentIndex 
+                                    ? 'bg-green-500/20 border border-green-500/30' 
+                                    : 'bg-gray-700/30 hover:bg-gray-600/30'
+                            }`}
+                            onClick={() => setCurrentIndex(index)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            {/* Team 1 Logo */}
+                            <div className="relative">
+                                <img
+                                    src={getTeamLogo(match.team1Name)}
+                                    alt={match.team1Name}
+                                    className="w-12 h-12 rounded-lg object-cover border-2 border-green-400/50"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                    }}
+                                />
+                                {index === currentIndex && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                                )}
+                            </div>
+
+                            {/* VS Indicator */}
+                            <motion.div
+                                className="text-sm font-bold text-green-400"
+                                animate={index === currentIndex ? { scale: [1, 1.2, 1] } : {}}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            >
+                                VS
+                            </motion.div>
+
+                            {/* Team 2 Logo */}
+                            <div className="relative">
+                                <img
+                                    src={getTeamLogo(match.team2Name)}
+                                    alt={match.team2Name}
+                                    className="w-12 h-12 rounded-lg object-cover border-2 border-green-400/50"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                    }}
+                                />
+                                {index === currentIndex && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                                )}
+                            </div>
+
+                            {/* Match Info */}
+                            <div className="text-left">
+                                <div className="text-xs text-gray-400">{match.round}</div>
+                                {(match.team1Score !== undefined && match.team2Score !== undefined) && (
+                                    <div className="text-sm font-bold text-white">
+                                        {match.team1Score} - {match.team2Score}
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
         </div>
     );
