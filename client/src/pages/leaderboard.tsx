@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { siteConfig } from "../../../shared/config";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { staggerVariants } from "@/hooks/use-scroll-reveal";
+import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
 interface LeaderboardScore {
     _id: string;
@@ -61,11 +62,8 @@ interface Match {
     lastUpdated: string;
 }
 
-const getTeamLogo = (teamName: string) => {
-    // Try to find exact match first, fallback to placeholder
-    const logoPath = `/images/TeamLogos/${teamName}.jpg`;
-    return logoPath; // Browser will handle 404 and fallback through onError
-};
+// Use the utility function for team logos
+const getTeamLogo = getTeamLogoUrl;
 
 const getStatusIcon = (status: string) => {
     switch (status) {
@@ -259,49 +257,73 @@ export default function LeaderboardPage() {
                                             {leaderboard.map((team, index) => (
                                                 <motion.div
                                                     key={team._id}
-                                                    className={`flex items-center p-4 rounded-lg border ${getRankColors(index)}`}
+                                                    className={`flex items-center p-6 rounded-lg border ${getRankColors(index)}`}
                                                     initial={{ opacity: 0, x: -20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ delay: index * 0.1 }}
                                                     whileHover={{ scale: 1.02, x: 5 }}
                                                 >
-                                                    <div className="flex items-center space-x-4 flex-1">
-                                                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#ff4654]/20 text-[#ff4654] font-bold">
+                                                    <div className="flex items-center space-x-6 flex-1">
+                                                        {/* Rank Number */}
+                                                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#ff4654]/20 text-[#ff4654] font-bold text-lg">
                                                             {getRankIcon(index)}
                                                         </div>
 
+                                                        {/* Team Logo - Made More Prominent */}
                                                         <div className="relative">
-                                                            <img
-                                                                src={getTeamLogo(team.teamName)}
-                                                                alt={team.teamName}
-                                                                className="w-12 h-12 rounded-lg object-cover border-2 border-[#ff4654]/30"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzFhMjMzMiIvPgo8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSI0IiBmaWxsPSIjMTExODIzIiBzdHJva2U9IiNmZjQ2NTQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjAgMjRoMjRjMy4zMTQgMCA2IDIuNjg2IDYgNnY4YzAgMy4zMTQtMi42ODYgNi02IDZIMjBjLTMuMzE0IDAtNi0yLjY4Ni02LTZ2LThjMC0zLjMxNCAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZjQ2NTQiIG9wYWNpdHk9IjAuOCIvPgo8cmVjdCB4PSIyMiIgeT0iMjgiIHdpZHRoPSIyIiBoZWlnaHQ9IjgiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMTgiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzAiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iMzgiIGN5PSIzNCIgcj0iMiIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSI0NiIgY3k9IjM0IiByPSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzgiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHR5eHQgeD0iMzIiIHk9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY0NjU0IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOCIgZm9udC13ZWlnaHQ9ImJvbGQiPlRFQU08L3RleHQ+Cjwvc3ZnPg==";
-                                                                }}
-                                                            />
+                                                            <div className="p-1 bg-gradient-to-br from-[#ff4654]/20 to-[#ba3a46]/20 rounded-lg">
+                                                                <img
+                                                                    src={getTeamLogo(team.teamName)}
+                                                                    alt={team.teamName}
+                                                                    className="w-16 h-16 rounded-lg object-cover border-2 border-[#ff4654]/50"
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            {/* Crown for Winner */}
                                                             {index === 0 && (
-                                                                <div className="absolute -top-1 -right-1">
-                                                                    <Crown className="h-4 w-4 text-yellow-400" />
+                                                                <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1">
+                                                                    <Crown className="h-4 w-4 text-black" />
+                                                                </div>
+                                                            )}
+                                                            {/* Medal for Runner-ups */}
+                                                            {index === 1 && (
+                                                                <div className="absolute -top-2 -right-2 bg-gray-300 rounded-full p-1">
+                                                                    <Medal className="h-4 w-4 text-black" />
+                                                                </div>
+                                                            )}
+                                                            {index === 2 && (
+                                                                <div className="absolute -top-2 -right-2 bg-orange-400 rounded-full p-1">
+                                                                    <Award className="h-4 w-4 text-black" />
                                                                 </div>
                                                             )}
                                                         </div>
 
-                                                        <div>
-                                                            <h3 className="font-semibold text-white text-lg">
+                                                        {/* Team Info */}
+                                                        <div className="flex-1">
+                                                            <h3 className="font-bold text-white text-xl mb-1">
                                                                 {team.teamName}
                                                             </h3>
-                                                            <div className="flex items-center space-x-2 text-sm text-gray-400">
-                                                                <span>{team.matchesWon}W</span>
+                                                            <div className="flex items-center space-x-3 text-sm text-gray-400">
+                                                                <span className="flex items-center">
+                                                                    <Trophy className="h-3 w-3 mr-1 text-green-400" />
+                                                                    {team.matchesWon} Wins
+                                                                </span>
                                                                 <span>•</span>
-                                                                <span>{team.matchesLost}L</span>
+                                                                <span className="flex items-center">
+                                                                    <XCircle className="h-3 w-3 mr-1 text-red-400" />
+                                                                    {team.matchesLost} Losses
+                                                                </span>
                                                                 <span>•</span>
-                                                                <span>{team.totalMatches} matches</span>
+                                                                <span>{team.totalMatches} Total</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="text-right">
-                                                        <div className="text-2xl font-bold text-[#ff4654]">
+                                                    {/* Score Section */}
+                                                    <div className="text-right mr-4">
+                                                        <div className="text-3xl font-bold text-[#ff4654] mb-1">
                                                             {team.score}
                                                         </div>
                                                         <div className="text-sm text-gray-400">
@@ -309,13 +331,14 @@ export default function LeaderboardPage() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="ml-4 text-right">
-                                                        <div className="text-lg font-bold text-white">
+                                                    {/* Rank Position */}
+                                                    <div className="text-right">
+                                                        <div className="text-2xl font-bold text-white mb-1">
                                                             #{index + 1}
                                                         </div>
                                                         {team.matchesWon > 0 && (
                                                             <div className="text-xs text-green-400">
-                                                                {Math.round((team.matchesWon / team.totalMatches) * 100)}% win rate
+                                                                {Math.round((team.matchesWon / team.totalMatches) * 100)}% WR
                                                             </div>
                                                         )}
                                                     </div>
@@ -350,28 +373,54 @@ export default function LeaderboardPage() {
                                             {inProgressMatches.map((match) => (
                                                 <motion.div
                                                     key={match._id}
-                                                    className="p-3 bg-[#1a2332]/50 rounded-lg border border-green-500/30"
+                                                    className="p-4 bg-[#1a2332]/50 rounded-lg border border-green-500/30"
                                                     whileHover={{ scale: 1.02 }}
                                                 >
-                                                    <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center justify-between mb-3">
                                                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                                                             <Play className="h-3 w-3 mr-1" />
                                                             LIVE
                                                         </Badge>
                                                         <span className="text-xs text-gray-400">{match.round}</span>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center justify-between">
+
+                                                    {/* Team 1 */}
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <img
+                                                                src={getTeamLogo(match.team1Name)}
+                                                                alt={match.team1Name}
+                                                                className="w-8 h-8 rounded object-cover border border-green-400/50"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                                }}
+                                                            />
                                                             <span className="text-sm font-medium text-white">{match.team1Name}</span>
-                                                            <span className="text-sm text-[#ff4654]">{match.team1Score || 0}</span>
                                                         </div>
-                                                        <div className="flex items-center justify-center">
-                                                            <div className="text-xs text-gray-400">VS</div>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
+                                                        <span className="text-lg font-bold text-[#ff4654]">{match.team1Score || 0}</span>
+                                                    </div>
+
+                                                    {/* VS Divider */}
+                                                    <div className="flex items-center justify-center my-2">
+                                                        <div className="w-full h-px bg-gray-600"></div>
+                                                        <div className="text-xs text-gray-400 px-2 bg-[#1a2332]">VS</div>
+                                                        <div className="w-full h-px bg-gray-600"></div>
+                                                    </div>
+
+                                                    {/* Team 2 */}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center space-x-2">
+                                                            <img
+                                                                src={getTeamLogo(match.team2Name)}
+                                                                alt={match.team2Name}
+                                                                className="w-8 h-8 rounded object-cover border border-green-400/50"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                                }}
+                                                            />
                                                             <span className="text-sm font-medium text-white">{match.team2Name}</span>
-                                                            <span className="text-sm text-[#ff4654]">{match.team2Score || 0}</span>
                                                         </div>
+                                                        <span className="text-lg font-bold text-[#ff4654]">{match.team2Score || 0}</span>
                                                     </div>
                                                 </motion.div>
                                             ))}
@@ -401,24 +450,52 @@ export default function LeaderboardPage() {
                                             {upcomingMatches.map((match) => (
                                                 <motion.div
                                                     key={match._id}
-                                                    className="p-3 bg-[#1a2332]/50 rounded-lg border border-[#ff4654]/20"
+                                                    className="p-4 bg-[#1a2332]/50 rounded-lg border border-[#ff4654]/20"
                                                     whileHover={{ scale: 1.02 }}
                                                 >
-                                                    <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center justify-between mb-3">
                                                         <Badge className={getStatusColor(match.status)}>
                                                             {getStatusIcon(match.status)}
                                                             <span className="ml-1">{match.status.toUpperCase()}</span>
                                                         </Badge>
                                                         <span className="text-xs text-gray-400">{match.round}</span>
                                                     </div>
-                                                    <div className="space-y-1">
+
+                                                    {/* Team 1 */}
+                                                    <div className="flex items-center space-x-3 mb-2">
+                                                        <img
+                                                            src={getTeamLogo(match.team1Name)}
+                                                            alt={match.team1Name}
+                                                            className="w-10 h-10 rounded-lg object-cover border border-[#ff4654]/30"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                            }}
+                                                        />
                                                         <div className="text-sm font-medium text-white">{match.team1Name}</div>
-                                                        <div className="flex items-center justify-center">
-                                                            <div className="text-xs text-gray-400">VS</div>
-                                                        </div>
+                                                    </div>
+
+                                                    {/* VS Divider */}
+                                                    <div className="flex items-center justify-center my-2">
+                                                        <div className="w-full h-px bg-gray-600"></div>
+                                                        <div className="text-xs text-gray-400 px-2 bg-[#1a2332]">VS</div>
+                                                        <div className="w-full h-px bg-gray-600"></div>
+                                                    </div>
+
+                                                    {/* Team 2 */}
+                                                    <div className="flex items-center space-x-3 mb-3">
+                                                        <img
+                                                            src={getTeamLogo(match.team2Name)}
+                                                            alt={match.team2Name}
+                                                            className="w-10 h-10 rounded-lg object-cover border border-[#ff4654]/30"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                            }}
+                                                        />
                                                         <div className="text-sm font-medium text-white">{match.team2Name}</div>
                                                     </div>
-                                                    <div className="mt-2 text-xs text-gray-400 flex items-center">
+
+                                                    {/* Match Time */}
+                                                    <div className="mt-2 text-xs text-gray-400 flex items-center justify-center">
                                                         <Clock className="h-3 w-3 mr-1" />
                                                         {new Date(match.scheduledTime).toLocaleString()}
                                                     </div>
@@ -450,36 +527,65 @@ export default function LeaderboardPage() {
                                             {recentMatches.map((match) => (
                                                 <motion.div
                                                     key={match._id}
-                                                    className="p-3 bg-[#1a2332]/50 rounded-lg border border-blue-500/20"
+                                                    className="p-4 bg-[#1a2332]/50 rounded-lg border border-blue-500/20"
                                                     whileHover={{ scale: 1.02 }}
                                                 >
-                                                    <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center justify-between mb-3">
                                                         <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
                                                             <CheckCircle className="h-3 w-3 mr-1" />
                                                             COMPLETED
                                                         </Badge>
                                                         <span className="text-xs text-gray-400">{match.round}</span>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center justify-between">
+
+                                                    {/* Team 1 */}
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <img
+                                                                src={getTeamLogo(match.team1Name)}
+                                                                alt={match.team1Name}
+                                                                className="w-8 h-8 rounded object-cover border border-blue-400/50"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                                }}
+                                                            />
                                                             <span className={`text-sm font-medium ${match.winnerId === match.team1Id ? 'text-green-400' : 'text-white'}`}>
                                                                 {match.team1Name}
+                                                                {match.winnerId === match.team1Id && <Crown className="inline h-3 w-3 ml-1" />}
                                                             </span>
-                                                            <span className="text-sm text-[#ff4654]">{match.team1Score || 0}</span>
                                                         </div>
-                                                        <div className="flex items-center justify-center">
-                                                            <div className="text-xs text-gray-400">VS</div>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-[#ff4654] font-bold">{match.team1Score || 0}</span>
+                                                    </div>
+
+                                                    {/* VS Divider */}
+                                                    <div className="flex items-center justify-center my-2">
+                                                        <div className="w-full h-px bg-gray-600"></div>
+                                                        <div className="text-xs text-gray-400 px-2 bg-[#1a2332]">VS</div>
+                                                        <div className="w-full h-px bg-gray-600"></div>
+                                                    </div>
+
+                                                    {/* Team 2 */}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center space-x-2">
+                                                            <img
+                                                                src={getTeamLogo(match.team2Name)}
+                                                                alt={match.team2Name}
+                                                                className="w-8 h-8 rounded object-cover border border-blue-400/50"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                                }}
+                                                            />
                                                             <span className={`text-sm font-medium ${match.winnerId === match.team2Id ? 'text-green-400' : 'text-white'}`}>
                                                                 {match.team2Name}
+                                                                {match.winnerId === match.team2Id && <Crown className="inline h-3 w-3 ml-1" />}
                                                             </span>
-                                                            <span className="text-sm text-[#ff4654]">{match.team2Score || 0}</span>
                                                         </div>
+                                                        <span className="text-sm text-[#ff4654] font-bold">{match.team2Score || 0}</span>
                                                     </div>
+
                                                     {match.winnerName && (
-                                                        <div className="mt-2 text-xs text-green-400 flex items-center justify-center">
-                                                            <Crown className="h-3 w-3 mr-1" />
+                                                        <div className="mt-3 text-xs text-green-400 flex items-center justify-center bg-green-500/10 rounded px-2 py-1">
+                                                            <Trophy className="h-3 w-3 mr-1" />
                                                             Winner: {match.winnerName}
                                                         </div>
                                                     )}

@@ -14,6 +14,7 @@ import {
     Zap,
     Target
 } from "lucide-react";
+import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
 export default function MatchDisplay() {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -64,11 +65,8 @@ export default function MatchDisplay() {
         return `${minutes}m`;
     };
 
-    const getTeamLogo = (teamName: string) => {
-        // Try to find exact match first, fallback to placeholder
-        const logoPath = `/images/TeamLogos/${teamName}.jpg`;
-        return logoPath; // Browser will handle 404 and fallback through onError
-    };
+    // Use the utility function for team logos
+    const getTeamLogo = getTeamLogoUrl;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0a0f1a] via-[#111823] to-[#1a2332] text-white">
@@ -263,41 +261,47 @@ function LiveMatchCard({ match, getTeamLogo }: { match: any; getTeamLogo: (teamN
 
                 <div className="grid grid-cols-5 gap-4 items-center">
                     <div className="col-span-2 text-center">
-                        <div className="flex items-center justify-center mb-4">
-                            <img
-                                src={getTeamLogo(match.team1Name)}
-                                alt={match.team1Name}
-                                className="w-16 h-16 rounded-lg object-cover border-2 border-green-400/50"
-                                onError={(e) => {
-                                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzFhMjMzMiIvPgo8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSI0IiBmaWxsPSIjMTExODIzIiBzdHJva2U9IiNmZjQ2NTQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjAgMjRoMjRjMy4zMTQgMCA2IDIuNjg2IDYgNnY4YzAgMy4zMTQtMi42ODYgNi02IDZIMjBjLTMuMzE0IDAtNi0yLjY4Ni02LTZ2LThjMC0zLjMxNCAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZjQ2NTQiIG9wYWNpdHk9IjAuOCIvPgo8cmVjdCB4PSIyMiIgeT0iMjgiIHdpZHRoPSIyIiBoZWlnaHQ9IjgiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMTgiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzAiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iMzgiIGN5PSIzNCIgcj0iMiIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSI0NiIgY3k9IjM0IiByPSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzgiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHR5eHQgeD0iMzIiIHk9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY0NjU0IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOCIgZm9udC13ZWlnaHQ9ImJvbGQiPlRFQU08L3RleHQ+Cjwvc3ZnPg==";
-                                }}
-                            />
+                        <div className="flex items-center justify-center mb-6">
+                            <div className="relative p-2 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-xl">
+                                <img
+                                    src={getTeamLogo(match.team1Name)}
+                                    alt={match.team1Name}
+                                    className="w-24 h-24 rounded-lg object-cover border-3 border-green-400/70 shadow-lg shadow-green-400/20"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                    }}
+                                />
+                                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full animate-pulse"></div>
+                            </div>
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-2">{match.team1Name}</h3>
+                        <h3 className="text-3xl font-bold text-white mb-4">{match.team1Name}</h3>
                         {match.team1Score !== undefined && (
-                            <div className="text-6xl font-bold text-green-400">{match.team1Score}</div>
+                            <div className="text-7xl font-bold text-green-400">{match.team1Score}</div>
                         )}
                     </div>
 
                     <div className="text-center">
-                        <div className="text-gray-400 text-2xl font-bold mb-2">VS</div>
+                        <div className="text-gray-400 text-3xl font-bold mb-4">VS</div>
                         <motion.div
-                            className="w-3 h-3 bg-green-400 rounded-full mx-auto animate-pulse"
-                            animate={{ scale: [1, 1.2, 1] }}
+                            className="w-4 h-4 bg-green-400 rounded-full mx-auto animate-pulse"
+                            animate={{ scale: [1, 1.5, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                         ></motion.div>
                     </div>
 
                     <div className="col-span-2 text-center">
-                        <div className="flex items-center justify-center mb-4">
-                            <img
-                                src={getTeamLogo(match.team2Name)}
-                                alt={match.team2Name}
-                                className="w-16 h-16 rounded-lg object-cover border-2 border-green-400/50"
-                                onError={(e) => {
-                                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzFhMjMzMiIvPgo8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSI0IiBmaWxsPSIjMTExODIzIiBzdHJva2U9IiNmZjQ2NTQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjAgMjRoMjRjMy4zMTQgMCA2IDIuNjg2IDYgNnY4YzAgMy4zMTQtMi42ODYgNi02IDZIMjBjLTMuMzE0IDAtNi0yLjY4Ni02LTZ2LThjMC0zLjMxNCAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZjQ2NTQiIG9wYWNpdHk9IjAuOCIvPgo8cmVjdCB4PSIyMiIgeT0iMjgiIHdpZHRoPSIyIiBoZWlnaHQ9IjgiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMTgiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzAiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iMzgiIGN5PSIzNCIgcj0iMiIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSI0NiIgY3k9IjM0IiByPSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzgiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHR5eHQgeD0iMzIiIHk9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY0NjU0IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOCIgZm9udC13ZWlnaHQ9ImJvbGQiPlRFQU08L3RleHQ+Cjwvc3ZnPg==";
-                                }}
-                            />
+                        <div className="flex items-center justify-center mb-6">
+                            <div className="relative p-2 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-xl">
+                                <img
+                                    src={getTeamLogo(match.team2Name)}
+                                    alt={match.team2Name}
+                                    className="w-24 h-24 rounded-lg object-cover border-3 border-green-400/70 shadow-lg shadow-green-400/20"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                    }}
+                                />
+                                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full animate-pulse"></div>
+                            </div>
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">{match.team2Name}</h3>
                         {match.team2Score !== undefined && (
@@ -321,16 +325,16 @@ function UpcomingMatchCard({ match, getTimeUntilMatch, getTeamLogo }: {
 
     return (
         <Card className={`${isStartingSoon
-                ? 'bg-gradient-to-r from-orange-900/40 to-orange-800/40 border-orange-500/50'
-                : 'bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-yellow-500/50'
+            ? 'bg-gradient-to-r from-orange-900/40 to-orange-800/40 border-orange-500/50'
+            : 'bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-yellow-500/50'
             } relative overflow-hidden`}>
             <div className={`absolute inset-0 ${isStartingSoon ? 'bg-gradient-to-r from-orange-500/10' : 'bg-gradient-to-r from-yellow-500/10'
                 } to-transparent`}></div>
             <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-4">
                     <Badge className={`${isStartingSoon
-                            ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                            : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
                         } text-sm px-3 py-1`}>
                         {match.round}
                     </Badge>
@@ -343,35 +347,39 @@ function UpcomingMatchCard({ match, getTimeUntilMatch, getTeamLogo }: {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="grid grid-cols-3 gap-6 items-center">
                     <div className="text-center">
-                        <div className="flex items-center justify-center mb-3">
-                            <img
-                                src={getTeamLogo(match.team1Name)}
-                                alt={match.team1Name}
-                                className="w-12 h-12 rounded-lg object-cover border-2 border-white/30"
-                                onError={(e) => {
-                                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzFhMjMzMiIvPgo8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSI0IiBmaWxsPSIjMTExODIzIiBzdHJva2U9IiNmZjQ2NTQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjAgMjRoMjRjMy4zMTQgMCA2IDIuNjg2IDYgNnY4YzAgMy4zMTQtMi42ODYgNi02IDZIMjBjLTMuMzE0IDAtNi0yLjY4Ni02LTZ2LThjMC0zLjMxNCAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZjQ2NTQiIG9wYWNpdHk9IjAuOCIvPgo8cmVjdCB4PSIyMiIgeT0iMjgiIHdpZHRoPSIyIiBoZWlnaHQ9IjgiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMTgiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzAiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iMzgiIGN5PSIzNCIgcj0iMiIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSI0NiIgY3k9IjM0IiByPSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzgiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHR5eHQgeD0iMzIiIHk9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY0NjU0IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOCIgZm9udC13ZWlnaHQ9ImJvbGQiPlRFQU08L3RleHQ+Cjwvc3ZnPg==";
-                                }}
-                            />
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="relative p-1 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-lg">
+                                <img
+                                    src={getTeamLogo(match.team1Name)}
+                                    alt={match.team1Name}
+                                    className="w-16 h-16 rounded-lg object-cover border-2 border-blue-400/60 shadow-md shadow-blue-400/20"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                    }}
+                                />
+                            </div>
                         </div>
-                        <h4 className="text-lg font-bold text-white">{match.team1Name}</h4>
+                        <h4 className="text-xl font-bold text-white">{match.team1Name}</h4>
                     </div>
 
                     <div className="text-center">
-                        <div className="text-gray-400 text-lg font-bold">VS</div>
+                        <div className="text-gray-400 text-xl font-bold">VS</div>
                     </div>
 
                     <div className="text-center">
-                        <div className="flex items-center justify-center mb-3">
-                            <img
-                                src={getTeamLogo(match.team2Name)}
-                                alt={match.team2Name}
-                                className="w-12 h-12 rounded-lg object-cover border-2 border-white/30"
-                                onError={(e) => {
-                                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzFhMjMzMiIvPgo8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSI0IiBmaWxsPSIjMTExODIzIiBzdHJva2U9IiNmZjQ2NTQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjAgMjRoMjRjMy4zMTQgMCA2IDIuNjg2IDYgNnY4YzAgMy4zMTQtMi42ODYgNi02IDZIMjBjLTMuMzE0IDAtNi0yLjY4Ni02LTZ2LThjMC0zLjMxNCAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZjQ2NTQiIG9wYWNpdHk9IjAuOCIvPgo8cmVjdCB4PSIyMiIgeT0iMjgiIHdpZHRoPSIyIiBoZWlnaHQ9IjgiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMTgiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzAiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iMzgiIGN5PSIzNCIgcj0iMiIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSI0NiIgY3k9IjM0IiByPSIyIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMzgiIHI9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHR5eHQgeD0iMzIiIHk9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY0NjU0IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOCIgZm9udC13ZWlnaHQ9ImJvbGQiPlRFQU08L3RleHQ+Cjwvc3ZnPg==";
-                                }}
-                            />
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="relative p-1 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-lg">
+                                <img
+                                    src={getTeamLogo(match.team2Name)}
+                                    alt={match.team2Name}
+                                    className="w-16 h-16 rounded-lg object-cover border-2 border-blue-400/60 shadow-md shadow-blue-400/20"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                    }}
+                                />
+                            </div>
                         </div>
                         <h4 className="text-lg font-bold text-white">{match.team2Name}</h4>
                     </div>

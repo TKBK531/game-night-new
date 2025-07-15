@@ -84,7 +84,7 @@ export function setupServerlessRoutes(app: Express): void {
             // Check team registration limits
             const currentTeamCount = await storage.getTeamCount(teamData.game);
             const maxTeams = teamData.game === "valorant" ? 8 : 12;
-            
+
             if (currentTeamCount >= maxTeams) {
                 return res.status(400).json({
                     message: `Registration is closed for ${teamData.game}. Maximum ${maxTeams} teams allowed.`,
@@ -179,7 +179,7 @@ export function setupServerlessRoutes(app: Express): void {
     app.get("/api/teams/check-availability/:game", async (req, res) => {
         try {
             const { game } = req.params;
-            
+
             if (!["valorant", "cod"].includes(game)) {
                 return res.status(400).json({ message: "Invalid game type" });
             }
@@ -194,7 +194,7 @@ export function setupServerlessRoutes(app: Express): void {
                     registered: teamCount,
                     maxTeams,
                     isAvailable,
-                    message: isAvailable 
+                    message: isAvailable
                         ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
                         : "Registration is closed for this tournament."
                 });
@@ -204,7 +204,7 @@ export function setupServerlessRoutes(app: Express): void {
                 const queuedCount = await storage.getQueuedTeamCount(game);
                 const maxTeams = 12;
                 const maxQueue = 5;
-                
+
                 const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
 
                 res.json({
@@ -214,11 +214,11 @@ export function setupServerlessRoutes(app: Express): void {
                     maxTeams,
                     maxQueue,
                     isAvailable: isRegistrationOpen,
-                    message: isRegistrationOpen 
+                    message: isRegistrationOpen
                         ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
-                        : confirmedCount >= maxTeams 
-                          ? "Registration is closed. Tournament is full."
-                          : "Registration queue is full. Please try again later."
+                        : confirmedCount >= maxTeams
+                            ? "Registration is closed. Tournament is full."
+                            : "Registration queue is full. Please try again later."
                 });
             }
         } catch (error) {
@@ -236,11 +236,11 @@ export function setupServerlessRoutes(app: Express): void {
 
             res.json({
                 valorant: { registered: valorantCount, total: 8 },
-                cod: { 
-                    confirmed: codConfirmedCount, 
-                    queued: codQueuedCount, 
+                cod: {
+                    confirmed: codConfirmedCount,
+                    queued: codQueuedCount,
                     total: 12,
-                    maxQueue: 5 
+                    maxQueue: 5
                 }
             });
         } catch (error) {
@@ -431,12 +431,12 @@ export function setupServerlessRoutes(app: Express): void {
     app.get("/api/leaderboard", async (req, res) => {
         try {
             await connectToDatabase();
-            
+
             const game = req.query.game as string;
-            
+
             if (!game || (game !== "valorant" && game !== "cod")) {
                 const leaderboard = await storage.getTeamLeaderboard(game as "valorant" | "cod");
-                
+
                 // If no real data, return sample data
                 if (leaderboard.length === 0) {
                     const sampleData = [
@@ -453,7 +453,7 @@ export function setupServerlessRoutes(app: Express): void {
                             updatedBy: "system"
                         },
                         {
-                            _id: "sample2", 
+                            _id: "sample2",
                             teamId: "2",
                             teamName: "Elite Squad",
                             game: game || "valorant",
@@ -466,7 +466,7 @@ export function setupServerlessRoutes(app: Express): void {
                         },
                         {
                             _id: "sample3",
-                            teamId: "3", 
+                            teamId: "3",
                             teamName: "Phoenix Riders",
                             game: game || "valorant",
                             score: 2100,
@@ -477,10 +477,10 @@ export function setupServerlessRoutes(app: Express): void {
                             updatedBy: "system"
                         }
                     ];
-                    
+
                     return res.json(sampleData);
                 }
-                
+
                 res.json(leaderboard);
             } else {
                 return res.status(400).json({ message: "Game parameter is required and must be 'valorant' or 'cod'" });
@@ -495,12 +495,12 @@ export function setupServerlessRoutes(app: Express): void {
     app.get("/api/matches", async (req, res) => {
         try {
             await connectToDatabase();
-            
+
             const game = req.query.game as string;
-            
+
             if (!game || (game !== "valorant" && game !== "cod")) {
                 const matches = await storage.getMatches(game as "valorant" | "cod");
-                
+
                 // If no real data, return sample data
                 if (matches.length === 0) {
                     const sampleData = [
@@ -509,7 +509,7 @@ export function setupServerlessRoutes(app: Express): void {
                             game: game || "valorant",
                             team1Id: "1",
                             team1Name: "Team Alpha",
-                            team2Id: "2", 
+                            team2Id: "2",
                             team2Name: "Elite Squad",
                             status: "scheduled",
                             scheduledTime: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
@@ -520,7 +520,7 @@ export function setupServerlessRoutes(app: Express): void {
                         },
                         {
                             _id: "match2",
-                            game: game || "valorant", 
+                            game: game || "valorant",
                             team1Id: "3",
                             team1Name: "Phoenix Riders",
                             team2Id: "4",
@@ -536,10 +536,10 @@ export function setupServerlessRoutes(app: Express): void {
                             lastUpdated: new Date().toISOString()
                         }
                     ];
-                    
+
                     return res.json(sampleData);
                 }
-                
+
                 res.json(matches);
             } else {
                 return res.status(400).json({ message: "Game parameter is required and must be 'valorant' or 'cod'" });
