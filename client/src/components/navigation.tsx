@@ -137,6 +137,18 @@ export default function Navigation() {
               Countdown
             </motion.button>
             <motion.a
+              href="/leaderboard"
+              className="hover:text-[#ff4654] transition-colors cursor-pointer"
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              whileHover={{ scale: 1.1, color: "#ff4654" }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Leaderboard
+            </motion.a>
+            <motion.a
               href="/rules"
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
@@ -222,6 +234,13 @@ export default function Navigation() {
                 >
                   Countdown
                 </motion.button>
+                <motion.a
+                  href="/leaderboard"
+                  className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2 block"
+                  whileHover={{ x: 10 }}
+                >
+                  Leaderboard
+                </motion.a>
                 <motion.a
                   href="/rules"
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2 block"

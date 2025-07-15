@@ -53,6 +53,8 @@ import {
   Download,
   Eye,
   Settings,
+  Medal,
+  Calendar,
 } from "lucide-react";
 
 interface User {
@@ -527,7 +529,7 @@ export default function AdminDashboard() {
         if (currentUser) {
           loadDashboardData(currentUser);
         }
-        
+
         // Invalidate stats query to update main page
         queryClient.invalidateQueries({ queryKey: ['/api/teams/stats'] });
       } else {
@@ -564,7 +566,7 @@ export default function AdminDashboard() {
         if (currentUser) {
           loadDashboardData(currentUser);
         }
-        
+
         // Invalidate stats query to update main page
         queryClient.invalidateQueries({ queryKey: ['/api/teams/stats'] });
       } else {
@@ -767,6 +769,20 @@ export default function AdminDashboard() {
               Scores ({scores.length})
             </TabsTrigger>
             <TabsTrigger
+              value="leaderboard"
+              className="data-[state=active]:bg-[#ff4654]"
+            >
+              <Medal className="h-4 w-4 mr-2" />
+              Leaderboard
+            </TabsTrigger>
+            <TabsTrigger
+              value="matches"
+              className="data-[state=active]:bg-[#ba3a46]"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Matches
+            </TabsTrigger>
+            <TabsTrigger
               value="secret"
               className="data-[state=active]:bg-[#ff4654]"
             >
@@ -775,14 +791,14 @@ export default function AdminDashboard() {
             </TabsTrigger>
             {(currentUser.role === "superuser" ||
               currentUser.role === "elite_board") && (
-              <TabsTrigger
-                value="users"
-                className="data-[state=active]:bg-[#ff4654]"
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Users ({users.length})
-              </TabsTrigger>
-            )}
+                <TabsTrigger
+                  value="users"
+                  className="data-[state=active]:bg-[#ff4654]"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Users ({users.length})
+                </TabsTrigger>
+              )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -842,23 +858,23 @@ export default function AdminDashboard() {
 
               {(currentUser.role === "superuser" ||
                 currentUser.role === "elite_board") && (
-                <Card className="bg-[#111823] border-[#ff4654]/30">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-200">
-                      Admin Users
-                    </CardTitle>
-                    <Shield className="h-4 w-4 text-[#ff4654]" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-[#ff4654]">
-                      {users.length}
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      System administrators
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                  <Card className="bg-[#111823] border-[#ff4654]/30">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-gray-200">
+                        Admin Users
+                      </CardTitle>
+                      <Shield className="h-4 w-4 text-[#ff4654]" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-[#ff4654]">
+                        {users.length}
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        System administrators
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
             </div>
           </TabsContent>
 
@@ -937,15 +953,15 @@ export default function AdminDashboard() {
                         </Button>
                         {(currentUser.role === "superuser" ||
                           currentUser.role === "elite_board") && (
-                          <Button
-                            onClick={() => deleteTeam(team._id)}
-                            variant="outline"
-                            size="sm"
-                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                            <Button
+                              onClick={() => deleteTeam(team._id)}
+                              variant="outline"
+                              size="sm"
+                              className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                       </div>
                     </div>
                   ))}
@@ -1034,9 +1050,8 @@ export default function AdminDashboard() {
                       onClick={() => handleSecretChallengeSort('score')}
                       variant="outline"
                       size="sm"
-                      className={`border-purple-500/50 text-purple-200 hover:bg-purple-800/50 ${
-                        secretChallengeSortBy === 'score' ? 'bg-purple-800/50' : ''
-                      }`}
+                      className={`border-purple-500/50 text-purple-200 hover:bg-purple-800/50 ${secretChallengeSortBy === 'score' ? 'bg-purple-800/50' : ''
+                        }`}
                     >
                       Score {secretChallengeSortBy === 'score' && (secretChallengeSortOrder === 'desc' ? '↓' : '↑')}
                     </Button>
@@ -1044,9 +1059,8 @@ export default function AdminDashboard() {
                       onClick={() => handleSecretChallengeSort('date')}
                       variant="outline"
                       size="sm"
-                      className={`border-purple-500/50 text-purple-200 hover:bg-purple-800/50 ${
-                        secretChallengeSortBy === 'date' ? 'bg-purple-800/50' : ''
-                      }`}
+                      className={`border-purple-500/50 text-purple-200 hover:bg-purple-800/50 ${secretChallengeSortBy === 'date' ? 'bg-purple-800/50' : ''
+                        }`}
                     >
                       Date {secretChallengeSortBy === 'date' && (secretChallengeSortOrder === 'desc' ? '↓' : '↑')}
                     </Button>
@@ -1058,23 +1072,21 @@ export default function AdminDashboard() {
                   {sortedSecretChallenges.map((challenge, index) => (
                     <div
                       key={challenge._id}
-                      className={`flex items-center justify-between p-4 rounded-lg border ${
-                        index === 0 
+                      className={`flex items-center justify-between p-4 rounded-lg border ${index === 0
                           ? "bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-500/50"
                           : index === 1
-                          ? "bg-gradient-to-r from-gray-600/20 to-gray-500/20 border-gray-400/50"
-                          : index === 2
-                          ? "bg-gradient-to-r from-orange-700/20 to-orange-600/20 border-orange-500/50"
-                          : "bg-[#1a2332] border-[#ff4654]/20"
-                      }`}
+                            ? "bg-gradient-to-r from-gray-600/20 to-gray-500/20 border-gray-400/50"
+                            : index === 2
+                              ? "bg-gradient-to-r from-orange-700/20 to-orange-600/20 border-orange-500/50"
+                              : "bg-[#1a2332] border-[#ff4654]/20"
+                        }`}
                     >
                       <div className="flex items-center space-x-4">
-                        <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
-                          index === 0 ? "bg-yellow-500/20 text-yellow-400" :
-                          index === 1 ? "bg-gray-500/20 text-gray-300" :
-                          index === 2 ? "bg-orange-500/20 text-orange-400" :
-                          "bg-[#ff4654]/20 text-[#ff4654]"
-                        }`}>
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${index === 0 ? "bg-yellow-500/20 text-yellow-400" :
+                            index === 1 ? "bg-gray-500/20 text-gray-300" :
+                              index === 2 ? "bg-orange-500/20 text-orange-400" :
+                                "bg-[#ff4654]/20 text-[#ff4654]"
+                          }`}>
                           #{index + 1}
                         </div>
                         <div>
@@ -1118,10 +1130,10 @@ export default function AdminDashboard() {
                       </p>
                       <div className="mt-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
                         <p className="text-xs text-purple-300">
-                          <strong>For players to discover:</strong><br/>
-                          • Look for hints in the footer, CSS comments, and HTML source<br/>
-                          • Enter the classic Konami Code on any page<br/>
-                          • Complete the 30-second target challenge<br/>
+                          <strong>For players to discover:</strong><br />
+                          • Look for hints in the footer, CSS comments, and HTML source<br />
+                          • Enter the classic Konami Code on any page<br />
+                          • Complete the 30-second target challenge<br />
                           • First place wins the exclusive prize!
                         </p>
                       </div>
@@ -1134,191 +1146,191 @@ export default function AdminDashboard() {
 
           {(currentUser.role === "superuser" ||
             currentUser.role === "elite_board") && (
-            <TabsContent value="users" className="space-y-6">
-              <Card className="bg-[#111823] border-[#ff4654]/30">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle className="text-[#ff4654]">
-                        Admin Users
-                      </CardTitle>
-                      <CardDescription className="text-gray-400">
-                        Manage system administrator accounts
-                      </CardDescription>
-                    </div>
-                    {currentUser.role === "superuser" && (
-                      <Dialog
-                        open={isCreateUserDialogOpen}
-                        onOpenChange={setIsCreateUserDialogOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button className="gaming-button">
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Add User
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-[#111823] border-[#ff4654]/30 text-white">
-                          <DialogHeader>
-                            <DialogTitle className="text-[#ff4654]">
-                              Create New Admin User
-                            </DialogTitle>
-                            <DialogDescription className="text-gray-400">
-                              Add a new administrator to the system
-                            </DialogDescription>
-                          </DialogHeader>
-                          <Form {...createUserForm}>
-                            <form
-                              onSubmit={createUserForm.handleSubmit(createUser)}
-                              className="space-y-4"
-                            >
-                              <FormField
-                                control={createUserForm.control}
-                                name="username"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-gray-200">
-                                      Username
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        placeholder="Enter username"
-                                        className="bg-[#1a2332] border-[#ff4654]/30 text-white placeholder:text-gray-400 focus:border-[#ff4654]"
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-[#ff4654]" />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={createUserForm.control}
-                                name="password"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-gray-200">
-                                      Password
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        type="password"
-                                        placeholder="Enter password"
-                                        className="bg-[#1a2332] border-[#ff4654]/30 text-white placeholder:text-gray-400 focus:border-[#ff4654]"
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-[#ff4654]" />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={createUserForm.control}
-                                name="role"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-gray-200">
-                                      Role
-                                    </FormLabel>
-                                    <Select
-                                      onValueChange={field.onChange}
-                                      defaultValue={field.value}
-                                    >
+              <TabsContent value="users" className="space-y-6">
+                <Card className="bg-[#111823] border-[#ff4654]/30">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="text-[#ff4654]">
+                          Admin Users
+                        </CardTitle>
+                        <CardDescription className="text-gray-400">
+                          Manage system administrator accounts
+                        </CardDescription>
+                      </div>
+                      {currentUser.role === "superuser" && (
+                        <Dialog
+                          open={isCreateUserDialogOpen}
+                          onOpenChange={setIsCreateUserDialogOpen}
+                        >
+                          <DialogTrigger asChild>
+                            <Button className="gaming-button">
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Add User
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-[#111823] border-[#ff4654]/30 text-white">
+                            <DialogHeader>
+                              <DialogTitle className="text-[#ff4654]">
+                                Create New Admin User
+                              </DialogTitle>
+                              <DialogDescription className="text-gray-400">
+                                Add a new administrator to the system
+                              </DialogDescription>
+                            </DialogHeader>
+                            <Form {...createUserForm}>
+                              <form
+                                onSubmit={createUserForm.handleSubmit(createUser)}
+                                className="space-y-4"
+                              >
+                                <FormField
+                                  control={createUserForm.control}
+                                  name="username"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-gray-200">
+                                        Username
+                                      </FormLabel>
                                       <FormControl>
-                                        <SelectTrigger className="bg-[#1a2332] border-[#ff4654]/30 text-white focus:border-[#ff4654]">
-                                          <SelectValue placeholder="Select a role" />
-                                        </SelectTrigger>
+                                        <Input
+                                          {...field}
+                                          placeholder="Enter username"
+                                          className="bg-[#1a2332] border-[#ff4654]/30 text-white placeholder:text-gray-400 focus:border-[#ff4654]"
+                                        />
                                       </FormControl>
-                                      <SelectContent className="bg-[#1a2332] border-[#ff4654]/30">
-                                        <SelectItem
-                                          value="elite_board"
-                                          className="text-white hover:bg-[#ff4654]/20"
-                                        >
-                                          Elite Board - Full data access
-                                        </SelectItem>
-                                        <SelectItem
-                                          value="top_board"
-                                          className="text-white hover:bg-[#ff4654]/20"
-                                        >
-                                          Top Board - Limited access
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage className="text-[#ff4654]" />
-                                  </FormItem>
-                                )}
-                              />
-                              <div className="flex justify-end space-x-2 pt-4">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() =>
-                                    setIsCreateUserDialogOpen(false)
-                                  }
-                                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                                >
-                                  Cancel
-                                </Button>
-                                <Button
-                                  type="submit"
-                                  disabled={isCreatingUser}
-                                  className="gaming-button"
-                                >
-                                  {isCreatingUser ? (
-                                    <>
-                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                      Creating...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserPlus className="h-4 w-4 mr-2" />
-                                      Create User
-                                    </>
+                                      <FormMessage className="text-[#ff4654]" />
+                                    </FormItem>
                                   )}
+                                />
+                                <FormField
+                                  control={createUserForm.control}
+                                  name="password"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-gray-200">
+                                        Password
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          type="password"
+                                          placeholder="Enter password"
+                                          className="bg-[#1a2332] border-[#ff4654]/30 text-white placeholder:text-gray-400 focus:border-[#ff4654]"
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[#ff4654]" />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={createUserForm.control}
+                                  name="role"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-gray-200">
+                                        Role
+                                      </FormLabel>
+                                      <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                      >
+                                        <FormControl>
+                                          <SelectTrigger className="bg-[#1a2332] border-[#ff4654]/30 text-white focus:border-[#ff4654]">
+                                            <SelectValue placeholder="Select a role" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="bg-[#1a2332] border-[#ff4654]/30">
+                                          <SelectItem
+                                            value="elite_board"
+                                            className="text-white hover:bg-[#ff4654]/20"
+                                          >
+                                            Elite Board - Full data access
+                                          </SelectItem>
+                                          <SelectItem
+                                            value="top_board"
+                                            className="text-white hover:bg-[#ff4654]/20"
+                                          >
+                                            Top Board - Limited access
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage className="text-[#ff4654]" />
+                                    </FormItem>
+                                  )}
+                                />
+                                <div className="flex justify-end space-x-2 pt-4">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                      setIsCreateUserDialogOpen(false)
+                                    }
+                                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    type="submit"
+                                    disabled={isCreatingUser}
+                                    className="gaming-button"
+                                  >
+                                    {isCreatingUser ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Creating...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <UserPlus className="h-4 w-4 mr-2" />
+                                        Create User
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </form>
+                            </Form>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {users.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center justify-between p-4 bg-[#1a2332] rounded-lg border border-[#ff4654]/20"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div>
+                              <h3 className="font-semibold text-white">
+                                {user.username}
+                              </h3>
+                              <Badge className={getRoleBadgeColor(user.role)}>
+                                {user.role.replace("_", " ").toUpperCase()}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {currentUser.role === "superuser" &&
+                              user.id !== currentUser.id && (
+                                <Button
+                                  onClick={() => deleteUser(user.id)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
-                              </div>
-                            </form>
-                          </Form>
-                        </DialogContent>
-                      </Dialog>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {users.map((user) => (
-                      <div
-                        key={user.id}
-                        className="flex items-center justify-between p-4 bg-[#1a2332] rounded-lg border border-[#ff4654]/20"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <h3 className="font-semibold text-white">
-                              {user.username}
-                            </h3>
-                            <Badge className={getRoleBadgeColor(user.role)}>
-                              {user.role.replace("_", " ").toUpperCase()}
-                            </Badge>
+                              )}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          {currentUser.role === "superuser" &&
-                            user.id !== currentUser.id && (
-                              <Button
-                                onClick={() => deleteUser(user.id)}
-                                variant="outline"
-                                size="sm"
-                                className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
 
           {/* COD Queue Management */}
           <TabsContent value="cod-queue" className="space-y-6">
@@ -1366,8 +1378,8 @@ export default function AdminDashboard() {
                                 team.status === "queued"
                                   ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
                                   : team.status === "approved"
-                                  ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                  : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                                    ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                    : "bg-gray-500/20 text-gray-400 border-gray-500/30"
                               }
                             >
                               {team.status?.toUpperCase()}
@@ -1432,6 +1444,73 @@ export default function AdminDashboard() {
                       </div>
                     ))
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Leaderboard Management Tab */}
+          <TabsContent value="leaderboard" className="space-y-6">
+            <Card className="bg-[#111823] border-[#ff4654]/30">
+              <CardHeader>
+                <CardTitle className="text-[#ff4654] flex items-center">
+                  <Medal className="h-6 w-6 mr-3" />
+                  Leaderboard Management
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Manage team scores and leaderboard positions for both Valorant and Call of Duty tournaments
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Medal className="h-16 w-16 mx-auto mb-4 text-[#ff4654] opacity-50" />
+                  <h3 className="text-xl font-bold text-white mb-2">Leaderboard Management</h3>
+                  <p className="text-gray-400 mb-4">
+                    Advanced leaderboard management features will be available here.
+                  </p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Features include: Score updates, team rankings, match results integration,
+                    and automatic leaderboard calculations.
+                  </p>
+                  <Button className="bg-[#ff4654] hover:bg-[#ba3a46] text-white">
+                    View Full Leaderboard
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Match Management Tab */}
+          <TabsContent value="matches" className="space-y-6">
+            <Card className="bg-[#111823] border-[#ba3a46]/30">
+              <CardHeader>
+                <CardTitle className="text-[#ba3a46] flex items-center">
+                  <Calendar className="h-6 w-6 mr-3" />
+                  Match Management
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Schedule matches, update scores, and manage tournament brackets
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Calendar className="h-16 w-16 mx-auto mb-4 text-[#ba3a46] opacity-50" />
+                  <h3 className="text-xl font-bold text-white mb-2">Match Management</h3>
+                  <p className="text-gray-400 mb-4">
+                    Comprehensive match management system for tournament operations.
+                  </p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Features include: Match scheduling, live score updates, bracket management,
+                    and automated match results processing.
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <Button className="bg-[#ba3a46] hover:bg-[#ff4654] text-white">
+                      Schedule Match
+                    </Button>
+                    <Button variant="outline" className="border-[#ba3a46] text-[#ba3a46] hover:bg-[#ba3a46] hover:text-white">
+                      View Brackets
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

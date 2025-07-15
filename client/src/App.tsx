@@ -9,6 +9,7 @@ import RulesPage from "@/pages/rules";
 import AdminFiles from "@/pages/admin-files";
 import AdminDashboard from "@/pages/admin";
 import SupportUsPage from "@/pages/support-us";
+import LeaderboardPage from "@/pages/leaderboard";
 import KonamiCodeChallenge from "@/components/konami-code";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/rules" component={() => <RulesPage />} />
       <Route path="/support-us" component={() => <SupportUsPage />} />
+      <Route path="/leaderboard" component={() => <LeaderboardPage />} />
       <Route path="/admin" component={() => <AdminDashboard />} />
       <Route path="/admin/files" component={() => <AdminFiles />} />
       <Route component={NotFound} />
