@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import AdminLogin from "@/components/admin-login";
 import { Button } from "@/components/ui/button";
 import {
@@ -1073,19 +1073,19 @@ export default function AdminDashboard() {
                     <div
                       key={challenge._id}
                       className={`flex items-center justify-between p-4 rounded-lg border ${index === 0
-                          ? "bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-500/50"
-                          : index === 1
-                            ? "bg-gradient-to-r from-gray-600/20 to-gray-500/20 border-gray-400/50"
-                            : index === 2
-                              ? "bg-gradient-to-r from-orange-700/20 to-orange-600/20 border-orange-500/50"
-                              : "bg-[#1a2332] border-[#ff4654]/20"
+                        ? "bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-500/50"
+                        : index === 1
+                          ? "bg-gradient-to-r from-gray-600/20 to-gray-500/20 border-gray-400/50"
+                          : index === 2
+                            ? "bg-gradient-to-r from-orange-700/20 to-orange-600/20 border-orange-500/50"
+                            : "bg-[#1a2332] border-[#ff4654]/20"
                         }`}
                     >
                       <div className="flex items-center space-x-4">
                         <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${index === 0 ? "bg-yellow-500/20 text-yellow-400" :
-                            index === 1 ? "bg-gray-500/20 text-gray-300" :
-                              index === 2 ? "bg-orange-500/20 text-orange-400" :
-                                "bg-[#ff4654]/20 text-[#ff4654]"
+                          index === 1 ? "bg-gray-500/20 text-gray-300" :
+                            index === 2 ? "bg-orange-500/20 text-orange-400" :
+                              "bg-[#ff4654]/20 text-[#ff4654]"
                           }`}>
                           #{index + 1}
                         </div>
@@ -1451,69 +1451,12 @@ export default function AdminDashboard() {
 
           {/* Leaderboard Management Tab */}
           <TabsContent value="leaderboard" className="space-y-6">
-            <Card className="bg-[#111823] border-[#ff4654]/30">
-              <CardHeader>
-                <CardTitle className="text-[#ff4654] flex items-center">
-                  <Medal className="h-6 w-6 mr-3" />
-                  Leaderboard Management
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Manage team scores and leaderboard positions for both Valorant and Call of Duty tournaments
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Medal className="h-16 w-16 mx-auto mb-4 text-[#ff4654] opacity-50" />
-                  <h3 className="text-xl font-bold text-white mb-2">Leaderboard Management</h3>
-                  <p className="text-gray-400 mb-4">
-                    Advanced leaderboard management features will be available here.
-                  </p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Features include: Score updates, team rankings, match results integration,
-                    and automatic leaderboard calculations.
-                  </p>
-                  <Button className="bg-[#ff4654] hover:bg-[#ba3a46] text-white">
-                    View Full Leaderboard
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <LeaderboardManager />
           </TabsContent>
 
           {/* Match Management Tab */}
           <TabsContent value="matches" className="space-y-6">
-            <Card className="bg-[#111823] border-[#ba3a46]/30">
-              <CardHeader>
-                <CardTitle className="text-[#ba3a46] flex items-center">
-                  <Calendar className="h-6 w-6 mr-3" />
-                  Match Management
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Schedule matches, update scores, and manage tournament brackets
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Calendar className="h-16 w-16 mx-auto mb-4 text-[#ba3a46] opacity-50" />
-                  <h3 className="text-xl font-bold text-white mb-2">Match Management</h3>
-                  <p className="text-gray-400 mb-4">
-                    Comprehensive match management system for tournament operations.
-                  </p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Features include: Match scheduling, live score updates, bracket management,
-                    and automated match results processing.
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button className="bg-[#ba3a46] hover:bg-[#ff4654] text-white">
-                      Schedule Match
-                    </Button>
-                    <Button variant="outline" className="border-[#ba3a46] text-[#ba3a46] hover:bg-[#ba3a46] hover:text-white">
-                      View Brackets
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MatchManager />
           </TabsContent>
         </Tabs>
       </div>
@@ -1744,5 +1687,790 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// Leaderboard Manager Component
+function LeaderboardManager() {
+  const [selectedGame, setSelectedGame] = useState<"valorant" | "cod">("valorant");
+  const [editingTeam, setEditingTeam] = useState<any>(null);
+  const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch leaderboard data
+  const { data: leaderboard = [], isLoading, refetch } = useQuery<any[]>({
+    queryKey: ['/api/leaderboard', selectedGame],
+    queryFn: () => fetch(`/api/leaderboard?game=${selectedGame}`).then(res => res.json()),
+  });
+
+  // Fetch teams for dropdown
+  const { data: teams = [] } = useQuery<any[]>({
+    queryKey: ['/api/admin/teams'],
+    queryFn: () => fetch('/api/admin/teams', { credentials: 'include' }).then(res => res.json()),
+  });
+
+  const gameTeams = teams.filter(team => team.game === selectedGame);
+
+  const updateTeamScore = async (scoreData: any) => {
+    try {
+      const response = await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(scoreData),
+      });
+
+      if (!response.ok) throw new Error('Failed to update score');
+
+      toast({
+        title: 'Success',
+        description: 'Team score updated successfully',
+      });
+
+      refetch();
+      setIsScoreDialogOpen(false);
+      setEditingTeam(null);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update score',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Game Selector */}
+      <div className="flex items-center space-x-4">
+        <label className="text-white font-semibold">Game:</label>
+        <Tabs value={selectedGame} onValueChange={(value) => setSelectedGame(value as "valorant" | "cod")}>
+          <TabsList className="bg-[#1a2332] border border-[#ff4654]/30">
+            <TabsTrigger value="valorant" className="data-[state=active]:bg-[#ff4654]">Valorant</TabsTrigger>
+            <TabsTrigger value="cod" className="data-[state=active]:bg-[#ba3a46]">Call of Duty</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button
+          onClick={() => {
+            setEditingTeam({ game: selectedGame });
+            setIsScoreDialogOpen(true);
+          }}
+          className="bg-[#ff4654] hover:bg-[#ba3a46] text-white"
+        >
+          <Trophy className="h-4 w-4 mr-2" />
+          Add/Update Score
+        </Button>
+      </div>
+
+      {/* Leaderboard Table */}
+      <Card className="bg-[#1a2332] border-[#ff4654]/20">
+        <CardHeader>
+          <CardTitle className="text-white">{selectedGame === 'valorant' ? 'Valorant' : 'Call of Duty'} Leaderboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff4654]"></div>
+            </div>
+          ) : leaderboard.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <Trophy className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <p>No scores recorded yet</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#ff4654]/20">
+                    <th className="text-left py-3 px-4 text-white">Rank</th>
+                    <th className="text-left py-3 px-4 text-white">Team</th>
+                    <th className="text-left py-3 px-4 text-white">Score</th>
+                    <th className="text-left py-3 px-4 text-white">Matches</th>
+                    <th className="text-left py-3 px-4 text-white">Win Rate</th>
+                    <th className="text-left py-3 px-4 text-white">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.map((team, index) => (
+                    <tr key={team._id} className="border-b border-[#ff4654]/10 hover:bg-[#ff4654]/5">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center">
+                          {index === 0 && <Medal className="h-5 w-5 text-yellow-400 mr-2" />}
+                          {index === 1 && <Medal className="h-5 w-5 text-gray-300 mr-2" />}
+                          {index === 2 && <Medal className="h-5 w-5 text-orange-400 mr-2" />}
+                          <span className="text-white font-bold">#{index + 1}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-white font-semibold">{team.teamName}</td>
+                      <td className="py-3 px-4 text-[#ff4654] font-bold text-lg">{team.score}</td>
+                      <td className="py-3 px-4 text-gray-300">
+                        {team.matchesWon}W - {team.matchesLost}L ({team.totalMatches} total)
+                      </td>
+                      <td className="py-3 px-4 text-gray-300">
+                        {team.totalMatches > 0 ? Math.round((team.matchesWon / team.totalMatches) * 100) : 0}%
+                      </td>
+                      <td className="py-3 px-4">
+                        <Button
+                          onClick={() => {
+                            setEditingTeam(team);
+                            setIsScoreDialogOpen(true);
+                          }}
+                          size="sm"
+                          className="bg-[#ba3a46] hover:bg-[#ff4654] text-white"
+                        >
+                          Edit
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Score Update Dialog */}
+      <Dialog open={isScoreDialogOpen} onOpenChange={setIsScoreDialogOpen}>
+        <DialogContent className="bg-[#111823] border-[#ff4654]/30 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-[#ff4654]">
+              {editingTeam?._id ? 'Update Team Score' : 'Add Team Score'}
+            </DialogTitle>
+          </DialogHeader>
+          <ScoreUpdateForm
+            team={editingTeam}
+            teams={gameTeams}
+            onSubmit={updateTeamScore}
+            onCancel={() => {
+              setIsScoreDialogOpen(false);
+              setEditingTeam(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Score Update Form Component
+function ScoreUpdateForm({ team, teams, onSubmit, onCancel }: any) {
+  const [formData, setFormData] = useState({
+    teamId: team?.teamId || '',
+    teamName: team?.teamName || '',
+    game: team?.game || 'valorant',
+    score: team?.score || 0,
+    matchesWon: team?.matchesWon || 0,
+    matchesLost: team?.matchesLost || 0,
+    totalMatches: team?.totalMatches || 0,
+    updatedBy: 'admin', // This should come from current user
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Auto-calculate total matches
+    const calculatedTotal = formData.matchesWon + formData.matchesLost;
+
+    onSubmit({
+      ...formData,
+      totalMatches: calculatedTotal,
+    });
+  };
+
+  const handleTeamSelect = (teamId: string) => {
+    const selectedTeam = teams.find((t: any) => t._id === teamId);
+    if (selectedTeam) {
+      setFormData(prev => ({
+        ...prev,
+        teamId: selectedTeam._id,
+        teamName: selectedTeam.teamName,
+      }));
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {!team?._id && (
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
+          <Select onValueChange={handleTeamSelect} value={formData.teamId}>
+            <SelectTrigger className="bg-[#1a2332] border-[#ff4654]/30 text-white">
+              <SelectValue placeholder="Select a team" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a2332] border-[#ff4654]/30">
+              {teams.map((t: any) => (
+                <SelectItem key={t._id} value={t._id} className="text-white hover:bg-[#ff4654]/20">
+                  {t.teamName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {formData.teamName && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Team</label>
+            <Input
+              value={formData.teamName}
+              disabled
+              className="bg-[#1a2332] border-[#ff4654]/30 text-gray-400"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Score</label>
+              <Input
+                type="number"
+                value={formData.score}
+                onChange={(e) => setFormData(prev => ({ ...prev, score: parseInt(e.target.value) || 0 }))}
+                className="bg-[#1a2332] border-[#ff4654]/30 text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Matches Won</label>
+              <Input
+                type="number"
+                value={formData.matchesWon}
+                onChange={(e) => setFormData(prev => ({ ...prev, matchesWon: parseInt(e.target.value) || 0 }))}
+                className="bg-[#1a2332] border-[#ff4654]/30 text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Matches Lost</label>
+            <Input
+              type="number"
+              value={formData.matchesLost}
+              onChange={(e) => setFormData(prev => ({ ...prev, matchesLost: parseInt(e.target.value) || 0 }))}
+              className="bg-[#1a2332] border-[#ff4654]/30 text-white"
+            />
+          </div>
+
+          <div className="text-sm text-gray-400">
+            Total Matches: {formData.matchesWon + formData.matchesLost}
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <Button type="submit" className="bg-[#ff4654] hover:bg-[#ba3a46] text-white">
+              {team?._id ? 'Update Score' : 'Add Score'}
+            </Button>
+            <Button type="button" onClick={onCancel} variant="outline" className="border-gray-500 text-gray-300">
+              Cancel
+            </Button>
+          </div>
+        </>
+      )}
+    </form>
+  );
+}
+
+// Match Manager Component
+function MatchManager() {
+  const [selectedGame, setSelectedGame] = useState<"valorant" | "cod">("valorant");
+  const [isMatchDialogOpen, setIsMatchDialogOpen] = useState(false);
+  const [editingMatch, setEditingMatch] = useState<any>(null);
+  const { toast } = useToast();
+
+  // Fetch matches data
+  const { data: allMatches = [], isLoading, refetch } = useQuery<any[]>({
+    queryKey: ['/api/matches', selectedGame],
+    queryFn: () => fetch(`/api/matches?game=${selectedGame}`).then(res => res.json()),
+  });
+
+  // Fetch teams for dropdowns
+  const { data: teams = [] } = useQuery<any[]>({
+    queryKey: ['/api/admin/teams'],
+    queryFn: () => fetch('/api/admin/teams', { credentials: 'include' }).then(res => res.json()),
+  });
+
+  const gameTeams = teams.filter(team => team.game === selectedGame);
+
+  // Filter matches by status
+  const ongoingMatches = allMatches.filter(m => m.status === "in_progress").slice(0, 3);
+  const upcomingMatches = allMatches.filter(m => m.status === "scheduled");
+  const completedMatches = allMatches.filter(m => m.status === "completed").slice(0, 10);
+
+  const createMatch = async (matchData: any) => {
+    try {
+      const response = await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(matchData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create match');
+
+      toast({
+        title: 'Success',
+        description: 'Match created successfully',
+      });
+
+      refetch();
+      setIsMatchDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create match',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const updateMatch = async (matchId: string, updateData: any) => {
+    try {
+      const response = await fetch(`/api/matches/${matchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) throw new Error('Failed to update match');
+
+      toast({
+        title: 'Success',
+        description: 'Match updated successfully',
+      });
+
+      refetch();
+      setIsMatchDialogOpen(false);
+      setEditingMatch(null);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update match',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "scheduled": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      case "in_progress": return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "completed": return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      case "cancelled": return "bg-red-500/20 text-red-400 border-red-500/30";
+      default: return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Game Selector and Actions */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <label className="text-white font-semibold">Game:</label>
+          <Tabs value={selectedGame} onValueChange={(value) => setSelectedGame(value as "valorant" | "cod")}>
+            <TabsList className="bg-[#1a2332] border border-[#ba3a46]/30">
+              <TabsTrigger value="valorant" className="data-[state=active]:bg-[#ff4654]">Valorant</TabsTrigger>
+              <TabsTrigger value="cod" className="data-[state=active]:bg-[#ba3a46]">Call of Duty</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        <Button
+          onClick={() => {
+            setEditingMatch({ game: selectedGame });
+            setIsMatchDialogOpen(true);
+          }}
+          className="bg-[#ba3a46] hover:bg-[#ff4654] text-white"
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          Schedule Match
+        </Button>
+      </div>
+
+      {/* Ongoing Matches (Max 3) */}
+      <Card className="bg-[#1a2332] border-green-500/30">
+        <CardHeader>
+          <CardTitle className="text-green-400 flex items-center">
+            <div className="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+            Ongoing Matches ({ongoingMatches.length}/3)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {ongoingMatches.length === 0 ? (
+            <div className="text-center py-6 text-gray-400">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <p>No ongoing matches</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {ongoingMatches.map((match) => (
+                <MatchCard
+                  key={match._id}
+                  match={match}
+                  onEdit={(match: any) => {
+                    setEditingMatch(match);
+                    setIsMatchDialogOpen(true);
+                  }}
+                  onUpdate={updateMatch}
+                  getStatusColor={getStatusColor}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Upcoming Matches */}
+      <Card className="bg-[#1a2332] border-yellow-500/30">
+        <CardHeader>
+          <CardTitle className="text-yellow-400 flex items-center">
+            <Calendar className="h-5 w-5 mr-3" />
+            Upcoming Matches ({upcomingMatches.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {upcomingMatches.length === 0 ? (
+            <div className="text-center py-6 text-gray-400">
+              <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <p>No upcoming matches scheduled</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {upcomingMatches.map((match) => (
+                <MatchCard
+                  key={match._id}
+                  match={match}
+                  onEdit={(match: any) => {
+                    setEditingMatch(match);
+                    setIsMatchDialogOpen(true);
+                  }}
+                  onUpdate={updateMatch}
+                  getStatusColor={getStatusColor}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Completed Matches */}
+      <Card className="bg-[#1a2332] border-blue-500/30">
+        <CardHeader>
+          <CardTitle className="text-blue-400 flex items-center">
+            <Trophy className="h-5 w-5 mr-3" />
+            Recent Results ({completedMatches.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {completedMatches.length === 0 ? (
+            <div className="text-center py-6 text-gray-400">
+              <Trophy className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <p>No completed matches</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {completedMatches.map((match) => (
+                <MatchCard
+                  key={match._id}
+                  match={match}
+                  onEdit={(match: any) => {
+                    setEditingMatch(match);
+                    setIsMatchDialogOpen(true);
+                  }}
+                  onUpdate={updateMatch}
+                  getStatusColor={getStatusColor}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Match Dialog */}
+      <Dialog open={isMatchDialogOpen} onOpenChange={setIsMatchDialogOpen}>
+        <DialogContent className="bg-[#111823] border-[#ba3a46]/30 text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-[#ba3a46]">
+              {editingMatch?._id ? 'Update Match' : 'Schedule New Match'}
+            </DialogTitle>
+          </DialogHeader>
+          <MatchForm
+            match={editingMatch}
+            teams={gameTeams}
+            onSubmit={editingMatch?._id ?
+              (data: any) => updateMatch(editingMatch._id, data) :
+              createMatch
+            }
+            onCancel={() => {
+              setIsMatchDialogOpen(false);
+              setEditingMatch(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Match Card Component
+function MatchCard({ match, onEdit, onUpdate, getStatusColor }: any) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const quickStatusUpdate = async (newStatus: string) => {
+    setIsUpdating(true);
+    const updateData: any = { status: newStatus };
+
+    if (newStatus === "in_progress" && !match.actualStartTime) {
+      updateData.actualStartTime = new Date().toISOString();
+    } else if (newStatus === "completed" && !match.actualEndTime) {
+      updateData.actualEndTime = new Date().toISOString();
+    }
+
+    await onUpdate(match._id, updateData);
+    setIsUpdating(false);
+  };
+
+  return (
+    <div className="border border-[#ff4654]/20 rounded-lg p-4 bg-[#111823]/50">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <Badge className={getStatusColor(match.status)}>
+            {match.status.replace('_', ' ').toUpperCase()}
+          </Badge>
+          <span className="text-sm text-gray-400">{match.round}</span>
+        </div>
+        <div className="flex space-x-2">
+          {match.status === "scheduled" && (
+            <Button
+              size="sm"
+              onClick={() => quickStatusUpdate("in_progress")}
+              disabled={isUpdating}
+              className="bg-green-600 hover:bg-green-700 text-white text-xs"
+            >
+              Start
+            </Button>
+          )}
+          {match.status === "in_progress" && (
+            <Button
+              size="sm"
+              onClick={() => quickStatusUpdate("completed")}
+              disabled={isUpdating}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+            >
+              Finish
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => onEdit(match)}
+            className="bg-[#ba3a46] hover:bg-[#ff4654] text-white text-xs"
+          >
+            Edit
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 items-center">
+        <div className="text-center">
+          <div className="font-semibold text-white">{match.team1Name}</div>
+          {match.team1Score !== undefined && (
+            <div className="text-2xl font-bold text-[#ff4654]">{match.team1Score}</div>
+          )}
+        </div>
+
+        <div className="text-center">
+          <div className="text-gray-400 text-sm">VS</div>
+          {match.status === "completed" && match.winnerName && (
+            <div className="text-xs text-green-400 mt-1">
+              Winner: {match.winnerName}
+            </div>
+          )}
+        </div>
+
+        <div className="text-center">
+          <div className="font-semibold text-white">{match.team2Name}</div>
+          {match.team2Score !== undefined && (
+            <div className="text-2xl font-bold text-[#ff4654]">{match.team2Score}</div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3 text-xs text-gray-400 text-center">
+        Scheduled: {new Date(match.scheduledTime).toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
+// Match Form Component
+function MatchForm({ match, teams, onSubmit, onCancel }: any) {
+  const [formData, setFormData] = useState({
+    game: match?.game || 'valorant',
+    team1Id: match?.team1Id || '',
+    team1Name: match?.team1Name || '',
+    team2Id: match?.team2Id || '',
+    team2Name: match?.team2Name || '',
+    scheduledTime: match?.scheduledTime ? new Date(match.scheduledTime).toISOString().slice(0, 16) : '',
+    round: match?.round || '',
+    status: match?.status || 'scheduled',
+    team1Score: match?.team1Score || '',
+    team2Score: match?.team2Score || '',
+    winnerId: match?.winnerId || '',
+    winnerName: match?.winnerName || '',
+    createdBy: 'admin', // Should come from current user
+  });
+
+  const handleTeamSelect = (teamId: string, teamNumber: 1 | 2) => {
+    const selectedTeam = teams.find((t: any) => t._id === teamId);
+    if (selectedTeam) {
+      setFormData(prev => ({
+        ...prev,
+        [`team${teamNumber}Id`]: selectedTeam._id,
+        [`team${teamNumber}Name`]: selectedTeam.teamName,
+      }));
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const submitData = {
+      ...formData,
+      scheduledTime: new Date(formData.scheduledTime).toISOString(),
+      team1Score: formData.team1Score ? parseInt(formData.team1Score.toString()) : undefined,
+      team2Score: formData.team2Score ? parseInt(formData.team2Score.toString()) : undefined,
+    };
+
+    // Auto-determine winner if scores are provided
+    if (submitData.team1Score !== undefined && submitData.team2Score !== undefined) {
+      if (submitData.team1Score > submitData.team2Score) {
+        submitData.winnerId = formData.team1Id;
+        submitData.winnerName = formData.team1Name;
+      } else if (submitData.team2Score > submitData.team1Score) {
+        submitData.winnerId = formData.team2Id;
+        submitData.winnerName = formData.team2Name;
+      }
+    }
+
+    onSubmit(submitData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Team 1</label>
+          <Select onValueChange={(value) => handleTeamSelect(value, 1)} value={formData.team1Id}>
+            <SelectTrigger className="bg-[#1a2332] border-[#ba3a46]/30 text-white">
+              <SelectValue placeholder="Select Team 1" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a2332] border-[#ba3a46]/30">
+              {teams.map((team: any) => (
+                <SelectItem key={team._id} value={team._id} className="text-white hover:bg-[#ba3a46]/20">
+                  {team.teamName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Team 2</label>
+          <Select onValueChange={(value) => handleTeamSelect(value, 2)} value={formData.team2Id}>
+            <SelectTrigger className="bg-[#1a2332] border-[#ba3a46]/30 text-white">
+              <SelectValue placeholder="Select Team 2" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a2332] border-[#ba3a46]/30">
+              {teams.filter((team: any) => team._id !== formData.team1Id).map((team: any) => (
+                <SelectItem key={team._id} value={team._id} className="text-white hover:bg-[#ba3a46]/20">
+                  {team.teamName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Scheduled Time</label>
+          <Input
+            type="datetime-local"
+            value={formData.scheduledTime}
+            onChange={(e) => setFormData(prev => ({ ...prev, scheduledTime: e.target.value }))}
+            className="bg-[#1a2332] border-[#ba3a46]/30 text-white"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Round</label>
+          <Select onValueChange={(value) => setFormData(prev => ({ ...prev, round: value }))} value={formData.round}>
+            <SelectTrigger className="bg-[#1a2332] border-[#ba3a46]/30 text-white">
+              <SelectValue placeholder="Select Round" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a2332] border-[#ba3a46]/30">
+              <SelectItem value="Qualifier" className="text-white">Qualifier</SelectItem>
+              <SelectItem value="Round of 16" className="text-white">Round of 16</SelectItem>
+              <SelectItem value="Quarter-Final" className="text-white">Quarter-Final</SelectItem>
+              <SelectItem value="Semi-Final" className="text-white">Semi-Final</SelectItem>
+              <SelectItem value="Final" className="text-white">Final</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {match?._id && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+            <Select onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))} value={formData.status}>
+              <SelectTrigger className="bg-[#1a2332] border-[#ba3a46]/30 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a2332] border-[#ba3a46]/30">
+                <SelectItem value="scheduled" className="text-white">Scheduled</SelectItem>
+                <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
+                <SelectItem value="completed" className="text-white">Completed</SelectItem>
+                <SelectItem value="cancelled" className="text-white">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Team 1 Score</label>
+              <Input
+                type="number"
+                value={formData.team1Score}
+                onChange={(e) => setFormData(prev => ({ ...prev, team1Score: e.target.value }))}
+                className="bg-[#1a2332] border-[#ba3a46]/30 text-white"
+                placeholder="Score"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Team 2 Score</label>
+              <Input
+                type="number"
+                value={formData.team2Score}
+                onChange={(e) => setFormData(prev => ({ ...prev, team2Score: e.target.value }))}
+                className="bg-[#1a2332] border-[#ba3a46]/30 text-white"
+                placeholder="Score"
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="flex space-x-3 pt-4">
+        <Button type="submit" className="bg-[#ba3a46] hover:bg-[#ff4654] text-white">
+          {match?._id ? 'Update Match' : 'Schedule Match'}
+        </Button>
+        <Button type="button" onClick={onCancel} variant="outline" className="border-gray-500 text-gray-300">
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }
