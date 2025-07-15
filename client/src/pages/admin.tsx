@@ -55,6 +55,7 @@ import {
   Settings,
   Medal,
   Calendar,
+  Tv,
 } from "lucide-react";
 
 interface User {
@@ -716,6 +717,15 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Button
+                onClick={() => window.open('/matches', '_blank')}
+                variant="outline"
+                size="sm"
+                className="border-[#ba3a46]/30 text-[#ba3a46] hover:bg-[#ba3a46]/10"
+              >
+                <Tv className="h-4 w-4 mr-2" />
+                Match Display
+              </Button>
               <div className="text-right">
                 <p className="text-sm font-medium">{currentUser.username}</p>
                 <Badge className={getRoleBadgeColor(currentUser.role)}>
