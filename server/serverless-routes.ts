@@ -84,7 +84,7 @@ export function setupServerlessRoutes(app: Express): void {
             // Check team registration limits
             const currentTeamCount = await storage.getTeamCount(teamData.game);
             const maxTeams = teamData.game === "valorant" ? 8 : 12;
-            
+
             if (currentTeamCount >= maxTeams) {
                 return res.status(400).json({
                     message: `Registration is closed for ${teamData.game}. Maximum ${maxTeams} teams allowed.`,
@@ -179,7 +179,7 @@ export function setupServerlessRoutes(app: Express): void {
     app.get("/api/teams/check-availability/:game", async (req, res) => {
         try {
             const { game } = req.params;
-            
+
             if (!["valorant", "cod"].includes(game)) {
                 return res.status(400).json({ message: "Invalid game type" });
             }
@@ -194,7 +194,7 @@ export function setupServerlessRoutes(app: Express): void {
                     registered: teamCount,
                     maxTeams,
                     isAvailable,
-                    message: isAvailable 
+                    message: isAvailable
                         ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
                         : "Registration is closed for this tournament."
                 });
@@ -204,7 +204,7 @@ export function setupServerlessRoutes(app: Express): void {
                 const queuedCount = await storage.getQueuedTeamCount(game);
                 const maxTeams = 12;
                 const maxQueue = 5;
-                
+
                 const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
 
                 res.json({
@@ -214,11 +214,11 @@ export function setupServerlessRoutes(app: Express): void {
                     maxTeams,
                     maxQueue,
                     isAvailable: isRegistrationOpen,
-                    message: isRegistrationOpen 
+                    message: isRegistrationOpen
                         ? `Registration is open. ${maxTeams - confirmedCount} confirmed spots, ${maxQueue - queuedCount} queue spots remaining.`
-                        : confirmedCount >= maxTeams 
-                          ? "Registration is closed. Tournament is full."
-                          : "Registration queue is full. Please try again later."
+                        : confirmedCount >= maxTeams
+                            ? "Registration is closed. Tournament is full."
+                            : "Registration queue is full. Please try again later."
                 });
             }
         } catch (error) {
@@ -236,11 +236,11 @@ export function setupServerlessRoutes(app: Express): void {
 
             res.json({
                 valorant: { registered: valorantCount, total: 8 },
-                cod: { 
-                    confirmed: codConfirmedCount, 
-                    queued: codQueuedCount, 
+                cod: {
+                    confirmed: codConfirmedCount,
+                    queued: codQueuedCount,
                     total: 12,
-                    maxQueue: 5 
+                    maxQueue: 5
                 }
             });
         } catch (error) {
@@ -424,6 +424,92 @@ export function setupServerlessRoutes(app: Express): void {
                 message: "Database connection failed",
                 error: errorDetails
             });
+        }
+    });
+
+    // Leaderboard endpoints for the new leaderboard page
+    app.get("/api/leaderboard", async (req, res) => {
+        try {
+            await connectToDatabase();
+
+            const game = req.query.game as string;
+
+            if (!game || (game !== "valorant" && game !== "cod")) {
+                return res.status(400).json({ message: "Game parameter is required and must be 'valorant' or 'cod'" });
+            }
+
+            const leaderboard = await storage.getTeamLeaderboard(game as "valorant" | "cod");
+            res.json(leaderboard);
+        } catch (error) {
+            console.error("Error in /api/leaderboard:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // Matches endpoints
+    app.get("/api/matches", async (req, res) => {
+        try {
+            await connectToDatabase();
+
+            const game = req.query.game as string;
+
+            if (!game || (game !== "valorant" && game !== "cod")) {
+                return res.status(400).json({ message: "Game parameter is required and must be 'valorant' or 'cod'" });
+            }
+
+            const matches = await storage.getMatches(game as "valorant" | "cod");
+            res.json(matches);
+        } catch (error) {
+            console.error("Error in /api/matches:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // Create/Update leaderboard score
+    app.post("/api/leaderboard", async (req, res) => {
+        try {
+            await connectToDatabase();
+            const result = await storage.updateTeamScore(req.body);
+            res.json(result);
+        } catch (error) {
+            console.error("Error in /api/leaderboard:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // Create match
+    app.post("/api/matches", async (req, res) => {
+        try {
+            await connectToDatabase();
+            const result = await storage.createMatch(req.body);
+            res.json(result);
+        } catch (error) {
+            console.error("Error in /api/matches:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // Update match
+    app.put("/api/matches/:id", async (req, res) => {
+        try {
+            await connectToDatabase();
+            const result = await storage.updateMatch(req.params.id, req.body);
+            res.json(result);
+        } catch (error) {
+            console.error("Error in /api/matches/:id:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // Delete match
+    app.delete("/api/matches/:id", async (req, res) => {
+        try {
+            await connectToDatabase();
+            await storage.deleteMatch(req.params.id);
+            res.json({ message: "Match deleted successfully" });
+        } catch (error) {
+            console.error("Error in /api/matches/:id DELETE:", error);
+            res.status(500).json({ message: "Internal server error" });
         }
     });
 }

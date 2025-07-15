@@ -178,12 +178,45 @@ const SecretChallengeSchema = new mongoose.Schema({
   completedAt: { type: Date, default: Date.now },
 });
 
+const LeaderboardScoreSchema = new mongoose.Schema({
+  teamId: { type: String, required: true },
+  teamName: { type: String, required: true },
+  game: { type: String, required: true, enum: ['valorant', 'cod'] },
+  score: { type: Number, required: true, default: 0 },
+  matchesWon: { type: Number, default: 0 },
+  matchesLost: { type: Number, default: 0 },
+  totalMatches: { type: Number, default: 0 },
+  lastUpdated: { type: Date, default: Date.now },
+  updatedBy: { type: String, required: true }
+}, { timestamps: true });
+
+const MatchSchema = new mongoose.Schema({
+  game: { type: String, required: true, enum: ['valorant', 'cod'] },
+  team1Id: { type: String, required: true },
+  team1Name: { type: String, required: true },
+  team2Id: { type: String, required: true },
+  team2Name: { type: String, required: true },
+  status: { type: String, required: true, enum: ['scheduled', 'in_progress', 'completed', 'cancelled'], default: 'scheduled' },
+  scheduledTime: { type: Date, required: true },
+  actualStartTime: { type: Date },
+  actualEndTime: { type: Date },
+  team1Score: { type: Number },
+  team2Score: { type: Number },
+  winnerId: { type: String },
+  winnerName: { type: String },
+  round: { type: String },
+  createdBy: { type: String, required: true },
+  lastUpdated: { type: Date, default: Date.now }
+}, { timestamps: true });
+
 // Models
 const Team = mongoose.models.Team || mongoose.model("Team", TeamSchema);
 const GameScore =
   mongoose.models.GameScore || mongoose.model("GameScore", GameScoreSchema);
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
 const SecretChallenge = mongoose.models.SecretChallenge || mongoose.model("SecretChallenge", SecretChallengeSchema);
+const LeaderboardScore = mongoose.models.LeaderboardScore || mongoose.model("LeaderboardScore", LeaderboardScoreSchema);
+const Match = mongoose.models.Match || mongoose.model("Match", MatchSchema);
 
 // Storage class implementation
 class MongoDBStorage {
@@ -241,7 +274,7 @@ class MongoDBStorage {
       if (queuedCount >= 5) {
         throw new Error("COD registration queue is full. Please try again later.");
       }
-      
+
       // Add to COD queue
       teamDoc.status = "queued";
       teamDoc.queuedAt = new Date();
@@ -377,12 +410,12 @@ class MongoDBStorage {
   // Secret challenge methods
   async createSecretChallenge(challengeData: any) {
     await connectToDatabase();
-    
+
     // Check if player has already completed the challenge
-    const existingChallenge = await SecretChallenge.findOne({ 
-      playerEmail: challengeData.playerEmail 
+    const existingChallenge = await SecretChallenge.findOne({
+      playerEmail: challengeData.playerEmail
     });
-    
+
     if (existingChallenge) {
       throw new Error("You have already completed this challenge!");
     }
@@ -710,6 +743,105 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         method,
       });
       return;
+    }    // Static image serving endpoints - fetch from GitHub
+    if (url?.startsWith("/images/") && method === "GET") {
+      try {
+        // Extract the image path from the URL
+        const imagePath = url.replace("/images/", "");
+
+        // GitHub raw URL for the image
+        const githubRawUrl = `https://raw.githubusercontent.com/TKBK531/game-night-new/leaderboard/images/${imagePath}`;
+
+        console.log("Attempting to fetch image from GitHub:", githubRawUrl);
+
+        // Fetch the image from GitHub
+        const response = await fetch(githubRawUrl);
+
+        if (!response.ok) {
+          console.log("Image not found on GitHub:", githubRawUrl);
+          res.status(404).json({ error: "Image not found" });
+          return;
+        }
+
+        // Get the image buffer
+        const imageBuffer = await response.arrayBuffer();
+
+        // Determine content type based on file extension
+        const ext = imagePath.toLowerCase().split('.').pop();
+        let contentType = "image/jpeg"; // default
+        switch (ext) {
+          case "png": contentType = "image/png"; break;
+          case "gif": contentType = "image/gif"; break;
+          case "webp": contentType = "image/webp"; break;
+          case "svg": contentType = "image/svg+xml"; break;
+          case "ico": contentType = "image/x-icon"; break;
+          case "jpg":
+          case "jpeg":
+          default: contentType = "image/jpeg"; break;
+        }
+
+        // Set headers and send file
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+        res.status(200);
+        res.end(Buffer.from(imageBuffer));
+        return;
+      } catch (error) {
+        console.error("Error serving image:", error);
+        res.status(500).json({ error: "Error serving image" });
+        return;
+      }
+    }    // Static uploads serving endpoints - try GitHub first, then GridFS
+    if (url?.startsWith("/uploads/") && method === "GET") {
+      try {
+        // Extract the file path from the URL
+        const filePath = url.replace("/uploads/", "");
+
+        // First try to fetch from GitHub (for files committed to repo)
+        const githubRawUrl = `https://raw.githubusercontent.com/TKBK531/game-night-new/leaderboard/uploads/${filePath}`;
+
+        console.log("Attempting to fetch upload from GitHub:", githubRawUrl);
+
+        try {
+          const response = await fetch(githubRawUrl);
+
+          if (response.ok) {
+            // File found on GitHub
+            const fileBuffer = await response.arrayBuffer();
+
+            // Determine content type based on file extension
+            const ext = filePath.toLowerCase().split('.').pop();
+            let contentType = "application/octet-stream"; // default
+            switch (ext) {
+              case "pdf": contentType = "application/pdf"; break;
+              case "png": contentType = "image/png"; break;
+              case "jpg":
+              case "jpeg": contentType = "image/jpeg"; break;
+              case "gif": contentType = "image/gif"; break;
+              case "webp": contentType = "image/webp"; break;
+            }
+
+            // Set headers and send file
+            res.setHeader("Content-Type", contentType);
+            res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+            res.status(200);
+            res.end(Buffer.from(fileBuffer));
+            return;
+          }
+        } catch (githubError) {
+          console.log("File not found on GitHub, trying GridFS...");
+        }
+
+        // If not found on GitHub, try GridFS for user uploads
+        // This would need GridFS implementation for file retrieval
+        console.log("Upload not found:", filePath);
+        res.status(404).json({ error: "File not found" });
+        return;
+      } catch (error) {
+        console.error("Error serving upload:", error);
+        res.status(500).json({ error: "Error serving file" });
+        return;
+      }
     }
 
     // Test endpoint for team registration
@@ -941,8 +1073,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await connectToDatabase();
 
         // Count confirmed teams for Valorant (all Valorant teams are confirmed)
-        const valorantCount = await Team.countDocuments({ 
-          game: "valorant", 
+        const valorantCount = await Team.countDocuments({
+          game: "valorant",
           $or: [
             { status: 'confirmed' },
             { status: { $exists: false } },
@@ -951,8 +1083,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         // Count confirmed + approved teams for COD
-        const codConfirmedCount = await Team.countDocuments({ 
-          game: "cod", 
+        const codConfirmedCount = await Team.countDocuments({
+          game: "cod",
           $or: [
             { status: 'confirmed' },
             { status: 'approved' },
@@ -962,18 +1094,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         // Count queued teams for COD
-        const codQueuedCount = await Team.countDocuments({ 
-          game: "cod", 
-          status: "queued" 
+        const codQueuedCount = await Team.countDocuments({
+          game: "cod",
+          status: "queued"
         });
 
         const stats = {
           valorant: { registered: valorantCount, total: 8 },
-          cod: { 
-            confirmed: codConfirmedCount, 
-            queued: codQueuedCount, 
+          cod: {
+            confirmed: codConfirmedCount,
+            queued: codQueuedCount,
             total: 12,
-            maxQueue: 5 
+            maxQueue: 5
           }
         };
 
@@ -1442,15 +1574,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     else if (url?.includes("/teams/check-availability/") && method === "GET") {
       try {
         const game = url.split("/teams/check-availability/")[1];
-        
+
         if (!["valorant", "cod"].includes(game)) {
           res.status(400).json({ message: "Invalid game type" });
           return;
         }
 
         if (game === "valorant") {
-          const teamCount = await Team.countDocuments({ 
-            game: "valorant", 
+          const teamCount = await Team.countDocuments({
+            game: "valorant",
             $or: [
               { status: 'confirmed' },
               { status: { $exists: false } },
@@ -1465,14 +1597,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             registered: teamCount,
             maxTeams,
             isAvailable,
-            message: isAvailable 
+            message: isAvailable
               ? `Registration is open. ${maxTeams - teamCount} spots remaining.`
               : "Registration is closed for this tournament."
           });
         } else {
           // COD queue system
-          const confirmedCount = await Team.countDocuments({ 
-            game: "cod", 
+          const confirmedCount = await Team.countDocuments({
+            game: "cod",
             $or: [
               { status: 'confirmed' },
               { status: 'approved' },
@@ -1480,13 +1612,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               { status: null }
             ]
           });
-          const queuedCount = await Team.countDocuments({ 
-            game: "cod", 
-            status: "queued" 
+          const queuedCount = await Team.countDocuments({
+            game: "cod",
+            status: "queued"
           });
           const maxTeams = 12;
           const maxQueue = 5;
-          
+
           const isRegistrationOpen = confirmedCount < maxTeams && queuedCount < maxQueue;
 
           res.json({
@@ -1496,9 +1628,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             maxTeams,
             maxQueue,
             isAvailable: isRegistrationOpen,
-            message: isRegistrationOpen 
+            message: isRegistrationOpen
               ? "Registration is open. You will be added to the registration queue."
-              : confirmedCount >= maxTeams 
+              : confirmedCount >= maxTeams
                 ? "Registration is closed. Tournament is full."
                 : "Registration queue is full. Please try again later."
           });
@@ -1515,7 +1647,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (url?.includes("/admin/export-teams") && method === "GET" && token) {
       try {
         const XLSX = require('xlsx');
-        
+
         // Get all teams with full details
         const teams = await Team.find({
           $or: [
@@ -1524,7 +1656,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { status: null }
           ]
         }).sort({ registeredAt: -1 });
-        
+
         // Format data for Excel
         const excelData = teams.map((team, index) => ({
           'S.No': index + 1,
@@ -1559,11 +1691,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A',
           'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
         }));
-        
+
         // Create workbook and worksheet
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(excelData);
-        
+
         // Auto-size columns
         const columnWidths = [
           { wch: 5 },   // S.No
@@ -1599,18 +1731,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           { wch: 15 }   // Queued Date
         ];
         worksheet['!cols'] = columnWidths;
-        
+
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Teams');
-        
+
         // Generate Excel file buffer
         const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-        
+
         // Set response headers
         const fileName = `game-night-teams-${new Date().toISOString().split('T')[0]}.xlsx`;
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         res.setHeader('Content-Length', excelBuffer.length);
-        
+
         // Send file
         res.send(excelBuffer);
         return;
@@ -1625,13 +1757,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (url?.includes("/admin/export-cod-queue") && method === "GET" && token) {
       try {
         const XLSX = require('xlsx');
-        
+
         // Get all COD teams in queue or approved status
         const codTeams = await Team.find({
           game: 'cod',
           status: { $in: ["queued", "approved"] }
         }).sort({ queuedAt: 1 }); // Sort by queue time
-        
+
         // Format data for Excel
         const excelData = codTeams.map((team, index) => ({
           'Queue Position': index + 1,
@@ -1660,11 +1792,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Approved By': team.approvedBy || 'N/A',
           'Approved Date': team.approvedAt ? new Date(team.approvedAt).toLocaleDateString() : 'N/A'
         }));
-        
+
         // Create workbook and worksheet
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(excelData);
-        
+
         // Auto-size columns
         const columnWidths = [
           { wch: 8 },   // Queue Position
@@ -1694,18 +1826,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           { wch: 15 }   // Approved Date
         ];
         worksheet['!cols'] = columnWidths;
-        
+
         XLSX.utils.book_append_sheet(workbook, worksheet, 'COD Queue');
-        
+
         // Generate Excel file buffer
         const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-        
+
         // Set response headers
         const fileName = `cod-queue-${new Date().toISOString().split('T')[0]}.xlsx`;
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         res.setHeader('Content-Length', excelBuffer.length);
-        
+
         // Send file
         res.send(excelBuffer);
         return;
@@ -1716,12 +1848,198 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Leaderboard endpoint
+    if (url?.includes("/api/leaderboard") && method === "GET") {
+      try {
+        const urlObj = new URL(req.url!, `http://${req.headers.host}`);
+        const game = urlObj.searchParams.get('game');
+
+        if (!game || (game !== "valorant" && game !== "cod")) {
+          res.status(400).json({ message: "Valid game parameter required (valorant or cod)" });
+          return;
+        }
+
+        await connectToDatabase();
+
+        // Get leaderboard data
+        const leaderboard = await LeaderboardScore.find({ game }).sort({ score: -1, matchesWon: -1 });
+
+        res.json(leaderboard);
+        return;
+      } catch (error) {
+        console.error("Error in /api/leaderboard:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    // Match endpoints
+    if (url?.includes("/api/matches") && method === "GET") {
+      try {
+        const urlObj = new URL(req.url!, `http://${req.headers.host}`);
+        const game = urlObj.searchParams.get('game');
+        const status = urlObj.searchParams.get('status');
+
+        if (!game || (game !== "valorant" && game !== "cod")) {
+          res.status(400).json({ message: "Valid game parameter required (valorant or cod)" });
+          return;
+        }
+
+        await connectToDatabase();
+
+        // Build query
+        const query: any = { game };
+        if (status) {
+          query.status = status;
+        }
+
+        const matches = await Match.find(query).sort({ scheduledTime: -1 });
+
+        res.json(matches);
+        return;
+      } catch (error) {
+        console.error("Error in /api/matches:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    // Create match endpoint (admin only)
+    if (url === "/api/matches" && method === "POST") {
+      try {
+        if (!token) {
+          res.status(401).json({ message: "Authentication required" });
+          return;
+        }
+
+        const body = req.body;
+
+        await connectToDatabase();
+
+        const newMatch = new Match(body);
+        const savedMatch = await newMatch.save();
+
+        res.json(savedMatch);
+        return;
+      } catch (error) {
+        console.error("Error creating match:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    // Update match endpoint (admin only)
+    if (url?.match(/\/api\/matches\/[a-fA-F0-9]{24}$/) && method === "PUT") {
+      try {
+        if (!token) {
+          res.status(401).json({ message: "Authentication required" });
+          return;
+        }
+
+        const matchId = url.split('/').pop();
+        const body = req.body;
+
+        await connectToDatabase();
+
+        const updatedMatch = await Match.findByIdAndUpdate(
+          matchId,
+          { ...body, lastUpdated: new Date() },
+          { new: true }
+        );
+
+        if (!updatedMatch) {
+          res.status(404).json({ message: "Match not found" });
+          return;
+        }
+
+        res.json(updatedMatch);
+        return;
+      } catch (error) {
+        console.error("Error updating match:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    // Delete match endpoint (admin only)
+    if (url?.match(/\/api\/matches\/[a-fA-F0-9]{24}$/) && method === "DELETE") {
+      try {
+        if (!token) {
+          res.status(401).json({ message: "Authentication required" });
+          return;
+        }
+
+        const matchId = url.split('/').pop();
+
+        await connectToDatabase();
+
+        const deletedMatch = await Match.findByIdAndDelete(matchId);
+
+        if (!deletedMatch) {
+          res.status(404).json({ message: "Match not found" });
+          return;
+        }
+
+        res.json({ message: "Match deleted successfully" });
+        return;
+      } catch (error) {
+        console.error("Error deleting match:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
+    // Update leaderboard/team score endpoint (admin only)
+    if (url === "/api/leaderboard" && method === "POST") {
+      try {
+        if (!token) {
+          res.status(401).json({ message: "Authentication required" });
+          return;
+        }
+
+        const body = req.body;
+
+        await connectToDatabase();
+
+        // Check if score already exists for this team/game
+        const existingScore = await LeaderboardScore.findOne({
+          teamId: body.teamId,
+          game: body.game
+        });
+
+        if (existingScore) {
+          // Update existing score
+          if (body.score !== undefined) existingScore.score = body.score;
+          if (body.matchesWon !== undefined) existingScore.matchesWon = body.matchesWon;
+          if (body.matchesLost !== undefined) existingScore.matchesLost = body.matchesLost;
+          if (body.totalMatches !== undefined) existingScore.totalMatches = body.totalMatches;
+          existingScore.lastUpdated = new Date();
+          existingScore.updatedBy = body.updatedBy || 'admin';
+
+          await existingScore.save();
+          res.json(existingScore);
+        } else {
+          // Create new score
+          const newScore = new LeaderboardScore(body);
+          const savedScore = await newScore.save();
+          res.json(savedScore);
+        }
+        return;
+      } catch (error) {
+        console.error("Error updating leaderboard:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    }
+
     // Default response for unmatched routes
     res.status(404).json({
       error: "API endpoint not found",
       availableEndpoints: [
         "/api/health (GET)",
         "/api/debug (GET)",
+        "/images/* (GET) - Static image serving",
+        "/uploads/* (GET) - Static file serving",
         "/api/admin/login (POST)",
         "/api/admin/me (GET)",
         "/api/admin/logout (POST)",
@@ -1750,6 +2068,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "/api/secret-challenge/check/:email (GET)",
         "/api/admin/secret-challenges (GET)",
         "/api/files/:id (GET)",
+        "/api/leaderboard?game=valorant|cod (GET)",
+        "/api/leaderboard (POST)",
+        "/api/matches?game=valorant|cod (GET)",
+        "/api/matches (POST)",
+        "/api/matches/:id (PUT)",
+        "/api/matches/:id (DELETE)",
       ],
       requestedUrl: url,
       method: method,
@@ -1761,8 +2085,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         process.env.NODE_ENV === "production"
           ? "Internal server error"
           : error instanceof Error
-          ? error.message
-          : "Unknown error",
+            ? error.message
+            : "Unknown error",
       timestamp: new Date().toISOString(),
     });
   }

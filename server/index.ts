@@ -25,6 +25,9 @@ app.use(session({
 // Serve uploaded files statically
 app.use('/uploads', express.static('uploads'));
 
+// Serve images statically
+app.use('/images', express.static('images'));
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

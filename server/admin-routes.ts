@@ -272,7 +272,7 @@ adminRouter.post('/approve-team/:teamId', requireRole(['superuser', 'elite_board
     try {
         const { teamId } = req.params;
         const { approvedBy } = req.body;
-        
+
         const team = await storage.approveTeamForPayment(teamId, approvedBy);
         res.json(team);
     } catch (error) {
@@ -307,12 +307,12 @@ adminRouter.post('/migrate-teams', requireRole(['superuser']), async (req: any, 
 adminRouter.get('/export-teams', requireAuth, async (req: any, res: any) => {
     try {
         console.log('Excel export request received');
-        
+
         // Get all teams with full details
         console.log('Fetching teams from storage...');
         const teams = await storage.getAllTeams();
         console.log(`Found ${teams.length} teams`);
-        
+
         // Format data for Excel
         console.log('Formatting data for Excel...');
         const excelData = teams.map((team, index) => ({
@@ -349,13 +349,13 @@ adminRouter.get('/export-teams', requireAuth, async (req: any, res: any) => {
             'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
         }));
         console.log(`Formatted ${excelData.length} rows for Excel`);
-        
+
         // Create workbook and worksheet
         console.log('Creating workbook...');
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(excelData);
         console.log('Worksheet created');
-        
+
         // Auto-size columns
         const columnWidths = [
             { wch: 5 },   // S.No
@@ -392,22 +392,22 @@ adminRouter.get('/export-teams', requireAuth, async (req: any, res: any) => {
         ];
         worksheet['!cols'] = columnWidths;
         console.log('Column widths set');
-        
+
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Teams');
         console.log('Worksheet appended to workbook');
-        
+
         // Generate Excel file buffer
         console.log('Generating Excel buffer...');
         const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
         console.log(`Excel buffer generated, size: ${excelBuffer.length} bytes`);
-        
+
         // Set response headers
         const fileName = `game-night-teams-${new Date().toISOString().split('T')[0]}.xlsx`;
         console.log(`Setting response headers, filename: ${fileName}`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         res.setHeader('Content-Length', excelBuffer.length);
-        
+
         // Send file
         console.log('Sending file...');
         res.send(excelBuffer);
@@ -415,9 +415,9 @@ adminRouter.get('/export-teams', requireAuth, async (req: any, res: any) => {
     } catch (error) {
         console.error('Error exporting teams:', error);
         console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-        res.status(500).json({ 
-            message: 'Failed to export teams', 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+        res.status(500).json({
+            message: 'Failed to export teams',
+            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -426,12 +426,12 @@ adminRouter.get('/export-teams', requireAuth, async (req: any, res: any) => {
 adminRouter.get('/export-cod-queue', requireAuth, async (req: any, res: any) => {
     try {
         console.log('COD queue export request received');
-        
+
         // Get COD queued teams only
         console.log('Fetching COD queued teams from storage...');
         const queuedTeams = await storage.getQueuedTeams('cod');
         console.log(`Found ${queuedTeams.length} COD queued teams`);
-        
+
         // Format data for Excel
         const excelData = queuedTeams.map((team, index) => ({
             'S.No': index + 1,
@@ -457,11 +457,11 @@ adminRouter.get('/export-cod-queue', requireAuth, async (req: any, res: any) => 
             'Registration Date': new Date(team.registeredAt).toLocaleDateString(),
             'Queued Date': team.queuedAt ? new Date(team.queuedAt).toLocaleDateString() : 'N/A'
         }));
-        
+
         // Create workbook and worksheet
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(excelData);
-        
+
         // Auto-size columns
         const columnWidths = [
             { wch: 5 },   // S.No
@@ -488,18 +488,18 @@ adminRouter.get('/export-cod-queue', requireAuth, async (req: any, res: any) => 
             { wch: 15 }   // Queued Date
         ];
         worksheet['!cols'] = columnWidths;
-        
+
         XLSX.utils.book_append_sheet(workbook, worksheet, 'COD Queue');
-        
+
         // Generate Excel file buffer
         const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-        
+
         // Set response headers
         const fileName = `cod-queue-${new Date().toISOString().split('T')[0]}.xlsx`;
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         res.setHeader('Content-Length', excelBuffer.length);
-        
+
         // Send file
         res.send(excelBuffer);
         console.log('COD queue export completed successfully');
