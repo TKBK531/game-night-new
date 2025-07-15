@@ -93,17 +93,20 @@ function findBestLogoMatch(teamName: string): string | null {
  */
 export function getTeamLogoUrl(teamName: string): string {
     if (!teamName || teamName.trim() === '') {
-        return '/images/DefaultTeamImage.jpg';
+        // Return default team logo from GitHub raw URL
+        return 'https://raw.githubusercontent.com/TKBK531/game-night-new/refs/heads/leaderboard/images/TeamLogos/DefaultteamLogo.jpg';
     }
 
     const matchedLogo = findBestLogoMatch(teamName);
 
     if (matchedLogo) {
-        // Try .jpg first (most common), but the onError in img tags will handle fallbacks
-        return `/images/TeamLogos/${matchedLogo}.jpg`;
+        // Use GitHub raw URL with proper URL encoding for spaces and special characters
+        const encodedTeamName = encodeURIComponent(matchedLogo);
+        return `https://raw.githubusercontent.com/TKBK531/game-night-new/refs/heads/leaderboard/images/TeamLogos/${encodedTeamName}.jpg`;
     }
 
-    return '/images/DefaultTeamImage.jpg';
+    // Return default team logo from GitHub raw URL
+    return 'https://raw.githubusercontent.com/TKBK531/game-night-new/refs/heads/leaderboard/images/TeamLogos/DefaultteamLogo.jpg';
 }
 
 /**

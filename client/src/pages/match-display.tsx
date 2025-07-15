@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
+// Fallback image URL for when team logos fail to load
+const FALLBACK_TEAM_LOGO = "https://raw.githubusercontent.com/TKBK531/game-night-new/refs/heads/leaderboard/images/TeamLogos/DefaultteamLogo.jpg";
+
 export default function MatchDisplay() {
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -299,7 +302,7 @@ function LiveMatchCarousel({ matches, getTeamLogo }: { matches: any[]; getTeamLo
                                     alt={match.team1Name}
                                     className="w-12 h-12 rounded-lg object-cover border-2 border-green-400/50"
                                     onError={(e) => {
-                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                        e.currentTarget.src = FALLBACK_TEAM_LOGO;
                                     }}
                                 />
                                 {index === currentIndex && (
@@ -367,8 +370,8 @@ function LiveMatchCard({ match, getTeamLogo }: { match: any; getTeamLogo: (teamN
                         </Badge>
                         {match.game && (
                             <Badge className={`text-sm px-3 py-1 ${match.game === 'valorant'
-                                    ? 'bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30'
-                                    : 'bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30'
+                                ? 'bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30'
+                                : 'bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30'
                                 }`}>
                                 {match.game === 'valorant' ? (
                                     <><GamepadIcon className="h-4 w-4 mr-1" />VALORANT</>
@@ -468,8 +471,8 @@ function UpcomingMatchCard({ match, getTimeUntilMatch, getTeamLogo }: {
                         </Badge>
                         {match.game && (
                             <Badge className={`text-xs px-2 py-1 ${match.game === 'valorant'
-                                    ? 'bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30'
-                                    : 'bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30'
+                                ? 'bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30'
+                                : 'bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30'
                                 }`}>
                                 {match.game === 'valorant' ? (
                                     <><GamepadIcon className="h-3 w-3 mr-1" />VAL</>

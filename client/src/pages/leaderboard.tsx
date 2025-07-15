@@ -28,6 +28,9 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { staggerVariants } from "@/hooks/use-scroll-reveal";
 import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
+// Fallback image URL for when team logos fail to load
+const FALLBACK_TEAM_LOGO = "https://raw.githubusercontent.com/TKBK531/game-night-new/refs/heads/leaderboard/images/TeamLogos/DefaultteamLogo.jpg";
+
 interface LeaderboardScore {
     _id: string;
     teamId: string;
@@ -277,7 +280,7 @@ export default function LeaderboardPage() {
                                                                     alt={team.teamName}
                                                                     className="w-16 h-16 rounded-lg object-cover border-2 border-[#ff4654]/50"
                                                                     onError={(e) => {
-                                                                        e.currentTarget.src = "/images/DefaultTeamImage.jpg";
+                                                                        e.currentTarget.src = FALLBACK_TEAM_LOGO;
                                                                     }}
                                                                 />
                                                             </div>
