@@ -2060,6 +2060,34 @@ function MatchManager() {
     }
   };
 
+  const deleteMatch = async (matchId: string) => {
+    if (!confirm('Are you sure you want to delete this match? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/matches/${matchId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete match');
+
+      toast({
+        title: 'Success',
+        description: 'Match deleted successfully',
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete match',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
@@ -2122,6 +2150,7 @@ function MatchManager() {
                     setIsMatchDialogOpen(true);
                   }}
                   onUpdate={updateMatch}
+                  onDelete={deleteMatch}
                   getStatusColor={getStatusColor}
                 />
               ))}
@@ -2155,6 +2184,7 @@ function MatchManager() {
                     setIsMatchDialogOpen(true);
                   }}
                   onUpdate={updateMatch}
+                  onDelete={deleteMatch}
                   getStatusColor={getStatusColor}
                 />
               ))}
@@ -2188,6 +2218,7 @@ function MatchManager() {
                     setIsMatchDialogOpen(true);
                   }}
                   onUpdate={updateMatch}
+                  onDelete={deleteMatch}
                   getStatusColor={getStatusColor}
                 />
               ))}
@@ -2223,7 +2254,7 @@ function MatchManager() {
 }
 
 // Match Card Component
-function MatchCard({ match, onEdit, onUpdate, getStatusColor }: any) {
+function MatchCard({ match, onEdit, onUpdate, onDelete, getStatusColor }: any) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const quickStatusUpdate = async (newStatus: string) => {
@@ -2276,6 +2307,13 @@ function MatchCard({ match, onEdit, onUpdate, getStatusColor }: any) {
             className="bg-[#ba3a46] hover:bg-[#ff4654] text-white text-xs"
           >
             Edit
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => onDelete(match._id)}
+            className="bg-red-600 hover:bg-red-700 text-white text-xs"
+          >
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </div>

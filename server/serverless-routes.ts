@@ -435,56 +435,11 @@ export function setupServerlessRoutes(app: Express): void {
             const game = req.query.game as string;
 
             if (!game || (game !== "valorant" && game !== "cod")) {
-                const leaderboard = await storage.getTeamLeaderboard(game as "valorant" | "cod");
-
-                // If no real data, return sample data
-                if (leaderboard.length === 0) {
-                    const sampleData = [
-                        {
-                            _id: "sample1",
-                            teamId: "1",
-                            teamName: "Team Alpha",
-                            game: game || "valorant",
-                            score: 2500,
-                            matchesWon: 8,
-                            matchesLost: 2,
-                            totalMatches: 10,
-                            lastUpdated: new Date().toISOString(),
-                            updatedBy: "system"
-                        },
-                        {
-                            _id: "sample2",
-                            teamId: "2",
-                            teamName: "Elite Squad",
-                            game: game || "valorant",
-                            score: 2300,
-                            matchesWon: 7,
-                            matchesLost: 3,
-                            totalMatches: 10,
-                            lastUpdated: new Date().toISOString(),
-                            updatedBy: "system"
-                        },
-                        {
-                            _id: "sample3",
-                            teamId: "3",
-                            teamName: "Phoenix Riders",
-                            game: game || "valorant",
-                            score: 2100,
-                            matchesWon: 6,
-                            matchesLost: 4,
-                            totalMatches: 10,
-                            lastUpdated: new Date().toISOString(),
-                            updatedBy: "system"
-                        }
-                    ];
-
-                    return res.json(sampleData);
-                }
-
-                res.json(leaderboard);
-            } else {
                 return res.status(400).json({ message: "Game parameter is required and must be 'valorant' or 'cod'" });
             }
+
+            const leaderboard = await storage.getTeamLeaderboard(game as "valorant" | "cod");
+            res.json(leaderboard);
         } catch (error) {
             console.error("Error in /api/leaderboard:", error);
             res.status(500).json({ message: "Internal server error" });
@@ -499,51 +454,11 @@ export function setupServerlessRoutes(app: Express): void {
             const game = req.query.game as string;
 
             if (!game || (game !== "valorant" && game !== "cod")) {
-                const matches = await storage.getMatches(game as "valorant" | "cod");
-
-                // If no real data, return sample data
-                if (matches.length === 0) {
-                    const sampleData = [
-                        {
-                            _id: "match1",
-                            game: game || "valorant",
-                            team1Id: "1",
-                            team1Name: "Team Alpha",
-                            team2Id: "2",
-                            team2Name: "Elite Squad",
-                            status: "scheduled",
-                            scheduledTime: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-                            round: "Semi-Final",
-                            createdBy: "admin",
-                            createdAt: new Date().toISOString(),
-                            lastUpdated: new Date().toISOString()
-                        },
-                        {
-                            _id: "match2",
-                            game: game || "valorant",
-                            team1Id: "3",
-                            team1Name: "Phoenix Riders",
-                            team2Id: "4",
-                            team2Name: "Shadow Warriors",
-                            status: "in_progress",
-                            scheduledTime: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
-                            actualStartTime: new Date(Date.now() - 1800000).toISOString(),
-                            team1Score: 8,
-                            team2Score: 6,
-                            round: "Quarter-Final",
-                            createdBy: "admin",
-                            createdAt: new Date().toISOString(),
-                            lastUpdated: new Date().toISOString()
-                        }
-                    ];
-
-                    return res.json(sampleData);
-                }
-
-                res.json(matches);
-            } else {
                 return res.status(400).json({ message: "Game parameter is required and must be 'valorant' or 'cod'" });
             }
+
+            const matches = await storage.getMatches(game as "valorant" | "cod");
+            res.json(matches);
         } catch (error) {
             console.error("Error in /api/matches:", error);
             res.status(500).json({ message: "Internal server error" });
@@ -582,6 +497,18 @@ export function setupServerlessRoutes(app: Express): void {
             res.json(result);
         } catch (error) {
             console.error("Error in /api/matches/:id:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+
+    // Delete match
+    app.delete("/api/matches/:id", async (req, res) => {
+        try {
+            await connectToDatabase();
+            await storage.deleteMatch(req.params.id);
+            res.json({ message: "Match deleted successfully" });
+        } catch (error) {
+            console.error("Error in /api/matches/:id DELETE:", error);
             res.status(500).json({ message: "Internal server error" });
         }
     });

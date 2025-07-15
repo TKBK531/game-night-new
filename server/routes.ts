@@ -508,62 +508,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const leaderboard = await storage.getTeamLeaderboard(game as "valorant" | "cod");
-
-      // If no data exists, return sample data for demo
-      if (leaderboard.length === 0) {
-        const sampleData = [
-          {
-            _id: "sample1",
-            teamId: "1",
-            teamName: "TeamNotFound",
-            game: game,
-            score: 250,
-            matchesWon: 8,
-            matchesLost: 2,
-            totalMatches: 10,
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "system"
-          },
-          {
-            _id: "sample2",
-            teamId: "2",
-            teamName: "Silent Reapers",
-            game: game,
-            score: 230,
-            matchesWon: 7,
-            matchesLost: 3,
-            totalMatches: 10,
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "system"
-          },
-          {
-            _id: "sample3",
-            teamId: "3",
-            teamName: "Dragon Worriers",
-            game: game,
-            score: 210,
-            matchesWon: 6,
-            matchesLost: 4,
-            totalMatches: 10,
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "system"
-          },
-          {
-            _id: "sample4",
-            teamId: "4",
-            teamName: "Team Mythics",
-            game: game,
-            score: 190,
-            matchesWon: 5,
-            matchesLost: 5,
-            totalMatches: 10,
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "system"
-          }
-        ];
-        return res.json(sampleData);
-      }
-
       res.json(leaderboard);
     } catch (error) {
       console.error("Error in /api/leaderboard:", error);
@@ -580,65 +524,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const matches = await storage.getMatches(game as "valorant" | "cod", status as string);
-
-      // If no data exists, return sample data for demo
-      if (matches.length === 0) {
-        const sampleMatches = [
-          {
-            _id: "match1",
-            game: game,
-            team1Id: "1",
-            team1Name: "TeamNotFound",
-            team2Id: "2",
-            team2Name: "Silent Reapers",
-            status: "in_progress",
-            scheduledTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 mins ago
-            actualStartTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-            team1Score: 8,
-            team2Score: 6,
-            round: "Semi-Final",
-            createdBy: "admin",
-            createdAt: new Date().toISOString(),
-            lastUpdated: new Date().toISOString()
-          },
-          {
-            _id: "match2",
-            game: game,
-            team1Id: "3",
-            team1Name: "Dragon Worriers",
-            team2Id: "4",
-            team2Name: "Team Mythics",
-            status: "scheduled",
-            scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-            round: "Quarter-Final",
-            createdBy: "admin",
-            createdAt: new Date().toISOString(),
-            lastUpdated: new Date().toISOString()
-          },
-          {
-            _id: "match3",
-            game: game,
-            team1Id: "5",
-            team1Name: "Hellborn",
-            team2Id: "6",
-            team2Name: "Reapers",
-            status: "completed",
-            scheduledTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-            actualStartTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            actualEndTime: new Date(Date.now() - 23 * 60 * 60 * 1000).toISOString(),
-            winnerId: "5",
-            winnerName: "Hellborn",
-            team1Score: 13,
-            team2Score: 9,
-            round: "Round 1",
-            createdBy: "admin",
-            createdAt: new Date().toISOString(),
-            lastUpdated: new Date().toISOString()
-          }
-        ];
-        return res.json(sampleMatches);
-      }
-
       res.json(matches);
     } catch (error) {
       console.error("Error in /api/matches:", error);
@@ -665,6 +550,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(match);
     } catch (error) {
       console.error("Error in /api/matches/:matchId:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/matches/:matchId", async (req, res) => {
+    try {
+      // Admin authentication would go here
+      const { matchId } = req.params;
+      await storage.deleteMatch(matchId);
+      res.json({ message: "Match deleted successfully" });
+    } catch (error) {
+      console.error("Error in /api/matches/:matchId DELETE:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

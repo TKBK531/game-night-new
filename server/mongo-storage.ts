@@ -61,6 +61,7 @@ export interface IStorage {
     getMatches(game: "valorant" | "cod", status?: string): Promise<IMatch[]>;
     createMatch(matchData: InsertMatch): Promise<IMatch>;
     updateMatch(matchId: string, updates: Partial<IMatch>): Promise<IMatch>;
+    deleteMatch(matchId: string): Promise<void>;
 }
 
 export class MongoDBStorage implements IStorage {
@@ -524,6 +525,14 @@ export class MongoDBStorage implements IStorage {
             throw new Error("Match not found");
         }
         return match;
+    }
+
+    async deleteMatch(matchId: string): Promise<void> {
+        await connectToDatabase();
+        const result = await Match.findByIdAndDelete(matchId);
+        if (!result) {
+            throw new Error("Match not found");
+        }
     }
 }
 
