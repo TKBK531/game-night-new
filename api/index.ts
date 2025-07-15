@@ -745,6 +745,98 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    // Static image serving endpoints
+    if (url?.startsWith("/images/") && method === "GET") {
+      try {
+        // Extract the image path from the URL
+        const imagePath = url.replace("/images/", "");
+        const baseDir = process.cwd();
+        const fullPath = `${baseDir}/images/${imagePath}`;
+
+        console.log("Attempting to serve image:", fullPath);
+
+        // Check if file exists using fs
+        if (!fs.existsSync(fullPath)) {
+          console.log("Image not found:", fullPath);
+          res.status(404).json({ error: "Image not found" });
+          return;
+        }
+
+        // Read the file
+        const fileBuffer = fs.readFileSync(fullPath);
+
+        // Determine content type based on file extension
+        const ext = imagePath.toLowerCase().split('.').pop();
+        let contentType = "image/jpeg"; // default
+        switch (ext) {
+          case "png": contentType = "image/png"; break;
+          case "gif": contentType = "image/gif"; break;
+          case "webp": contentType = "image/webp"; break;
+          case "svg": contentType = "image/svg+xml"; break;
+          case "ico": contentType = "image/x-icon"; break;
+          case "jpg":
+          case "jpeg":
+          default: contentType = "image/jpeg"; break;
+        }
+
+        // Set headers and send file
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+        res.status(200);
+        res.end(fileBuffer);
+        return;
+      } catch (error) {
+        console.error("Error serving image:", error);
+        res.status(500).json({ error: "Error serving image" });
+        return;
+      }
+    }
+
+    // Static uploads serving endpoints
+    if (url?.startsWith("/uploads/") && method === "GET") {
+      try {
+        // Extract the file path from the URL
+        const filePath = url.replace("/uploads/", "");
+        const baseDir = process.cwd();
+        const fullPath = `${baseDir}/uploads/${filePath}`;
+
+        console.log("Attempting to serve upload:", fullPath);
+
+        // Check if file exists using fs
+        if (!fs.existsSync(fullPath)) {
+          console.log("Upload not found:", fullPath);
+          res.status(404).json({ error: "File not found" });
+          return;
+        }
+
+        // Read the file
+        const fileBuffer = fs.readFileSync(fullPath);
+
+        // Determine content type based on file extension
+        const ext = filePath.toLowerCase().split('.').pop();
+        let contentType = "application/octet-stream"; // default
+        switch (ext) {
+          case "pdf": contentType = "application/pdf"; break;
+          case "png": contentType = "image/png"; break;
+          case "jpg":
+          case "jpeg": contentType = "image/jpeg"; break;
+          case "gif": contentType = "image/gif"; break;
+          case "webp": contentType = "image/webp"; break;
+        }
+
+        // Set headers and send file
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+        res.status(200);
+        res.end(fileBuffer);
+        return;
+      } catch (error) {
+        console.error("Error serving upload:", error);
+        res.status(500).json({ error: "Error serving file" });
+        return;
+      }
+    }
+
     // Test endpoint for team registration
     if (url?.includes("/test/teams") && method === "POST") {
       try {
@@ -1939,6 +2031,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       availableEndpoints: [
         "/api/health (GET)",
         "/api/debug (GET)",
+        "/images/* (GET) - Static image serving",
+        "/uploads/* (GET) - Static file serving",
         "/api/admin/login (POST)",
         "/api/admin/me (GET)",
         "/api/admin/logout (POST)",
