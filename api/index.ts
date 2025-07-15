@@ -743,27 +743,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         method,
       });
       return;
-    }
-
-    // Static image serving endpoints
+    }    // Static image serving endpoints - fetch from GitHub
     if (url?.startsWith("/images/") && method === "GET") {
       try {
         // Extract the image path from the URL
         const imagePath = url.replace("/images/", "");
-        const baseDir = process.cwd();
-        const fullPath = `${baseDir}/images/${imagePath}`;
 
-        console.log("Attempting to serve image:", fullPath);
+        // GitHub raw URL for the image
+        const githubRawUrl = `https://raw.githubusercontent.com/TKBK531/game-night-new/leaderboard/images/${imagePath}`;
 
-        // Check if file exists using fs
-        if (!fs.existsSync(fullPath)) {
-          console.log("Image not found:", fullPath);
+        console.log("Attempting to fetch image from GitHub:", githubRawUrl);
+
+        // Fetch the image from GitHub
+        const response = await fetch(githubRawUrl);
+
+        if (!response.ok) {
+          console.log("Image not found on GitHub:", githubRawUrl);
           res.status(404).json({ error: "Image not found" });
           return;
         }
 
-        // Read the file
-        const fileBuffer = fs.readFileSync(fullPath);
+        // Get the image buffer
+        const imageBuffer = await response.arrayBuffer();
 
         // Determine content type based on file extension
         const ext = imagePath.toLowerCase().split('.').pop();
@@ -783,52 +784,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         res.setHeader("Content-Type", contentType);
         res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
         res.status(200);
-        res.end(fileBuffer);
+        res.end(Buffer.from(imageBuffer));
         return;
       } catch (error) {
         console.error("Error serving image:", error);
         res.status(500).json({ error: "Error serving image" });
         return;
       }
-    }
-
-    // Static uploads serving endpoints
+    }    // Static uploads serving endpoints - try GitHub first, then GridFS
     if (url?.startsWith("/uploads/") && method === "GET") {
       try {
         // Extract the file path from the URL
         const filePath = url.replace("/uploads/", "");
-        const baseDir = process.cwd();
-        const fullPath = `${baseDir}/uploads/${filePath}`;
 
-        console.log("Attempting to serve upload:", fullPath);
+        // First try to fetch from GitHub (for files committed to repo)
+        const githubRawUrl = `https://raw.githubusercontent.com/TKBK531/game-night-new/leaderboard/uploads/${filePath}`;
 
-        // Check if file exists using fs
-        if (!fs.existsSync(fullPath)) {
-          console.log("Upload not found:", fullPath);
-          res.status(404).json({ error: "File not found" });
-          return;
+        console.log("Attempting to fetch upload from GitHub:", githubRawUrl);
+
+        try {
+          const response = await fetch(githubRawUrl);
+
+          if (response.ok) {
+            // File found on GitHub
+            const fileBuffer = await response.arrayBuffer();
+
+            // Determine content type based on file extension
+            const ext = filePath.toLowerCase().split('.').pop();
+            let contentType = "application/octet-stream"; // default
+            switch (ext) {
+              case "pdf": contentType = "application/pdf"; break;
+              case "png": contentType = "image/png"; break;
+              case "jpg":
+              case "jpeg": contentType = "image/jpeg"; break;
+              case "gif": contentType = "image/gif"; break;
+              case "webp": contentType = "image/webp"; break;
+            }
+
+            // Set headers and send file
+            res.setHeader("Content-Type", contentType);
+            res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+            res.status(200);
+            res.end(Buffer.from(fileBuffer));
+            return;
+          }
+        } catch (githubError) {
+          console.log("File not found on GitHub, trying GridFS...");
         }
 
-        // Read the file
-        const fileBuffer = fs.readFileSync(fullPath);
-
-        // Determine content type based on file extension
-        const ext = filePath.toLowerCase().split('.').pop();
-        let contentType = "application/octet-stream"; // default
-        switch (ext) {
-          case "pdf": contentType = "application/pdf"; break;
-          case "png": contentType = "image/png"; break;
-          case "jpg":
-          case "jpeg": contentType = "image/jpeg"; break;
-          case "gif": contentType = "image/gif"; break;
-          case "webp": contentType = "image/webp"; break;
-        }
-
-        // Set headers and send file
-        res.setHeader("Content-Type", contentType);
-        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
-        res.status(200);
-        res.end(fileBuffer);
+        // If not found on GitHub, try GridFS for user uploads
+        // This would need GridFS implementation for file retrieval
+        console.log("Upload not found:", filePath);
+        res.status(404).json({ error: "File not found" });
         return;
       } catch (error) {
         console.error("Error serving upload:", error);
