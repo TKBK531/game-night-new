@@ -322,6 +322,7 @@ const UserSchema = new Schema<IUser>({
   },
   createdAt: { type: Date, default: Date.now },
   lastLogin: { type: Date },
+  isActive: { type: Boolean, default: true },
 });
 
 // Indexes for performance
@@ -399,6 +400,7 @@ export interface InsertUser {
   username: string;
   password: string;
   role: "superuser" | "elite_board" | "top_board";
+  isActive?: boolean;
 }
 
 export interface LoginUser {
