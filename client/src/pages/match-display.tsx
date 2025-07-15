@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Trophy,
     Calendar,
@@ -18,7 +17,6 @@ import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
 export default function MatchDisplay() {
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [selectedGame, setSelectedGame] = useState<"valorant" | "cod">("valorant");
 
     // Update time every second
     useEffect(() => {
@@ -29,16 +27,23 @@ export default function MatchDisplay() {
         return () => clearInterval(timer);
     }, []);
 
-    // Fetch matches data
-    const { data: allMatches = [], isLoading, refetch } = useQuery<any[]>({
-        queryKey: ['/api/matches', selectedGame],
-        queryFn: () => fetch(`/api/matches?game=${selectedGame}`).then(res => res.json()),
+    // Fetch all matches data (both Valorant and COD)
+    const { data: valorantMatches = [], isLoading: isLoadingValorant } = useQuery<any[]>({
+        queryKey: ['/api/matches', 'valorant'],
+        queryFn: () => fetch('/api/matches?game=valorant').then(res => res.json()),
         refetchInterval: 30000, // Refetch every 30 seconds for live updates
     });
 
-    // Filter matches by status
-    const ongoingMatches = allMatches.filter(m => m.status === "in_progress").slice(0, 3);
-    const upcomingMatches = allMatches.filter(m => m.status === "scheduled").slice(0, 6);
+    const { data: codMatches = [], isLoading: isLoadingCod } = useQuery<any[]>({
+        queryKey: ['/api/matches', 'cod'],
+        queryFn: () => fetch('/api/matches?game=cod').then(res => res.json()),
+        refetchInterval: 30000, // Refetch every 30 seconds for live updates
+    });
+
+    // Combine and filter matches by status
+    const allMatches = [...valorantMatches, ...codMatches];
+    const ongoingMatches = allMatches.filter(m => m.status === "in_progress");
+    const upcomingMatches = allMatches.filter(m => m.status === "scheduled");
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -110,33 +115,6 @@ export default function MatchDisplay() {
                             </div>
                         </motion.div>
                     </div>
-
-                    {/* Game Selector */}
-                    <motion.div
-                        className="mt-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                    >
-                        <Tabs value={selectedGame} onValueChange={(value) => setSelectedGame(value as "valorant" | "cod")}>
-                            <TabsList className="bg-[#1a2332] border border-[#ff4654]/30 p-1 h-auto">
-                                <TabsTrigger
-                                    value="valorant"
-                                    className="data-[state=active]:bg-[#ff4654] data-[state=active]:text-white text-xl px-8 py-3"
-                                >
-                                    <GamepadIcon className="h-6 w-6 mr-3" />
-                                    VALORANT
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="cod"
-                                    className="data-[state=active]:bg-[#ba3a46] data-[state=active]:text-white text-xl px-8 py-3"
-                                >
-                                    <Target className="h-6 w-6 mr-3" />
-                                    CALL OF DUTY
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                    </motion.div>
                 </div>
             </div>
 
@@ -156,9 +134,27 @@ export default function MatchDisplay() {
                                     LIVE MATCHES
                                 </h2>
                             </div>
-                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-lg px-4 py-2">
-                                {ongoingMatches.length}/3 Active
-                            </Badge>
+                            <div className="flex items-center space-x-3">
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-lg px-4 py-2">
+                                    {ongoingMatches.length} Active
+                                </Badge>
+                                {ongoingMatches.length > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                        {ongoingMatches.filter(m => m.game === 'valorant').length > 0 && (
+                                            <Badge className="bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30 text-sm px-3 py-1">
+                                                <GamepadIcon className="h-4 w-4 mr-1" />
+                                                VALORANT
+                                            </Badge>
+                                        )}
+                                        {ongoingMatches.filter(m => m.game === 'cod').length > 0 && (
+                                            <Badge className="bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30 text-sm px-3 py-1">
+                                                <Target className="h-4 w-4 mr-1" />
+                                                COD
+                                            </Badge>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -232,7 +228,7 @@ function LiveMatchCarousel({ matches, getTeamLogo }: { matches: any[]; getTeamLo
     // Auto-rotate carousel every 5 seconds
     useEffect(() => {
         if (matches.length <= 1) return;
-        
+
         const interval = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % matches.length);
         }, 5000);
@@ -273,9 +269,8 @@ function LiveMatchCarousel({ matches, getTeamLogo }: { matches: any[]; getTeamLo
                     <motion.button
                         key={index}
                         onClick={() => setCurrentIndex(index)}
-                        className={`w-4 h-4 rounded-full transition-colors ${
-                            index === currentIndex ? 'bg-green-400' : 'bg-gray-600'
-                        }`}
+                        className={`w-4 h-4 rounded-full transition-colors ${index === currentIndex ? 'bg-green-400' : 'bg-gray-600'
+                            }`}
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}
                     />
@@ -289,11 +284,10 @@ function LiveMatchCarousel({ matches, getTeamLogo }: { matches: any[]; getTeamLo
                     {matches.map((match, index) => (
                         <motion.div
                             key={match._id}
-                            className={`flex items-center space-x-4 px-4 py-3 rounded-lg transition-all cursor-pointer ${
-                                index === currentIndex 
-                                    ? 'bg-green-500/20 border border-green-500/30' 
-                                    : 'bg-gray-700/30 hover:bg-gray-600/30'
-                            }`}
+                            className={`flex items-center space-x-4 px-4 py-3 rounded-lg transition-all cursor-pointer ${index === currentIndex
+                                ? 'bg-green-500/20 border border-green-500/30'
+                                : 'bg-gray-700/30 hover:bg-gray-600/30'
+                                }`}
                             onClick={() => setCurrentIndex(index)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -340,6 +334,12 @@ function LiveMatchCarousel({ matches, getTeamLogo }: { matches: any[]; getTeamLo
                             {/* Match Info */}
                             <div className="text-left">
                                 <div className="text-xs text-gray-400">{match.round}</div>
+                                {match.game && (
+                                    <div className={`text-xs font-semibold ${match.game === 'valorant' ? 'text-[#ff4654]' : 'text-[#ba3a46]'
+                                        }`}>
+                                        {match.game === 'valorant' ? 'VAL' : 'COD'}
+                                    </div>
+                                )}
                                 {(match.team1Score !== undefined && match.team2Score !== undefined) && (
                                     <div className="text-sm font-bold text-white">
                                         {match.team1Score} - {match.team2Score}
@@ -365,6 +365,18 @@ function LiveMatchCard({ match, getTeamLogo }: { match: any; getTeamLogo: (teamN
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-lg px-4 py-2">
                             🔴 LIVE
                         </Badge>
+                        {match.game && (
+                            <Badge className={`text-sm px-3 py-1 ${match.game === 'valorant'
+                                    ? 'bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30'
+                                    : 'bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30'
+                                }`}>
+                                {match.game === 'valorant' ? (
+                                    <><GamepadIcon className="h-4 w-4 mr-1" />VALORANT</>
+                                ) : (
+                                    <><Target className="h-4 w-4 mr-1" />COD</>
+                                )}
+                            </Badge>
+                        )}
                     </div>
                     <div className="text-right">
                         <p className="text-sm text-gray-400">Started</p>
@@ -447,12 +459,26 @@ function UpcomingMatchCard({ match, getTimeUntilMatch, getTeamLogo }: {
                 } to-transparent`}></div>
             <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <Badge className={`${isStartingSoon
-                        ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                        } text-sm px-3 py-1`}>
-                        {match.round}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                        <Badge className={`${isStartingSoon
+                            ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                            : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                            } text-sm px-3 py-1`}>
+                            {match.round}
+                        </Badge>
+                        {match.game && (
+                            <Badge className={`text-xs px-2 py-1 ${match.game === 'valorant'
+                                    ? 'bg-[#ff4654]/20 text-[#ff4654] border-[#ff4654]/30'
+                                    : 'bg-[#ba3a46]/20 text-[#ba3a46] border-[#ba3a46]/30'
+                                }`}>
+                                {match.game === 'valorant' ? (
+                                    <><GamepadIcon className="h-3 w-3 mr-1" />VAL</>
+                                ) : (
+                                    <><Target className="h-3 w-3 mr-1" />COD</>
+                                )}
+                            </Badge>
+                        )}
+                    </div>
                     <div className="text-right">
                         <p className="text-sm text-gray-400">Starting in</p>
                         <p className={`text-lg font-bold ${isStartingSoon ? 'text-orange-400' : 'text-yellow-400'
