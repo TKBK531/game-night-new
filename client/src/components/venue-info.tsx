@@ -21,7 +21,7 @@ export default function VenueInfo() {
     {
       icon: Monitor,
       title: "Gaming Setup",
-      description: "High-end PCs with 4GB+ Graphics Memory\n75Hz monitors",
+      description: "High-end PCs with 4GB+ Graphics Memory\n60+Hz monitors",
       color: "#ba3a46"
     },
     {
