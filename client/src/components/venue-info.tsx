@@ -21,13 +21,13 @@ export default function VenueInfo() {
     {
       icon: Monitor,
       title: "Gaming Setup",
-      description: "High-end PCs with RTX 3050\n75Hz monitors",
+      description: "High-end PCs with 4GB+ Graphics Memory\n75Hz monitors",
       color: "#ba3a46"
     },
     {
       icon: Wifi,
-      title: "Network",
-      description: "Dedicated gaming network\nUltra-low latency",
+      title: "WIFI Connectivity",
+      description: "",
       color: "#ff4654"
     }
   ];
