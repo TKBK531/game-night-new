@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { siteConfig } from "../../../shared/config";
 import { ScrollReveal } from "./ui/scroll-reveal";
 import { staggerVariants } from "@/hooks/use-scroll-reveal";
+import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -52,7 +53,7 @@ export default function HeroSection() {
       </div>
 
       <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
-        {/* Main Title */}
+        {/* Event Completed Title */}
         <ScrollReveal variant="fadeInDown" delay={0.2}>
           <div className="relative mb-12">
             <div className="absolute -inset-4 bg-gradient-to-r from-[#ff4654]/20 via-[#ba3a46]/20 to-[#ff4654]/20 blur-xl rounded-full"></div>
@@ -82,28 +83,151 @@ export default function HeroSection() {
                 {siteConfig.event.title} {siteConfig.event.year}
               </span>
             </motion.div>
+
+            <motion.div
+              className="text-2xl md:text-3xl font-orbitron font-bold text-green-400 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.0, ease: "easeOut" }}
+            >
+              <Trophy className="inline mr-3 text-yellow-400" />
+              EVENT COMPLETED!
+              <Trophy className="inline ml-3 text-yellow-400" />
+            </motion.div>
           </div>
         </ScrollReveal>
 
-        {/* Subtitle with icons */}
+        {/* Tournament Winners */}
         <ScrollReveal variant="fadeInUp" delay={0.4}>
-          <div className="mb-12 space-y-4">
-            <p className="text-xl md:text-2xl text-gray-300 font-medium">
-              <Sparkles className="inline text-[#ff4654] mr-2" />
-              {siteConfig.event.subtitle}
-              <Sparkles className="inline text-[#ba3a46] ml-2" />
-            </p>
-            <div className="flex justify-center items-center gap-6 text-lg text-gray-400">
-              <div className="flex items-center gap-2">
-                <Calendar className="text-[#ba3a46]" />
-                {siteConfig.schedule.eventDate}
+          <div className="mb-12 space-y-8">
+            <motion.div
+              className="bg-gradient-to-r from-[#ff4654]/20 to-[#ba3a46]/20 rounded-xl p-8 backdrop-blur-sm border border-[#ff4654]/30"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+            >
+              <h2 className="text-3xl md:text-4xl font-orbitron font-bold text-[#ff4654] mb-6">
+                🏆 TOURNAMENT CHAMPIONS 🏆
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Valorant Winners */}
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-orbitron font-bold text-white mb-4">
+                    <Gamepad2 className="inline mr-2 text-[#ff4654]" />
+                    VALORANT
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-r from-[#ff4654]/20 to-[#ba3a46]/20 rounded-lg p-4 border border-[#ff4654]/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <img
+                            src={getTeamLogoUrl("Team Mythics")}
+                            alt="Team Mythics Logo"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-yellow-400 mr-4"
+                          />
+                          <div>
+                            <div className="flex items-center">
+                              <Trophy className="text-yellow-400 mr-2" size={20} />
+                              <span className="text-xl font-bold text-yellow-400">1st Place</span>
+                            </div>
+                            <span className="text-lg font-bold text-[#ff4654]">Team Mythics</span>
+                          </div>
+                        </div>
+                        <div className="text-3xl">🏆</div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-[#ff4654]/10 to-[#ba3a46]/10 rounded-lg p-4 border border-[#ff4654]/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <img
+                            src={getTeamLogoUrl("Tactical Naps")}
+                            alt="Tactical Naps Logo"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-400 mr-4"
+                          />
+                          <div>
+                            <div className="flex items-center">
+                              <Target className="text-gray-300 mr-2" size={20} />
+                              <span className="text-lg font-bold text-gray-300">2nd Place</span>
+                            </div>
+                            <span className="text-lg font-bold text-[#ff4654]">Tactical Naps</span>
+                          </div>
+                        </div>
+                        <div className="text-2xl">🥈</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Call of Duty Winners */}
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-orbitron font-bold text-white mb-4">
+                    <Gamepad2 className="inline mr-2 text-[#ba3a46]" />
+                    CALL OF DUTY
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-r from-[#ba3a46]/20 to-[#ff4654]/20 rounded-lg p-4 border border-[#ba3a46]/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <img
+                            src={getTeamLogoUrl("Mind Processing")}
+                            alt="Mind Processing Logo"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-yellow-400 mr-4"
+                          />
+                          <div>
+                            <div className="flex items-center">
+                              <Trophy className="text-yellow-400 mr-2" size={20} />
+                              <span className="text-xl font-bold text-yellow-400">1st Place</span>
+                            </div>
+                            <span className="text-lg font-bold text-[#ba3a46]">Mind Processing</span>
+                          </div>
+                        </div>
+                        <div className="text-3xl">🏆</div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-[#ba3a46]/10 to-[#ff4654]/10 rounded-lg p-4 border border-[#ba3a46]/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <img
+                            src={getTeamLogoUrl("Silent Reapers")}
+                            alt="Silent Reapers Logo"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-400 mr-4"
+                          />
+                          <div>
+                            <div className="flex items-center">
+                              <Target className="text-gray-300 mr-2" size={20} />
+                              <span className="text-lg font-bold text-gray-300">2nd Place</span>
+                            </div>
+                            <span className="text-lg font-bold text-[#ba3a46]">Silent Reapers</span>
+                          </div>
+                        </div>
+                        <div className="text-2xl">🥈</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="w-2 h-2 bg-[#ff4654] rounded-full animate-pulse"></div>
-              <div className="flex items-center gap-2">
-                <Target className="text-[#ff4654]" />
-                {siteConfig.event.description}
-              </div>
-            </div>
+            </motion.div>
+
+            {/* Thank you message */}
+            <motion.div
+              className="text-xl md:text-2xl text-gray-300 font-medium space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.4 }}
+            >
+              <p className="mb-4">
+                <Sparkles className="inline text-[#ff4654] mr-2" />
+                Congratulations to all our amazing participants!
+                <Sparkles className="inline text-[#ba3a46] ml-2" />
+              </p>
+              <p className="text-lg text-gray-400">
+                Thank you for making Game Night: Reignite 25' an incredible success!
+              </p>
+              <p className="text-lg text-gray-400">
+                We hope to see you again in our next bigger and better tournament!
+              </p>
+            </motion.div>
           </div>
         </ScrollReveal>
 
@@ -111,27 +235,27 @@ export default function HeroSection() {
         <ScrollReveal variant="scaleIn" delay={0.6}>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <motion.button
-              onClick={() => scrollToSection("countdown")}
+              onClick={() => scrollToSection("leaderboard")}
               className="group bg-[#ff4654]/20 border border-[#ff4654] text-[#ff4654] px-10 py-5 rounded-xl font-bold text-xl flex items-center justify-center hover-lift"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Trophy className="mr-3 group-hover:animate-bounce" />
-              Registration Closed
+              View Final Results
             </motion.button>
             <motion.button
-              onClick={() => scrollToSection("schedule")}
+              onClick={() => scrollToSection("tournament-showcase")}
               className="border-2 border-[#ff4654] text-[#ff4654] px-10 py-5 rounded-xl font-bold text-xl hover:bg-[#ff4654] hover:text-[#ffffff] transition-all flex items-center justify-center backdrop-blur-sm bg-[#ff4654]/10 hover-lift"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Calendar className="mr-3" />
-              View Schedule
+              <Gamepad2 className="mr-3" />
+              View Highlights
             </motion.button>
           </div>
         </ScrollReveal>
 
-        {/* Stats Cards */}
+        {/* Event Stats Cards */}
         <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
           variants={staggerVariants}
@@ -139,73 +263,77 @@ export default function HeroSection() {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
         >
-          {siteConfig.heroStats.map((stat, index) => {
-            // Calculate dynamic values
-            let displayValue = "";
-            let IconComponent;
+          {/* Event Completed */}
+          <motion.div
+            className="gaming-border rounded-xl p-6 backdrop-blur-sm bg-[#111823]/50 hover-lift"
+            variants={{
+              hidden: { opacity: 0, y: 50, scale: 0.8 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: { duration: 0.6, ease: "easeOut" },
+              },
+            }}
+            whileHover={{
+              scale: 1.05,
+              transition: { duration: 0.2 },
+            }}
+          >
+            <Trophy className="text-3xl mx-auto mb-3 text-yellow-400" />
+            <div className="text-2xl font-orbitron font-bold text-green-400">
+              SUCCESS!
+            </div>
+            <div className="text-gray-400">Event Completed</div>
+          </motion.div>
 
-            switch (stat.icon) {
-              case "Gamepad2":
-                IconComponent = Gamepad2;
-                displayValue =
-                  Object.values(siteConfig.tournaments)
-                    .reduce((total, tournament) => {
-                      const prizeAmount = parseInt(
-                        tournament.prizePool.replace(/[LKR,\s]/g, "")
-                      );
-                      return total + prizeAmount;
-                    }, 0)
-                    .toLocaleString("en-LK") + " LKR+";
-                break;
-              case "Shield":
-                IconComponent = Shield;
-                displayValue =
-                  Object.values(siteConfig.tournaments).reduce(
-                    (total, tournament) => total + tournament.maxTeams,
-                    0
-                  ) + " Teams";
-                break;
-              case "Cpu":
-                IconComponent = Cpu;
-                displayValue = `${siteConfig.schedule.eventStartTime} - ${siteConfig.schedule.eventEndTime}`;
-                break;
-              default:
-                IconComponent = Gamepad2;
-                displayValue = stat.value;
-            }
+          {/* Total Participants */}
+          <motion.div
+            className="gaming-border rounded-xl p-6 backdrop-blur-sm bg-[#111823]/50 hover-lift"
+            variants={{
+              hidden: { opacity: 0, y: 50, scale: 0.8 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: { duration: 0.6, ease: "easeOut", delay: 0.2 },
+              },
+            }}
+            whileHover={{
+              scale: 1.05,
+              transition: { duration: 0.2 },
+            }}
+          >
+            <Shield className="text-3xl mx-auto mb-3 text-[#ff4654]" />
+            <div className="text-2xl font-orbitron font-bold text-[#ff4654]">
+              16+ Teams
+            </div>
+            <div className="text-gray-400">Total Participants</div>
+          </motion.div>
 
-            return (
-              <motion.div
-                key={index}
-                className="gaming-border rounded-xl p-6 backdrop-blur-sm bg-[#111823]/50 hover-lift"
-                variants={{
-                  hidden: { opacity: 0, y: 50, scale: 0.8 },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    transition: { duration: 0.6, ease: "easeOut" },
-                  },
-                }}
-                whileHover={{
-                  scale: 1.05,
-                  transition: { duration: 0.2 },
-                }}
-              >
-                <IconComponent
-                  className="text-3xl mx-auto mb-3"
-                  style={{ color: stat.color }}
-                />
-                <div
-                  className="text-2xl font-orbitron font-bold"
-                  style={{ color: stat.color }}
-                >
-                  {displayValue}
-                </div>
-                <div className="text-gray-400">{stat.label}</div>
-              </motion.div>
-            );
-          })}
+          {/* Prize Pool Distributed */}
+          <motion.div
+            className="gaming-border rounded-xl p-6 backdrop-blur-sm bg-[#111823]/50 hover-lift"
+            variants={{
+              hidden: { opacity: 0, y: 50, scale: 0.8 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: { duration: 0.6, ease: "easeOut", delay: 0.4 },
+              },
+            }}
+            whileHover={{
+              scale: 1.05,
+              transition: { duration: 0.2 },
+            }}
+          >
+            <Gamepad2 className="text-3xl mx-auto mb-3 text-[#ba3a46]" />
+            <div className="text-2xl font-orbitron font-bold text-[#ba3a46]">
+              100,000+ LKR
+            </div>
+            <div className="text-gray-400">Prize Pool Distributed</div>
+          </motion.div>
         </motion.div>
       </div>
 

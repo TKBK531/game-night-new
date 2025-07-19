@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { siteConfig } from "../../../shared/config";
 import { ScrollReveal } from "./ui/scroll-reveal";
 import { staggerVariants } from "@/hooks/use-scroll-reveal";
+import { getTeamLogoUrl } from "../../../shared/team-logo-utils";
 
 export default function TournamentShowcase() {
   const { data: stats } = useQuery({
@@ -18,7 +19,7 @@ export default function TournamentShowcase() {
   };
 
   return (
-    <section id="tournaments" className="py-20 bg-[#1a2332]/50">
+    <section id="tournament-showcase" className="py-20 bg-[#1a2332]/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="fadeInUp">
           <div className="text-center mb-16">
@@ -29,10 +30,10 @@ export default function TournamentShowcase() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              Main Events
+              Tournament Results
             </motion.h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Compete in the most popular FPS games with professional setups and amazing prizes
+              Congratulations to all participants for making this tournament an incredible success!
             </p>
           </div>
         </ScrollReveal>
@@ -85,7 +86,7 @@ export default function TournamentShowcase() {
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              {siteConfig.tournaments.valorant.name}
+              {siteConfig.tournaments.valorant.name} - COMPLETED
             </motion.h3>
 
             <motion.div
@@ -104,6 +105,46 @@ export default function TournamentShowcase() {
               whileInView="visible"
             >
               <motion.div
+                className="flex items-center justify-between bg-gradient-to-r from-[#ff4654]/20 to-[#ba3a46]/20 rounded-lg p-3 border border-[#ff4654]/30"
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+              >
+                <div className="flex items-center">
+                  <Trophy className="text-yellow-400 mr-3" />
+                  <span className="font-bold text-yellow-400">1st Place</span>
+                </div>
+                <div className="flex items-center">
+                  <img
+                    src={getTeamLogoUrl("Team Mythics")}
+                    alt="Team Mythics Logo"
+                    className="w-8 h-8 rounded-full object-cover border border-yellow-400 mr-2"
+                  />
+                  <span className="text-yellow-400 font-bold">Team Mythics</span>
+                </div>
+              </motion.div>
+              <motion.div
+                className="flex items-center justify-between bg-gradient-to-r from-[#ff4654]/10 to-[#ba3a46]/10 rounded-lg p-3 border border-[#ff4654]/20"
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+              >
+                <div className="flex items-center">
+                  <Trophy className="text-gray-300 mr-3" />
+                  <span className="font-bold text-gray-300">2nd Place</span>
+                </div>
+                <div className="flex items-center">
+                  <img
+                    src={getTeamLogoUrl("Tactical Naps")}
+                    alt="Tactical Naps Logo"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-400 mr-2"
+                  />
+                  <span className="text-gray-300 font-bold">Tactical Naps</span>
+                </div>
+              </motion.div>
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -111,31 +152,11 @@ export default function TournamentShowcase() {
                 }}
               >
                 <Users className="text-[#ff4654] mr-3" />
-                {siteConfig.tournaments.valorant.teamSize} Players per Team
-              </motion.div>
-              <motion.div
-                className="flex items-center text-gray-300"
-                variants={{
-                  hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
-                }}
-              >
-                <Trophy className="text-[#ff4654] mr-3" />
-                {siteConfig.tournaments.valorant.prizePool} Prize Pool
-              </motion.div>
-              <motion.div
-                className="flex items-center text-gray-300"
-                variants={{
-                  hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
-                }}
-              >
-                <Clock className="text-[#ff4654] mr-3" />
-                Fee: {siteConfig.tournaments.valorant.registrationFee}
+                {(stats as any)?.valorant?.registered || 8} Teams Participated
               </motion.div>
             </motion.div>
 
-            {/* Gaming-style progress bar */}
+            {/* Tournament completion status */}
             <motion.div
               className="mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -143,29 +164,29 @@ export default function TournamentShowcase() {
               transition={{ delay: 0.6, duration: 0.5 }}
             >
               <div className="flex justify-between text-sm mb-2">
-                <span>Teams Registered</span>
-                <span>{(stats as any)?.valorant?.registered || 0}/{siteConfig.tournaments.valorant.maxTeams}</span>
+                <span>Tournament Status</span>
+                <span className="text-green-400 font-bold">COMPLETED</span>
               </div>
               <div className="w-full bg-[#242d3d] rounded-full h-3 overflow-hidden">
                 <motion.div
-                  className="bg-gradient-to-r from-[#ff4654] to-[#ba3a46] h-3 rounded-full"
+                  className="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full"
                   initial={{ width: 0 }}
-                  whileInView={{ width: `${(((stats as any)?.valorant?.registered || 0) / siteConfig.tournaments.valorant.maxTeams) * 100}%` }}
+                  whileInView={{ width: "100%" }}
                   transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 ></motion.div>
               </div>
             </motion.div>
 
             <motion.button
-              onClick={() => scrollToSection('countdown')}
-              className="w-full bg-[#ff4654]/20 border border-[#ff4654] text-[#ff4654] py-3 rounded-lg font-semibold hover:bg-[#ff4654]/30 transition-colors"
+              onClick={() => scrollToSection('leaderboard')}
+              className="w-full bg-green-600/20 border border-green-500 text-green-400 py-3 rounded-lg font-semibold hover:bg-green-600/30 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Registration Closed
+              View Results
             </motion.button>
           </motion.div>
 
@@ -210,7 +231,7 @@ export default function TournamentShowcase() {
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              {siteConfig.tournaments.cod.name}
+              {siteConfig.tournaments.cod.name} - COMPLETED
             </motion.h3>
 
             <motion.div
@@ -229,6 +250,46 @@ export default function TournamentShowcase() {
               whileInView="visible"
             >
               <motion.div
+                className="flex items-center justify-between bg-gradient-to-r from-[#ba3a46]/20 to-[#ff4654]/20 rounded-lg p-3 border border-[#ba3a46]/30"
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+              >
+                <div className="flex items-center">
+                  <Trophy className="text-yellow-400 mr-3" />
+                  <span className="font-bold text-yellow-400">1st Place</span>
+                </div>
+                <div className="flex items-center">
+                  <img
+                    src={getTeamLogoUrl("Mind Processing")}
+                    alt="Mind Processing Logo"
+                    className="w-8 h-8 rounded-full object-cover border border-yellow-400 mr-2"
+                  />
+                  <span className="text-yellow-400 font-bold">Mind Processing</span>
+                </div>
+              </motion.div>
+              <motion.div
+                className="flex items-center justify-between bg-gradient-to-r from-[#ba3a46]/10 to-[#ff4654]/10 rounded-lg p-3 border border-[#ba3a46]/20"
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+              >
+                <div className="flex items-center">
+                  <Trophy className="text-gray-300 mr-3" />
+                  <span className="font-bold text-gray-300">2nd Place</span>
+                </div>
+                <div className="flex items-center">
+                  <img
+                    src={getTeamLogoUrl("Silent Reapers")}
+                    alt="Silent Reapers Logo"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-400 mr-2"
+                  />
+                  <span className="text-gray-300 font-bold">Silent Reapers</span>
+                </div>
+              </motion.div>
+              <motion.div
                 className="flex items-center text-gray-300"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
@@ -236,31 +297,11 @@ export default function TournamentShowcase() {
                 }}
               >
                 <Users className="text-[#ba3a46] mr-3" />
-                {siteConfig.tournaments.cod.teamSize} Players per Team
-              </motion.div>
-              <motion.div
-                className="flex items-center text-gray-300"
-                variants={{
-                  hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
-                }}
-              >
-                <Trophy className="text-[#ba3a46] mr-3" />
-                {siteConfig.tournaments.cod.prizePool} Prize Pool
-              </motion.div>
-              <motion.div
-                className="flex items-center text-gray-300"
-                variants={{
-                  hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
-                }}
-              >
-                <Clock className="text-[#ba3a46] mr-3" />
-                Fee: {siteConfig.tournaments.cod.registrationFee}
+                {(stats as any)?.cod?.confirmed || 8} Teams Participated
               </motion.div>
             </motion.div>
 
-            {/* Gaming-style progress bar */}
+            {/* Tournament completion status */}
             <motion.div
               className="mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -268,30 +309,30 @@ export default function TournamentShowcase() {
               transition={{ delay: 0.6, duration: 0.5 }}
             >
               <div className="flex justify-between text-sm mb-2">
-                <span>Teams Confirmed</span>
-                <span>{(stats as any)?.cod?.confirmed || 0}/{siteConfig.tournaments.cod.maxTeams}</span>
+                <span>Tournament Status</span>
+                <span className="text-green-400 font-bold">COMPLETED</span>
               </div>
               <div className="w-full bg-[#242d3d] rounded-full h-3 overflow-hidden">
                 <motion.div
-                  className="bg-gradient-to-r from-[#ba3a46] to-[#ff4654] h-3 rounded-full"
+                  className="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full"
                   initial={{ width: 0 }}
-                  whileInView={{ width: `${(((stats as any)?.cod?.confirmed || 0) / siteConfig.tournaments.cod.maxTeams) * 100}%` }}
+                  whileInView={{ width: "100%" }}
                   transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 ></motion.div>
               </div>
-              
+
             </motion.div>
 
             <motion.button
-              onClick={() => scrollToSection('countdown')}
-              className="w-full bg-[#ba3a46]/20 border border-[#ba3a46] text-[#ba3a46] py-3 rounded-lg font-semibold hover:bg-[#ba3a46]/30 transition-colors"
+              onClick={() => scrollToSection('leaderboard')}
+              className="w-full bg-green-600/20 border border-green-500 text-green-400 py-3 rounded-lg font-semibold hover:bg-green-600/30 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Registration Closed
+              View Results
             </motion.button>
           </motion.div>
         </motion.div>

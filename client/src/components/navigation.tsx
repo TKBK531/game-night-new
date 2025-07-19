@@ -76,7 +76,7 @@ export default function Navigation() {
             initial="hidden"
             animate="visible"
           >
-            <motion.button
+            {/* <motion.button
               onClick={() => scrollToSection("tournaments")}
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
@@ -135,7 +135,7 @@ export default function Navigation() {
               whileTap={{ scale: 0.95 }}
             >
               Countdown
-            </motion.button>
+            </motion.button> */}
             {/* <motion.a
               href="/leaderboard"
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
@@ -160,7 +160,7 @@ export default function Navigation() {
             >
               Live Matches
             </motion.a> */}
-            <motion.a
+            {/* <motion.a
               href="/rules"
               className="hover:text-[#ff4654] transition-colors cursor-pointer"
               variants={{
@@ -183,7 +183,7 @@ export default function Navigation() {
               whileTap={{ scale: 0.95 }}
             >
               Admin
-            </motion.a>
+            </motion.a> */}
           </motion.div>
 
           <motion.button
@@ -210,7 +210,7 @@ export default function Navigation() {
               transition={{ duration: 0.3 }}
             >
               {" "}
-              <div className="flex flex-col space-y-2">
+              {/* <div className="flex flex-col space-y-2">
                 <motion.button
                   onClick={() => scrollToSection("tournaments")}
                   className="text-left hover:text-[#ff4654] transition-colors cursor-pointer py-2"
@@ -274,7 +274,7 @@ export default function Navigation() {
                 >
                   Admin
                 </motion.a>
-              </div>
+              </div> */}
             </motion.div>
           )}
         </AnimatePresence>
