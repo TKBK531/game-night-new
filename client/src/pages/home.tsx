@@ -14,11 +14,11 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <TournamentShowcase />
-      <EventSchedule />
-      <FunZone />
+      {/* <EventSchedule /> */}
+      {/* <FunZone /> */}
       <ReactionGame />
       <CountdownTimer />
-      <VenueInfo />
+      {/* <VenueInfo /> */}
       <Footer />
     </div>
   );
