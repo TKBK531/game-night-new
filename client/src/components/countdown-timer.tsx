@@ -99,11 +99,11 @@ export default function CountdownTimer() {
                     </div>
                     <div className="flex items-center">
                       <img
-                        src={getTeamLogoUrl("Silent Reapers")}
-                        alt="Silent Reapers Logo"
+                        src={getTeamLogoUrl("Reapers")}
+                        alt="Reapers Logo"
                         className="w-8 h-8 rounded-full object-cover border border-gray-400 mr-3"
                       />
-                      <span className="text-gray-300 font-semibold">2nd: Silent Reapers</span>
+                      <span className="text-gray-300 font-semibold">2nd: Reapers</span>
                     </div>
                   </div>
                 </div>

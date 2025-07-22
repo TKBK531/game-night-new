@@ -189,8 +189,8 @@ export default function HeroSection() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <img
-                            src={getTeamLogoUrl("Silent Reapers")}
-                            alt="Silent Reapers Logo"
+                            src={getTeamLogoUrl("Reapers")}
+                            alt="Reapers Logo"
                             className="w-12 h-12 rounded-full object-cover border-2 border-gray-400 mr-4"
                           />
                           <div>
@@ -198,7 +198,7 @@ export default function HeroSection() {
                               <Target className="text-gray-300 mr-2" size={20} />
                               <span className="text-lg font-bold text-gray-300">2nd Place</span>
                             </div>
-                            <span className="text-lg font-bold text-[#ba3a46]">Silent Reapers</span>
+                            <span className="text-lg font-bold text-[#ba3a46]">Reapers</span>
                           </div>
                         </div>
                         <div className="text-2xl">🥈</div>

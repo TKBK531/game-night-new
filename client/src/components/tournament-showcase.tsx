@@ -282,11 +282,11 @@ export default function TournamentShowcase() {
                 </div>
                 <div className="flex items-center">
                   <img
-                    src={getTeamLogoUrl("Silent Reapers")}
-                    alt="Silent Reapers Logo"
+                    src={getTeamLogoUrl("Reapers")}
+                    alt="Reapers Logo"
                     className="w-8 h-8 rounded-full object-cover border border-gray-400 mr-2"
                   />
-                  <span className="text-gray-300 font-bold">Silent Reapers</span>
+                  <span className="text-gray-300 font-bold">Reapers</span>
                 </div>
               </motion.div>
               <motion.div
